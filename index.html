@@ -69,10 +69,10 @@ button, input { font: inherit; color: inherit; }
 }
 
 /* Brand, top left */
-.brand { position: absolute; z-index: 3; top: calc(16px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 4px; pointer-events: none; }
+.brand { position: absolute; z-index: 3; top: calc(20px + env(safe-area-inset-top, 0px)); left: max(20px, env(safe-area-inset-left, 0px)); display: grid; gap: 10px; pointer-events: none; }
 .brand h1, .brand p { text-shadow: 0 0 2px var(--bg), 0 0 10px var(--bg), 0 0 18px var(--bg); }
-.brand h1 { margin: 0; font: 700 22px/1 var(--font-ui); letter-spacing: -.02em; }
-.brand p { margin: 0; font: 400 13px/1.35 var(--font-ui); color: var(--muted); max-width: 30ch; }
+.brand h1 { margin: 0; font: 700 clamp(34px, 4.4vw, 56px)/1 var(--font-ui); letter-spacing: -.035em; }
+.brand p { margin: 0; font: 400 15px/1.4 var(--font-ui); color: var(--muted); max-width: 34ch; text-wrap: balance; }
 .count { position: absolute; z-index: 3; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
 .count .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
 
@@ -160,8 +160,9 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 .notice b { color: var(--fg); font-weight: 500; }
 
 @media (max-width: 760px) {
-  .brand p { display: none; }
-  .count { top: calc(48px + env(safe-area-inset-top, 0px)); right: auto; left: max(16px, env(safe-area-inset-left, 0px)); height: 26px; font-size: 11px; }
+  .brand { top: calc(16px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); gap: 6px; }
+  .brand p { font-size: 13px; max-width: 30ch; }
+  .count { top: calc(124px + env(safe-area-inset-top, 0px)); right: auto; left: max(16px, env(safe-area-inset-left, 0px)); height: 26px; font-size: 11px; }
   .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
   .search input { width: 130px; }
   .notice { display: none; }
@@ -196,7 +197,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 <header class="brand">
   <h1>Leegstandatlas</h1>
-  <p>Leegstaande gebouwen en ruïnes in Plombières, aangeduid in het rood.</p>
+  <p>Leegstaande gebouwen in kaart gebracht, met alle beelden en gegevens per pand op één plek.</p>
 </header>
 <div class="count pill" id="count"><span class="dot"></span><span id="countText">0 panden</span></div>
 
@@ -369,7 +370,7 @@ $("countText").textContent = `${PANDEN.length} panden · Plombières`;
 
 function flyCluster() {
   stopSpin();
-  map.fitBounds(bounds, { padding: small ? { top: 110, bottom: 110, left: 40, right: 140 } : { top: 120, bottom: 120, left: 120, right: 260 }, maxZoom: 13.5, speed: 1.1, essential: true });
+  map.fitBounds(bounds, { padding: small ? { top: 150, bottom: 90, left: 40, right: 140 } : { top: 160, bottom: 120, left: 200, right: 200 }, maxZoom: 13.5, speed: 1.1, essential: true });
 }
 function zoomClass() {
   const z = map.getZoom();
@@ -422,6 +423,12 @@ document.addEventListener("click", e => { if (!e.target.closest(".search")) resu
 // Detailpaneel
 let tab = "fotos";
 const datum = s => s ? new Date(s + "T12:00:00").toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" }) : "Nog niet";
+// Houdt de bol en het gekozen pand in het midden van het deel van de kaart dat niet achter het paneel zit.
+function panelPadding() {
+  if ($("panel").hidden) return { top: 0, bottom: 0, left: 0, right: 0 };
+  return small ? { top: 100, bottom: Math.round(innerHeight * 0.74), left: 0, right: 0 } : { top: 0, bottom: 0, left: 0, right: $("panel").offsetWidth + 24 };
+}
+addEventListener("resize", () => map.setPadding(panelPadding()));
 function openPand(id, fly = true) {
   const p = PANDEN.find(x => x.id === id);
   if (!p) return;
@@ -438,14 +445,15 @@ function openPand(id, fly = true) {
   $("panel").hidden = false;
   showTab(tab);
   if (fly) {
-    const w = $("panel").offsetWidth;
-    map.flyTo({ center: p.lngLat, zoom: Math.max(map.getZoom(), live ? 17 : 13.5), speed: 1.2, essential: true,
-      padding: small ? { bottom: innerHeight * 0.6, top: 60 } : { right: w + 24 } });
+    map.flyTo({ center: p.lngLat, zoom: Math.max(map.getZoom(), live ? 17 : 13.5), speed: 1.2, essential: true, padding: panelPadding() });
+  } else {
+    map.easeTo({ padding: panelPadding(), duration: reduce ? 0 : 500 });
   }
   try { history.replaceState(null, "", "#" + id); } catch (e) {}
 }
 function closePand() {
   $("panel").hidden = true;
+  map.easeTo({ padding: panelPadding(), duration: reduce ? 0 : 500 });
   Object.values(markers).forEach(o => o.el.classList.remove("on"));
   current = null;
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
