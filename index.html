@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactieve wereldbol met leegstaande gebouwen en ruïnes in Plombières.">
+<title>Leegstandatlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one full-bleed globe; chrome floats on it as small pills, detail opens as a side sheet (bottom sheet on phones). */
+:root {
+  --bg: #eef0ee;
+  --ocean: #d8dbd8;
+  --land: #c2c6c2;
+  --border: #ffffff;
+  --fg: #262a27;
+  --muted: #6c726d;
+  --surface: #ffffff;
+  --surface-2: #f4f5f3;
+  --line: #e1e3e0;
+  --red: #d42b2b;
+  --red-soft: #fbe3e1;
+  --accent: #d42b2b;
+  --accent-fg: #ffffff;
+  --ok: #2f7d4f;
+  --warn: #b37a12;
+  --shadow: 0 1px 2px rgba(30,34,31,.06), 0 6px 20px rgba(30,34,31,.08);
+  --font-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111312; --ocean: #1b1f1d; --land: #313733; --border: #4b524d;
+    --fg: #e8ebe8; --muted: #9aa19c; --surface: #1c201e; --surface-2: #242926; --line: #333935;
+    --red: #ff5a52; --red-soft: #3a1d1b; --accent: #ff5a52; --accent-fg: #1a0605;
+    --ok: #6cc28f; --warn: #e0b04a; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111312; --ocean: #1b1f1d; --land: #313733; --border: #4b524d;
+  --fg: #e8ebe8; --muted: #9aa19c; --surface: #1c201e; --surface-2: #242926; --line: #333935;
+  --red: #ff5a52; --red-soft: #3a1d1b; --accent: #ff5a52; --accent-fg: #1a0605;
+  --ok: #6cc28f; --warn: #e0b04a; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); overflow: hidden; }
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+#map { position: absolute; inset: 0; background: var(--bg); }
+.maplibregl-map { overflow: hidden; position: relative; -webkit-tap-highlight-color: transparent; }
+.maplibregl-canvas { position: absolute; left: 0; top: 0; }
+.maplibregl-canvas-container.maplibregl-interactive { cursor: grab; }
+.maplibregl-canvas-container.maplibregl-interactive:active { cursor: grabbing; }
+.maplibregl-marker { position: absolute; top: 0; left: 0; will-change: transform; }
+.maplibregl-ctrl-bottom-right { position: absolute; right: 0; bottom: 0; z-index: 2; pointer-events: none; }
+.maplibregl-ctrl-attrib { pointer-events: auto; font: 10px/1.4 var(--font-mono); color: var(--muted); background: color-mix(in srgb, var(--bg) 80%, transparent); padding: 2px 8px; margin: 0 max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) 0; border-radius: 6px; }
+.maplibregl-ctrl-attrib a { color: inherit; }
+.maplibregl-ctrl-attrib-button { display: none; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px;
+  border-radius: 999px; background: var(--surface); color: var(--fg); border: 0;
+  font: 500 12px/1 var(--font-mono); box-shadow: var(--shadow); white-space: nowrap;
+}
+
+/* Brand, top left */
+.brand { position: absolute; z-index: 3; top: calc(16px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 4px; pointer-events: none; }
+.brand h1, .brand p { text-shadow: 0 0 2px var(--bg), 0 0 10px var(--bg), 0 0 18px var(--bg); }
+.brand h1 { margin: 0; font: 700 22px/1 var(--font-ui); letter-spacing: -.02em; }
+.brand p { margin: 0; font: 400 13px/1.35 var(--font-ui); color: var(--muted); max-width: 30ch; }
+.count { position: absolute; z-index: 3; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
+.count .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+
+/* Center control bar, like the reference */
+.bar { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; max-width: calc(100vw - 32px); }
+.seg { display: inline-flex; padding: 3px; gap: 2px; height: 36px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 86%, transparent); backdrop-filter: blur(8px); box-shadow: var(--shadow); }
+.seg button { border: 0; background: transparent; border-radius: 999px; padding: 0 14px; font: 500 12px/1 var(--font-mono); color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:not([aria-pressed="true"]):hover { color: var(--fg); }
+.search { position: relative; }
+.search input { height: 36px; width: 180px; border-radius: 999px; border: 0; padding: 0 14px 0 34px; background: var(--surface); box-shadow: var(--shadow); font: 500 12px/1 var(--font-mono); }
+.search input::placeholder { color: var(--muted); }
+.search svg { position: absolute; left: 12px; top: 11px; width: 14px; height: 14px; color: var(--muted); }
+.results { position: absolute; bottom: 44px; right: 0; width: 280px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
+.results button { display: grid; grid-template-columns: 10px 1fr; gap: 2px 10px; align-items: center; text-align: left; border: 0; background: transparent; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.results button:hover, .results button:focus-visible { background: var(--surface-2); }
+.results .d { width: 8px; height: 8px; border-radius: 50%; background: var(--red); grid-row: span 2; }
+.results b { font: 600 13px/1.2 var(--font-ui); }
+.results small { font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
+.results .none { padding: 10px; font: 400 12px var(--font-mono); color: var(--muted); }
+
+/* Markers */
+.mk { display: flex; align-items: center; gap: 8px; cursor: pointer; border: 0; background: none; padding: 0; }
+.mk .d { width: 14px; height: 14px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent); flex: none; transition: transform .15s; }
+.mk .pill { height: 26px; padding: 0 10px; font-size: 11px; transition: background .15s, opacity .2s; }
+.mk:hover .d, .mk.on .d { transform: scale(1.25); }
+.mk:hover .pill, .mk.on .pill { background: var(--accent); color: var(--accent-fg); }
+.mk.on .d { box-shadow: 0 0 0 4px var(--surface), 0 0 0 7px var(--red); }
+.mk.ruine .d { background: var(--surface); box-shadow: inset 0 0 0 4px var(--red), 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent); }
+body.far .mk { display: none; }
+body.mid .mk .pill { opacity: 0; pointer-events: none; }
+body.mid .mk:hover .pill { opacity: 1; }
+.agg { display: none; align-items: center; gap: 8px; border: 0; background: none; padding: 0; cursor: pointer; }
+body.far .agg { display: flex; }
+.agg .d { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 35%, transparent); }
+.agg:hover .pill { background: var(--accent); color: var(--accent-fg); }
+
+/* Detail panel */
+.panel { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(420px, calc(100vw - 24px)); background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .2s; }
+.panel[hidden] { display: flex !important; transform: translateX(110%); opacity: 0; pointer-events: none; }
+.ph { padding: 18px 20px 14px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+.ph-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: 999px; font: 500 11px/1 var(--font-mono); background: var(--surface-2); color: var(--muted); }
+.chip.st { background: var(--red-soft); color: var(--red); }
+.chip.st::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.x { width: 32px; height: 32px; border-radius: 50%; border: 0; background: var(--surface-2); cursor: pointer; display: grid; place-items: center; flex: none; }
+.x:hover { background: var(--line); }
+.ph h2 { margin: 0; font: 700 24px/1.1 var(--font-ui); letter-spacing: -.02em; text-wrap: balance; }
+.ph .addr { margin: 0; font: 400 13px/1.3 var(--font-ui); color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 4px 0 0; }
+.facts div { display: grid; gap: 3px; min-width: 0; }
+.facts dt { font: 500 10px/1 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.facts dd { margin: 0; font: 600 14px/1.2 var(--font-ui); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tabs { display: flex; gap: 4px; padding: 10px 14px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+.tabs button { flex: none; height: 30px; padding: 0 12px; border-radius: 999px; border: 0; background: transparent; color: var(--muted); font: 500 12px/1 var(--font-mono); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); }
+.tabs button:not([aria-selected="true"]):hover { background: var(--surface-2); color: var(--fg); }
+.pb { flex: 1; overflow-y: auto; padding: 18px 20px 24px; display: grid; gap: 14px; align-content: start; }
+.pb p.note { margin: 0; font: 400 12px/1.45 var(--font-mono); color: var(--muted); }
+.pb h3 { margin: 0; font: 600 14px/1.2 var(--font-ui); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.ph-tile { margin: 0; display: grid; gap: 6px; }
+.ph-tile .img { aspect-ratio: 4/3; max-width: 100%; border-radius: 12px; background: var(--surface-2); position: relative; overflow: hidden; display: grid; place-items: center; color: var(--muted); }
+.ph-tile .img svg { width: 70%; height: auto; opacity: .55; }
+.ph-tile.hist .img { background: color-mix(in srgb, #a88a5f 22%, var(--surface-2)); color: color-mix(in srgb, #7a5c33 70%, var(--fg)); }
+.ph-tile figcaption { font: 400 11px/1.3 var(--font-mono); color: var(--muted); }
+.ph-tile figcaption b { color: var(--fg); font-weight: 500; }
+.plan { border-radius: 12px; background: var(--surface-2); padding: 14px; color: var(--fg); }
+.plan svg { width: 100%; height: auto; display: block; }
+.plan-legend { display: flex; justify-content: space-between; font: 400 11px var(--font-mono); color: var(--muted); }
+.model { border-radius: 12px; background: var(--surface-2); position: relative; aspect-ratio: 1/1; max-width: 100%; overflow: hidden; touch-action: none; cursor: grab; }
+.model canvas { width: 100%; height: 100%; display: block; }
+.model .hint { position: absolute; left: 10px; bottom: 10px; font: 400 11px var(--font-mono); color: var(--muted); }
+table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
+.mat th { text-align: left; font: 500 10px/1 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 0 0 8px; }
+.mat td { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: top; }
+.mat td:first-child { color: var(--muted); width: 32%; padding-right: 8px; }
+.mat td:last-child { text-align: right; }
+.state { display: inline-flex; align-items: center; gap: 5px; font: 500 11px var(--font-mono); white-space: nowrap; }
+.state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.state.goed { color: var(--ok); } .state.matig { color: var(--warn); } .state.slecht { color: var(--red); }
+
+.notice { position: absolute; z-index: 3; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); max-width: 260px; font: 400 11px/1.4 var(--font-mono); color: var(--muted); }
+.notice b { color: var(--fg); font-weight: 500; }
+
+@media (max-width: 760px) {
+  .brand p { display: none; }
+  .count { top: calc(48px + env(safe-area-inset-top, 0px)); right: auto; left: max(16px, env(safe-area-inset-left, 0px)); height: 26px; font-size: 11px; }
+  .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .search input { width: 130px; }
+  .notice { display: none; }
+  .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; height: 74%; border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .panel[hidden] { transform: translateY(105%); }
+  .facts { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+.tabs .n { font-size: 10px; opacity: .7; }
+.pb h3 small { font: 400 11px var(--font-mono); color: var(--muted); margin-left: 6px; }
+.grid2.wide { grid-template-columns: minmax(0,1fr); }
+.ph-tile button.img { border: 0; padding: 0; cursor: zoom-in; width: 100%; }
+.ph-tile .img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.grid2.wide .img { aspect-ratio: 16/10; }
+.empty { display: grid; gap: 6px; padding: 18px; border-radius: 12px; border: 1px dashed var(--line); font-size: 13px; line-height: 1.45; }
+.empty span { color: var(--muted); font: 400 12px/1.45 var(--font-mono); }
+.lb { position: fixed; inset: 0; z-index: 20; background: rgba(10,12,11,.92); display: grid; place-items: center; padding: calc(56px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(56px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.lb img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+.lb button { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; font: 500 18px/1 var(--font-mono); }
+.lb button:hover { background: rgba(255,255,255,.26); }
+#lbClose { top: calc(12px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); }
+#lbPrev { left: max(12px, env(safe-area-inset-left, 0px)); top: 50%; }
+#lbNext { right: max(12px, env(safe-area-inset-right, 0px)); top: 50%; }
+.lb .c { position: absolute; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; color: rgba(255,255,255,.75); font: 400 12px var(--font-mono); }
+.sathint { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); width: min(440px, calc(100vw - 32px)); padding: 8px 14px; border-radius: 12px; background: var(--fg); color: var(--bg); font: 400 12px/1.4 var(--font-mono); text-align: center; }
+@media (max-width: 760px) { .sathint { bottom: calc(64px + env(safe-area-inset-bottom, 0px)); } }
+@media (prefers-reduced-motion: reduce) { .panel, .mk .d, .mk .pill { transition: none; } }
+</style>
+<style>[hidden]{display:none!important} body{margin:0} img{max-width:100%}</style>
+</head>
+<body>
+<div id="map" aria-label="Wereldbol met leegstaande gebouwen"></div>
+
+<header class="brand">
+  <h1>Leegstandatlas</h1>
+  <p>Leegstaande gebouwen en ruïnes in Plombières, aangeduid in het rood.</p>
+</header>
+<div class="count pill" id="count"><span class="dot"></span><span id="countText">0 panden</span></div>
+
+<p class="notice" id="notice" hidden></p>
+
+<p class="sathint" id="satHint" hidden>In deze preview is het satellietbeeld grof. Op de echte website is het scherp tot op straatniveau. Het luchtbeeld van elk pand staat in het detailpaneel.</p>
+
+<div class="lb" id="lb" hidden role="dialog" aria-label="Foto vergroot">
+  <img id="lbImg" alt="Vergrote foto">
+  <button type="button" id="lbClose" aria-label="Sluit">×</button>
+  <button type="button" id="lbPrev" aria-label="Vorige foto">‹</button>
+  <button type="button" id="lbNext" aria-label="Volgende foto">›</button>
+  <span class="c" id="lbCount"></span>
+</div>
+
+<div class="bar">
+  <div class="seg" role="group" aria-label="Kaartweergave">
+    <button type="button" id="btnKaart" aria-pressed="true">Kaart</button>
+    <button type="button" id="btnSat" aria-pressed="false">Satelliet</button>
+  </div>
+  <div class="search">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
+    <input id="q" type="search" placeholder="Zoeken" autocomplete="off" aria-label="Zoek een gebouw of gemeente">
+    <div class="results" id="results" hidden></div>
+  </div>
+</div>
+
+<aside class="panel" id="panel" hidden aria-labelledby="pTitle">
+  <div class="ph">
+    <div class="ph-top">
+      <div class="chips" id="pChips"></div>
+      <button class="x" id="pClose" type="button" aria-label="Sluit details"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.6"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
+    </div>
+    <div>
+      <h2 id="pTitle"></h2>
+      <p class="addr" id="pAddr"></p>
+    </div>
+    <dl class="facts" id="pFacts"></dl>
+  </div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="pb" id="pBody" role="tabpanel"></div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
+<script src="data/panden.js"></script>
+<script>
+// De panden staan in data/panden.js.
+
+const TABS = [["fotos", "Foto's"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Historische foto's"], ["materialen", "Materialen"]];
+const LIVE = {
+  osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers' },
+  sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: 'Satelliet © Esri, Maxar, Earthstar Geographics' }
+};
+const abs = p => location.href.split("#")[0].split("?")[0].replace(/[^/]*$/, "") + p;
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+let mode = "kaart", live = false, current = null;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const small = matchMedia("(max-width: 760px)").matches;
+
+const map = new maplibregl.Map({
+  container: "map",
+  center: [8, 38],
+  zoom: small ? 0.9 : 1.6,
+  attributionControl: false,
+  style: {
+    version: 8,
+    projection: { type: "globe" },
+    sources: {
+      land: { type: "geojson", data: abs("data/landen.geojson") },
+      grens: { type: "geojson", data: abs("data/grenzen.geojson") },
+      ne: { type: "raster", tiles: [abs("tiles/sat/{z}/{x}/{y}.jpg")], tileSize: 256, maxzoom: 3, attribution: "Natural Earth II (ingebouwd)" }
+    },
+    layers: [
+      { id: "zee", type: "background", paint: { "background-color": css("--ocean") } },
+      { id: "ne", type: "raster", source: "ne", layout: { visibility: "none" } },
+      { id: "land", type: "fill", source: "land", paint: { "fill-color": css("--land"), "fill-antialias": true } },
+      { id: "grens", type: "line", source: "grens", paint: { "line-color": css("--border"), "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.5, 7, 1.4] } }
+    ]
+  }
+});
+map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
+
+function applyTheme() {
+  if (!map.isStyleLoaded()) return;
+  map.setPaintProperty("zee", "background-color", css("--ocean"));
+  map.setPaintProperty("land", "fill-color", css("--land"));
+  map.setPaintProperty("grens", "line-color", css("--border"));
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light" || document.documentElement.dataset.theme === "dark";
+  if (map.getLayer("osm")) {
+    // Grijze OSM-kaart; in donkere modus omgekeerd zodat ze bij het thema past.
+    map.setPaintProperty("osm", "raster-brightness-min", dark ? 0.86 : 0.32);
+    map.setPaintProperty("osm", "raster-brightness-max", dark ? 0.12 : 1);
+  }
+  map.setSky({ "sky-color": css("--bg"), "horizon-color": css("--bg"), "fog-color": css("--bg"), "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 0.55, 5, 0.3, 8, 0] });
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+function setMode(m) {
+  mode = m;
+  $("btnKaart").setAttribute("aria-pressed", m === "kaart");
+  $("btnSat").setAttribute("aria-pressed", m === "satelliet");
+  if (typeof zoomClass === "function") zoomClass();
+  if (!map.isStyleLoaded()) return;
+  const vis = (id, on) => map.getLayer(id) && map.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+  const sat = m === "satelliet";
+  vis("osm", live && !sat);
+  vis("sat", live && sat);
+  vis("ne", !live && sat);
+  vis("land", !sat && !live);
+  vis("grens", !sat || !live);
+  map.setPaintProperty("grens", "line-opacity", sat ? 0.35 : 1);
+}
+$("btnKaart").onclick = () => setMode("kaart");
+$("btnSat").onclick = () => setMode("satelliet");
+
+// Live kaarttegels proberen; lukt dat niet (zoals in deze preview), dan blijft de ingebouwde basiskaart staan.
+function probe(url) {
+  return new Promise(res => {
+    const img = new Image(), t = setTimeout(() => res(false), 4000);
+    img.onload = () => { clearTimeout(t); res(true); };
+    img.onerror = () => { clearTimeout(t); res(false); };
+    img.crossOrigin = "anonymous";
+    img.src = url;
+  });
+}
+
+map.on("load", async () => {
+  applyTheme();
+  setMode(mode);
+  const ok = await probe("https://tile.openstreetmap.org/0/0/0.png");
+  if (ok) {
+    live = true;
+    map.addSource("osm", { type: "raster", tiles: LIVE.osm.tiles, tileSize: 256, maxzoom: LIVE.osm.max, attribution: LIVE.osm.attr });
+    map.addSource("sat", { type: "raster", tiles: LIVE.sat.tiles, tileSize: 256, maxzoom: LIVE.sat.max, attribution: LIVE.sat.attr });
+    map.addLayer({ id: "osm", type: "raster", source: "osm", paint: { "raster-saturation": -1, "raster-contrast": -0.1, "raster-fade-duration": 200 } }, "grens");
+    map.addLayer({ id: "sat", type: "raster", source: "sat", layout: { visibility: "none" } }, "grens");
+    applyTheme();
+    setMode(mode);
+  } else {
+    const n = $("notice");
+    n.innerHTML = "<b>Preview.</b> Hier staan een ingebouwde wereldkaart en satellietbeeld. Op de gepubliceerde website laden OpenStreetMap en satellietbeelden live, tot op straatniveau.";
+    n.hidden = false;
+  }
+});
+
+// Markers
+const markers = {};
+PANDEN.forEach(p => {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.className = "mk";
+  el.innerHTML = `<span class="d"></span><span class="pill">${esc(p.naam)}</span>`;
+  el.addEventListener("click", e => { e.stopPropagation(); openPand(p.id); });
+  markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
+  el.setAttribute("aria-label", `${p.naam}, ${p.status}`);
+});
+const bounds = PANDEN.reduce((b, p) => b.extend(p.lngLat), new maplibregl.LngLatBounds(PANDEN[0].lngLat, PANDEN[0].lngLat));
+const agg = document.createElement("button");
+agg.type = "button";
+agg.className = "agg";
+agg.innerHTML = `<span class="d"></span><span class="pill">Plombières · ${PANDEN.length} panden</span>`;
+agg.onclick = e => { e.stopPropagation(); flyCluster(); };
+new maplibregl.Marker({ element: agg, anchor: "left", offset: [-11, 0] }).setLngLat(bounds.getCenter()).addTo(map);
+agg.setAttribute("aria-label", `Zoom in op Plombières, ${PANDEN.length} panden`);
+$("countText").textContent = `${PANDEN.length} panden · Plombières`;
+
+function flyCluster() {
+  stopSpin();
+  map.fitBounds(bounds, { padding: small ? { top: 110, bottom: 110, left: 40, right: 140 } : { top: 120, bottom: 120, left: 120, right: 260 }, maxZoom: 13.5, speed: 1.1, essential: true });
+}
+function zoomClass() {
+  const z = map.getZoom();
+  document.body.classList.toggle("far", z < 8);
+  document.body.classList.toggle("mid", z >= 8 && z < 11.5);
+  const blur = !live && mode === "satelliet" && z > 6;
+  $("satHint").hidden = !blur;
+  if (!live && $("notice").textContent) $("notice").hidden = blur;
+}
+map.on("zoom", zoomClass);
+zoomClass();
+
+// Zachte rotatie tot de bezoeker de bol aanraakt.
+let spinning = !reduce;
+function stopSpin() { spinning = false; }
+function spin() {
+  if (!spinning) return;
+  const c = map.getCenter();
+  map.easeTo({ center: [c.lng + 6, c.lat], duration: 2000, easing: t => t });
+}
+map.on("moveend", () => spinning && spin());
+map.on("load", () => setTimeout(spin, 600));
+["mousedown", "touchstart", "wheel", "dragstart"].forEach(ev => map.on(ev, stopSpin));
+
+// Zoeken
+const q = $("q"), results = $("results");
+function renderResults() {
+  const t = q.value.trim().toLowerCase();
+  if (!t) { results.hidden = true; return; }
+  const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status].join(" ").toLowerCase().includes(t));
+  results.innerHTML = hits.length
+    ? hits.map(p => `<button type="button" data-id="${p.id}"><span class="d"></span><b>${esc(p.naam)}</b><small>${esc(p.adres || p.gemeente)}</small></button>`).join("")
+    : `<div class="none">Geen pand gevonden voor “${esc(q.value)}”.</div>`;
+  results.hidden = false;
+}
+q.addEventListener("input", renderResults);
+q.addEventListener("focus", renderResults);
+q.addEventListener("keydown", e => {
+  if (e.key === "Enter") { const b = results.querySelector("button"); if (b) b.click(); }
+  if (e.key === "Escape") { q.value = ""; results.hidden = true; }
+});
+results.addEventListener("click", e => {
+  const b = e.target.closest("button[data-id]");
+  if (!b) return;
+  results.hidden = true; q.blur();
+  openPand(b.dataset.id);
+});
+document.addEventListener("click", e => { if (!e.target.closest(".search")) results.hidden = true; });
+
+// Detailpaneel
+let tab = "fotos";
+const datum = s => s ? new Date(s + "T12:00:00").toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" }) : "Nog niet";
+function openPand(id, fly = true) {
+  const p = PANDEN.find(x => x.id === id);
+  if (!p) return;
+  stopSpin();
+  current = p;
+  Object.values(markers).forEach(o => o.el.classList.remove("on"));
+  markers[id].el.classList.add("on");
+  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span>`;
+  $("pTitle").textContent = p.naam;
+  $("pAddr").textContent = p.adres || p.gemeente;
+  const [lng, lat] = p.lngLat;
+  $("pFacts").innerHTML = [["Eigen foto's", p.fotos.length], ["Bezocht", datum(p.fotosGenomen)], ["Breedte", `${lat.toFixed(5)}° N`], ["Lengte", `${lng.toFixed(5)}° O`]]
+    .map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+  $("panel").hidden = false;
+  showTab(tab);
+  if (fly) {
+    const w = $("panel").offsetWidth;
+    map.flyTo({ center: p.lngLat, zoom: Math.max(map.getZoom(), live ? 17 : 13.5), speed: 1.2, essential: true,
+      padding: small ? { bottom: innerHeight * 0.6, top: 60 } : { right: w + 24 } });
+  }
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+}
+function closePand() {
+  $("panel").hidden = true;
+  Object.values(markers).forEach(o => o.el.classList.remove("on"));
+  current = null;
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+}
+$("pClose").onclick = closePand;
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("lb").hidden) return closeLb();
+  if (e.key === "Escape" && current && document.activeElement !== q) closePand();
+  if (!$("lb").hidden && (e.key === "ArrowRight" || e.key === "ArrowLeft")) stepLb(e.key === "ArrowRight" ? 1 : -1);
+});
+
+const tabsEl = $("tabs");
+function renderTabs() {
+  tabsEl.innerHTML = TABS.map(([k, l]) => {
+    const n = current ? current[TABKEY[k]].length : 0;
+    return `<button type="button" role="tab" data-tab="${k}" id="tab-${k}">${l}${k === "fotos" ? "" : n ? ` <span class="n">${n}</span>` : ""}</button>`;
+  }).join("");
+}
+tabsEl.addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
+const TABKEY = { fotos: "fotos", grondplan: "grondplannen", model: "model3d", historisch: "historisch", materialen: "materialen" };
+
+const gallery = (list, label, wide) => `<div class="grid2${wide ? " wide" : ""}">${list.map((src, i) =>
+  `<figure class="ph-tile"><button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(label)} ${i + 1} vergroten"><img src="${esc(src)}" alt="${esc(label)} ${i + 1}" loading="lazy"></button></figure>`).join("")}</div>`;
+const empty = (wat, map) => `<div class="empty"><b>Nog geen ${wat} voor dit pand.</b><span>Zet ze in de submap “${map}” van dit pand in de map “leegstand”, dan verschijnen ze hier.</span></div>`;
+
+function showTab(k) {
+  tab = k;
+  renderTabs();
+  tabsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === k));
+  $("pBody").setAttribute("aria-labelledby", "tab-" + k);
+  const p = current, body = $("pBody");
+  if (k === "fotos") {
+    const parts = [];
+    if (p.fotos.length) parts.push(`<h3>Eigen foto's <small>${datum(p.fotosGenomen)} · ${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
+    if (p.streetview.length) parts.push(`<h3>Street View <small>${p.streetview.length}</small></h3>${gallery(p.streetview, "Street View-beeld", true)}`);
+    if (p.luchtbeeld.length) parts.push(`<h3>Luchtbeeld <small>${p.luchtbeeld.length}</small></h3>${gallery(p.luchtbeeld, "Luchtbeeld", true)}`);
+    if (!p.fotos.length) parts.push(`<p class="note">Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.</p>`);
+    body.innerHTML = parts.join("");
+  } else if (k === "historisch") {
+    body.innerHTML = p.historisch.length ? gallery(p.historisch, "Historische foto") : empty("historische foto's", "historisch");
+  } else if (k === "grondplan") {
+    body.innerHTML = p.grondplannen.length ? gallery(p.grondplannen, "Grondplan", true) : empty("grondplannen", "grondplannen");
+  } else if (k === "model") {
+    body.innerHTML = p.model3d.length ? `<p class="note">${p.model3d.map(esc).join("<br>")}</p>` : empty("3D-model", "3d-model");
+  } else if (k === "materialen") {
+    body.innerHTML = p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : empty("materialenlijst", "materialen");
+  }
+}
+
+// Foto's vergroten
+let lbList = [], lbIdx = 0;
+$("pBody").addEventListener("click", e => {
+  const b = e.target.closest("button.img");
+  if (!b) return;
+  lbList = [...b.closest(".grid2").querySelectorAll("button.img")].map(x => x.dataset.src);
+  lbIdx = lbList.indexOf(b.dataset.src);
+  showLb();
+});
+function showLb() { $("lbImg").src = lbList[lbIdx]; $("lbCount").textContent = `${lbIdx + 1} / ${lbList.length}`; $("lb").hidden = false; $("lbClose").focus(); }
+function stepLb(d) { lbIdx = (lbIdx + d + lbList.length) % lbList.length; showLb(); }
+function closeLb() { $("lb").hidden = true; }
+$("lbClose").onclick = closeLb;
+$("lbPrev").onclick = () => stepLb(-1);
+$("lbNext").onclick = () => stepLb(1);
+$("lb").addEventListener("click", e => { if (e.target.id === "lb") closeLb(); });
+
+// Directe link naar een pand, bv. #kasteel-graaf-streversdorp
+function fromHash() { const id = location.hash.slice(1); if (id && PANDEN.some(p => p.id === id)) map.once("idle", () => openPand(id)); }
+window.addEventListener("hashchange", () => { const id = location.hash.slice(1); if (PANDEN.some(p => p.id === id) && (!current || current.id !== id)) openPand(id); });
+fromHash();
+</script>
+</body>
+</html>
