@@ -7,7 +7,7 @@ De site is een statische pagina en draait op GitHub Pages. Er is geen build-stap
 ## Structuur
 
 - `index.html`: de pagina (MapLibre GL met globe-weergave).
-- `export.html`: A3-export. Kies panden, bekijk het voorbeeld en druk af of bewaar als pdf. De voorpagina is de grijze kaart met de gekozen panden, daarna volgen per pand de geschiedenis, foto's, materialen en plannen. De keuze staat in de link (`export.html#panden=id1,id2`).
+- `export.html`: A3-export. Kies panden, bekijk het voorbeeld en druk af of bewaar als pdf. De voorpagina is de grijze kaart met de gekozen panden. Per pand volgt een pagina met een satellietbeeld uit de kaart en de vijf beste foto's (veld `uitgelicht` in `data/panden.js`), een pagina met geschiedenis, materialen en extra foto's, en daarna eventueel plannen en historische foto's. De keuze staat in de link (`export.html#panden=id1,id2`).
 - `data/panden.js`: alle panden met naam, type, status, adres, coördinaten, geschiedenis en paden naar de beelden. Een pand met `lngLat: null` staat niet op de bol, wel in de lijst en de zoekfunctie.
 - `media/<pand-id>/fotos|streetview|luchtbeeld/`: de beelden per pand.
 - `data/landen.geojson`, `data/grenzen.geojson`, `tiles/sat/`: ingebouwde reservekaart, alleen gebruikt als de live kaarten niet laden.

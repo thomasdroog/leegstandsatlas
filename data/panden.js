@@ -1,6 +1,7 @@
 // Panden uit de map "leegstand" (Plombières). Paden zijn relatief aan de hoofdmap van de site.
 // lngLat is [lengte, breedte]. Een pand zonder lngLat (null) staat niet op de kaart, maar wel in de lijst en de zoekfunctie.
 // geschiedenis: korte samenvatting in eigen woorden van het document "geschiedenis" in de map van het pand, met de bron.
+// uitgelicht: de vijf beste foto's voor de eerste pagina van de A3-export (zonder dit veld: de scherpste eigen foto's).
 const PANDEN = [
  {
   "id": "brico-jardin",
@@ -75,7 +76,14 @@ const PANDEN = [
      "url": "https://vop4600.wixsite.com/la-berwinne/gensterbloem"
     }
    ]
-  }
+  },
+  "uitgelicht": [
+   "media/gensterbloem-klooster/fotos/fotos-03.jpg",
+   "media/gensterbloem-klooster/fotos/fotos-06.jpg",
+   "media/gensterbloem-klooster/fotos/fotos-10.jpg",
+   "media/gensterbloem-klooster/fotos/fotos-13.jpg",
+   "media/gensterbloem-klooster/fotos/fotos-17.jpg"
+  ]
  },
  {
   "id": "kasteel-graaf-streversdorp",
@@ -119,7 +127,14 @@ const PANDEN = [
      "url": "https://www.kastelenblog.nl/kasteel/kasteel-streversdorp/verhaal"
     }
    ]
-  }
+  },
+  "uitgelicht": [
+   "media/kasteel-graaf-streversdorp/fotos/fotos-07.jpg",
+   "media/kasteel-graaf-streversdorp/fotos/fotos-04.jpg",
+   "media/kasteel-graaf-streversdorp/fotos/fotos-01.jpg",
+   "media/kasteel-graaf-streversdorp/fotos/fotos-05.jpg",
+   "media/kasteel-graaf-streversdorp/fotos/fotos-03.jpg"
+  ]
  },
  {
   "id": "huis-met-stallen-merckhof",
@@ -153,7 +168,14 @@ const PANDEN = [
   "grondplannen": [],
   "model3d": [],
   "historisch": [],
-  "materialen": []
+  "materialen": [],
+  "uitgelicht": [
+   "media/huis-met-stallen-merckhof/fotos/fotos-04.jpg",
+   "media/huis-met-stallen-merckhof/fotos/fotos-07.jpg",
+   "media/huis-met-stallen-merckhof/fotos/fotos-08.jpg",
+   "media/huis-met-stallen-merckhof/fotos/fotos-03.jpg",
+   "media/huis-met-stallen-merckhof/fotos/fotos-02.jpg"
+  ]
  },
  {
   "id": "garage-rue-du-cheval-blanc",
@@ -236,7 +258,14 @@ const PANDEN = [
     "De locomotiefstelplaats was altijd klein. Ze werd in 1918 gebouwd en kreeg haar eerste locomotieven in 1922. Van de eerste stationsgebouwen is vandaag niets meer te zien."
    ],
    "bronnen": []
-  }
+  },
+  "uitgelicht": [
+   "media/station-montzen/fotos/fotos-01.jpg",
+   "media/station-montzen/fotos/fotos-02.jpg",
+   "media/station-montzen/fotos/fotos-03.jpg",
+   "media/station-montzen/fotos/fotos-04.jpg",
+   "media/station-montzen/fotos/fotos-05.jpg"
+  ]
  },
  {
   "id": "verlaten-wagons-station-homburg",
@@ -278,7 +307,13 @@ const PANDEN = [
      "url": "https://historypark.be/"
     }
    ]
-  }
+  },
+  "uitgelicht": [
+   "media/verlaten-wagons-station-homburg/fotos/fotos-01.jpg",
+   "media/verlaten-wagons-station-homburg/fotos/fotos-02.jpg",
+   "media/verlaten-wagons-station-homburg/fotos/fotos-03.jpg",
+   "media/verlaten-wagons-station-homburg/fotos/fotos-04.jpg"
+  ]
  },
  {
   "id": "waterkrachtcentrale-plombieres",
@@ -323,7 +358,14 @@ const PANDEN = [
    ],
    "bronnen": [],
    "bronTekst": "Mail van de gemeente Plombières en de IPIC-inventaris"
-  }
+  },
+  "uitgelicht": [
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-01.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-02.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-06.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-15.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-17.jpg"
+  ]
  },
  {
   "id": "moulins-meyers",

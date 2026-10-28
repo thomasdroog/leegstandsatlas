@@ -88,7 +88,6 @@ button, input { font: inherit; color: inherit; }
 .mapbox img.base { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .mapbox .dot { position: absolute; width: 4.4mm; height: 4.4mm; margin: -2.2mm 0 0 -2.2mm; border-radius: 50%; background: var(--p-red); box-shadow: 0 0 0 1.2mm rgba(212,43,43,.25); }
 .mapbox .lab { position: absolute; height: 8mm; padding: 0 3mm; border-radius: 999px; background: #fff; color: var(--p-fg); font: 500 3.4mm/8mm var(--font-mono); white-space: nowrap; box-shadow: 0 .3mm .6mm rgba(30,34,31,.08), 0 1.5mm 5mm rgba(30,34,31,.12); }
-.mapbox .attr { position: absolute; right: 2mm; bottom: 2mm; padding: .8mm 2mm; border-radius: 1.5mm; background: rgba(255,255,255,.8); font: 400 2.4mm/1 var(--font-mono); color: var(--p-muted); }
 
 .ph { flex: none; display: flex; justify-content: space-between; align-items: flex-end; gap: 12mm; padding-bottom: 5mm; border-bottom: .3mm solid var(--p-line); }
 .ph .k { font: 500 2.8mm/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--p-muted); }
@@ -107,14 +106,27 @@ button, input { font: inherit; color: inherit; }
 .ph .wat { font: 500 3.4mm/1 var(--font-mono); color: var(--p-muted); }
 
 .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 128mm 1fr; gap: 12mm; }
+.body.b1 { grid-template-columns: 176mm 1fr; gap: 6mm; }
+.body.b2 { grid-template-columns: 140mm 1fr; }
+.satvak { position: relative; min-height: 0; overflow: hidden; background: #3a3f3b; }
+.satvak img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.satvak .dot { position: absolute; width: 4.4mm; height: 4.4mm; margin: -2.2mm 0 0 -2.2mm; border-radius: 50%; background: var(--p-red); box-shadow: 0 0 0 .8mm #fff, 0 0 0 2mm rgba(212,43,43,.45); }
+.satvak .noord { position: absolute; top: 4mm; right: 4mm; width: 8mm; height: 8mm; border-radius: 50%; background: rgba(255,255,255,.9); display: grid; place-items: center; font: 600 3.2mm/1 var(--font-mono); color: var(--p-fg); }
+.satvak .noord::before { content: ""; position: absolute; top: -2.2mm; left: 50%; margin-left: -1.4mm; border: 1.4mm solid transparent; border-bottom: 2mm solid #fff; border-top: 0; }
+.satvak .schaal { position: absolute; left: 4mm; bottom: 4mm; display: grid; gap: 1mm; font: 500 2.8mm/1 var(--font-mono); color: #fff; text-shadow: 0 0 1mm rgba(0,0,0,.6); }
+.satvak .schaal i { display: block; height: 1.4mm; background: #fff; box-shadow: 0 0 0 .3mm rgba(38,42,39,.7); }
+.satvak .attr, .mapbox .attr { position: absolute; right: 2mm; bottom: 2mm; padding: .8mm 2mm; border-radius: 1.5mm; background: rgba(255,255,255,.8); font: 400 2.4mm/1 var(--font-mono); color: var(--p-muted); }
+.satvak .geen { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 20mm; text-align: center; font: 400 3.4mm/1.5 var(--font-mono); color: #d8dbd8; }
+.tekst3 { flex: 1; min-height: 0; overflow: hidden; columns: 3; column-gap: 12mm; }
+.tekst3 .sec { margin-bottom: 7mm; }
+.tekst3 p, .tekst3 li { break-inside: avoid; }
+.tekst3 h3 { break-after: avoid; }
 .tekst { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 7mm; }
 .sec h3 { margin: 0 0 3mm; font: 500 2.8mm/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--p-muted); }
 .sec p { margin: 0 0 2.6mm; font: 400 3.9mm/1.55 var(--font-ui); text-wrap: pretty; }
 .sec p.src, .sec p.niets { font: 400 2.8mm/1.5 var(--font-mono); color: var(--p-muted); }
 .sec ul { margin: 0; padding: 0; list-style: none; font: 400 3.6mm/1.4 var(--font-ui); }
 .sec li { padding: 2mm 0; border-top: .3mm solid var(--p-line); }
-.cols { columns: 3; column-gap: 12mm; }
-.cols p { break-inside: avoid-column; }
 .vak { position: relative; min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 3mm; }
 .rij { display: flex; gap: 3mm; flex: none; }
 .rij figure { position: relative; margin: 0; height: 100%; flex: none; background: var(--p-soft); }
@@ -138,7 +150,7 @@ button, input { font: inherit; color: inherit; }
  <div class="kies">
   <a class="back" href="./">← Terug naar de kaart</a>
   <h1>Exporteren</h1>
-  <p>Kies de panden voor de export. Je krijgt A3-liggende pagina's: eerst de kaart met de gekozen panden, dan per pand de geschiedenis, foto's, materialen en plannen.</p>
+  <p>Kies de panden voor de export. Je krijgt A3-liggende pagina's: eerst de kaart met de gekozen panden, dan per pand een pagina met het satellietbeeld en de vijf beste foto's, en een pagina met geschiedenis, materialen en extra foto's. Plannen en historische foto's volgen apart.</p>
   <div class="sel-head">
     <b id="selCount">Panden</b>
     <span><button type="button" id="selAll">Alles</button><button type="button" id="selNone">Geen</button></span>
@@ -194,16 +206,20 @@ const zetAlles = aan => { gekozen.clear(); if (aan) ALLE.forEach(p => gekozen.ad
 $("selAll").onclick = () => zetAlles(true);
 $("selNone").onclick = () => zetAlles(false);
 
-// Beeldverhoudingen, nodig om foto's zonder bijsnijden in rijen te zetten.
-const maten = new Map();
+// Beeldverhoudingen, nodig om foto's zonder bijsnijden in rijen te zetten, en het aantal pixels om de scherpste foto's te kiezen.
+const maten = new Map(), pixels = new Map();
 const verhouding = src => {
-  if (!maten.has(src)) maten.set(src, new Promise(res => {
-    const i = new Image();
-    i.onload = () => res(i.naturalWidth / i.naturalHeight || 4 / 3);
-    i.onerror = () => res(4 / 3);
-    i.src = src;
-  }));
-  return maten.get(src);
+  if (!maten.has(src)) {
+    const m = { waarde: 4 / 3 };
+    m.klaar = new Promise(res => {
+      const i = new Image();
+      i.onload = () => { m.waarde = i.naturalWidth / i.naturalHeight || 4 / 3; pixels.set(src, i.naturalWidth * i.naturalHeight); res(m.waarde); };
+      i.onerror = () => res(m.waarde);
+      i.src = src;
+    });
+    maten.set(src, m);
+  }
+  return maten.get(src).klaar;
 };
 
 // Rijen die het vak in de breedte vullen (zoals een fotoboek), maximaal `rijen` per pagina.
@@ -322,16 +338,11 @@ function bronnen(g) {
 }
 const geschHTML = g => g.tekst.map(t => `<p>${esc(t)}</p>`).join("") + bronnen(g);
 
-function overzicht(p) {
+function hoofd(p) {
   const ll = p.lngLat;
   const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
   const feiten = [["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"], ["Bezocht", bezocht], ["Eigen foto's", p.fotos.length]];
-  const secties = [];
-  secties.push(`<div class="sec" data-sec="gesch"><h3>Geschiedenis</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">Nog geen geschiedenis aangeleverd.</p>`}</div>`);
-  secties.push(`<div class="sec"><h3>Materialen</h3>${p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="niets">Nog geen materialen aangeleverd.</p>`}</div>`);
-  if (p.model3d.length) secties.push(`<div class="sec"><h3>3D-model</h3><p class="niets">Te bekijken op de website.</p></div>`);
-  return `<section class="sheet">
-  <header class="ph">
+  return `<header class="ph">
     <div>
       <div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div>
       <h2>${esc(p.naam)}</h2>
@@ -339,16 +350,89 @@ function overzicht(p) {
       <div class="chips"><span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span></div>
     </div>
     <dl class="facts">${feiten.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
-  </header>
-  <div class="body"><div class="tekst">${secties.join("")}</div><div class="vak"></div></div>
-  ${voet(p)}
-</section>`;
+  </header>`;
+}
+// Pagina 1: satellietbeeld uit de kaart en de vijf beste foto's.
+const blad1 = p => `<section class="sheet">${hoofd(p)}<div class="body b1"><div class="satvak"></div><div class="vak"></div></div>${voet(p)}</section>`;
+// Pagina 2: geschiedenis en materialen, met de extra foto's ernaast (of de tekst over de hele breedte).
+function blad2(p, metFotos) {
+  const secties = [`<div class="sec"><h3>Geschiedenis</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">Nog geen geschiedenis aangeleverd.</p>`}</div>`,
+    `<div class="sec"><h3>Materialen</h3>${p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="niets">Nog geen materialen aangeleverd.</p>`}</div>`];
+  if (p.model3d.length) secties.push(`<div class="sec"><h3>3D-model</h3><p class="niets">Te bekijken op de website.</p></div>`);
+  return leegBlad(p, "Geschiedenis en materialen", metFotos
+    ? `<div class="body b2"><div class="tekst">${secties.join("")}</div><div class="vak"></div></div>`
+    : `<div class="tekst3">${secties.join("")}</div>`);
 }
 const leegBlad = (p, wat, inhoudHTML) => `<section class="sheet">${kop(p, wat)}${inhoudHTML}${voet(p)}</section>`;
+
+// De vijf beste foto's: de keuze in panden.js (uitgelicht), anders de grootste eigen foto's en dan Street View.
+function beste(p) {
+  if (p.uitgelicht && p.uitgelicht.length) return p.uitgelicht.slice(0, 5);
+  const eigen = [...p.fotos].sort((a, b) => (pixels.get(b) || 0) - (pixels.get(a) || 0));
+  return [...eigen, ...p.streetview].slice(0, 5);
+}
+const bijschrift = (p, src) => p.streetview.includes(src) ? "Street View" : p.luchtbeeld.includes(src) ? "Luchtbeeld" : "";
+
+// Satellietbeeld per pand, uit dezelfde Esri-kaart als de satellietmodus van de website.
+const SATZOOM = 16.6;
+let sat = null, satEl = null, satKlaar = null;
+const satCache = new Map();
+function maakSat() {
+  satEl = document.createElement("div");
+  satEl.style.cssText = "position:fixed;left:-5000px;top:0;width:600px;height:600px";
+  satEl.setAttribute("aria-hidden", "true");
+  document.body.append(satEl);
+  sat = new maplibregl.Map({
+    container: satEl, center: [5.93, 50.71], zoom: SATZOOM, interactive: false, attributionControl: false,
+    pixelRatio: 2, fadeDuration: 0, canvasContextAttributes: { preserveDrawingBuffer: true },
+    style: {
+      version: 8,
+      sources: { sat: { type: "raster", tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], tileSize: 256, maxzoom: 19 } },
+      layers: [{ id: "bg", type: "background", paint: { "background-color": "#3a3f3b" } }, { id: "sat", type: "raster", source: "sat", paint: { "raster-fade-duration": 0 } }]
+    }
+  });
+  satKlaar = new Promise(res => sat.once("load", res));
+}
+async function satBeeld(p, wpx, hpx) {
+  const sleutel = `${p.id}|${wpx}|${hpx}`;
+  if (satCache.has(sleutel)) return satCache.get(sleutel);
+  if (!sat) maakSat();
+  await satKlaar;
+  if (satEl.offsetWidth !== wpx || satEl.offsetHeight !== hpx) { satEl.style.width = wpx + "px"; satEl.style.height = hpx + "px"; sat.resize(); }
+  sat.jumpTo({ center: p.lngLat, zoom: SATZOOM });
+  await new Promise(res => { const t = setTimeout(res, 15000); sat.once("idle", () => { clearTimeout(t); res(); }); sat.triggerRepaint(); });
+  let src = "";
+  try { src = sat.getCanvas().toDataURL("image/jpeg", 0.88); } catch (e) {}
+  if (src) satCache.set(sleutel, src);
+  return src;
+}
+function schaalbalk(lat, wpx) {
+  const mpp = 40075016.686 * Math.cos(lat * Math.PI / 180) / (512 * 2 ** SATZOOM);
+  const len = [20, 50, 100, 200, 500].reduce((a, b) => Math.abs(b - wpx * mpp / 5) < Math.abs(a - wpx * mpp / 5) ? b : a);
+  return { len, pct: len / mpp / wpx * 100 };
+}
 
 // Voegt een pagina toe en geeft het element terug, zodat we het kunnen opmeten.
 const pagesEl = $("pages");
 function voegToe(html) { pagesEl.insertAdjacentHTML("beforeend", html); return pagesEl.lastElementChild; }
+
+// Rijen die niet de volle breedte halen, worden groter gemaakt zolang alles in het vak past.
+function rek(rows, W, H) {
+  for (const r of rows) {
+    const vol = (W - GAP * (r.items.length - 1)) / r.items.reduce((s, it) => s + it.a, 0);
+    const totaal = rows.reduce((s, x) => s + (x === r ? vol : x.h), 0) + GAP * (rows.length - 1);
+    if (vol > r.h && totaal <= H + .01) r.h = vol;
+  }
+  return rows;
+}
+// Liefst alle beelden in het vak, en dan zo groot mogelijk.
+function besteSchikking(items, w, h) {
+  if (!items.length) return [];
+  const vulling = rows => rows.reduce((s, r) => s + r.h * r.items.reduce((t, it) => t + it.a * r.h, 0), 0);
+  const aantal = rows => rows.reduce((n, r) => n + r.items.length, 0);
+  const score = rows => (aantal(rows) === items.length ? 1e9 : 0) + vulling(rows);
+  return [1, 2, 3].flatMap(n => [schik(items, w, h, n)[0], schik(items, w, h, n, true)[0]]).map(rows => rek(rows, w, h)).reduce((a, b) => score(b) > score(a) ? b : a);
+}
 
 async function fotoPaginas(p, items, titel, actueel) {
   if (!items.length) return;
@@ -360,7 +444,7 @@ async function fotoPaginas(p, items, titel, actueel) {
     .reduce((a, b) => b.length < a.length ? b : a);
   paginas.forEach((rows, i) => {
     if (!actueel()) return;
-    voegToe(leegBlad(p, paginas.length > 1 ? `${titel} · ${i + 1}/${paginas.length}` : titel, `<div class="vak" style="flex:1">${rijenHTML(rows)}</div>`));
+    voegToe(leegBlad(p, paginas.length > 1 ? `${titel} · ${i + 1}/${paginas.length}` : titel, `<div class="vak" style="flex:1">${rijenHTML(rek(rows, w, h))}</div>`));
   });
 }
 
@@ -381,39 +465,55 @@ async function bouw() {
   pagesEl.innerHTML = "";
   voegToe(voorblad(beeld, plaatsNamen(beeld.punten), opKaart, zonder));
 
-  for (const p of keuze) {
-    // Volgorde van de beelden: eerste eigen foto, luchtbeeld en Street View, dan de rest van de foto's.
-    const lijst = [
-      ...p.fotos.slice(0, 1).map(src => ({ src })),
-      ...p.luchtbeeld.map(src => ({ src, cap: "Luchtbeeld" })),
-      ...p.streetview.map(src => ({ src, cap: "Street View" })),
-      ...p.fotos.slice(1).map(src => ({ src }))
-    ];
-    const hist = p.historisch.map(src => ({ src }));
-    await Promise.all([...lijst, ...hist].map(async it => it.a = await verhouding(it.src)));
+  for (const [i, p] of keuze.entries()) {
+    $("sum").textContent = `Voorbeeld wordt gemaakt… ${i + 1} van ${keuze.length}`;
+    const alles = [...p.fotos, ...p.streetview, ...p.luchtbeeld, ...p.historisch];
+    await Promise.all(alles.map(verhouding));
     if (!actueel()) return;
+    const item = src => ({ src, a: maten.get(src).waarde, cap: bijschrift(p, src) });
 
-    const blad = voegToe(overzicht(p));
-    const tekst = blad.querySelector(".tekst");
-    // Past de geschiedenis niet naast de foto's, dan krijgt ze een eigen pagina.
-    let eigenGesch = false;
-    if (p.geschiedenis && tekst.scrollHeight > tekst.clientHeight + 2) {
-      eigenGesch = true;
-      blad.querySelector('[data-sec="gesch"]').innerHTML = `<h3>Geschiedenis</h3><p class="niets">Zie de volgende pagina.</p>`;
+    // Pagina 1
+    const top = beste(p);
+    const blad = voegToe(blad1(p));
+    const satvak = blad.querySelector(".satvak");
+    if (p.lngLat) {
+      const { w, h } = mm(satvak), wpx = Math.round(w * MM), hpx = Math.round(h * MM);
+      let src = "";
+      try { src = await satBeeld(p, wpx, hpx); } catch (e) {}
+      if (!actueel()) return;
+      const sb = schaalbalk(p.lngLat[1], wpx);
+      satvak.innerHTML = `${src ? `<img src="${src}" alt="Satellietbeeld van ${esc(p.naam)}">` : `<p class="geen">Het satellietbeeld kon niet geladen worden.</p>`}
+        <span class="dot" style="left:50%;top:50%"></span><span class="noord">N</span>
+        <span class="schaal" style="width:${sb.pct.toFixed(2)}%"><b>${sb.len} m</b><i></i></span>
+        <span class="attr">Satelliet © Esri, Maxar, Earthstar Geographics</span>`;
+    } else if (p.luchtbeeld.length) {
+      satvak.innerHTML = `<img src="${esc(p.luchtbeeld[0])}" alt="Luchtbeeld van ${esc(p.naam)}"><span class="attr">Luchtbeeld (schermafbeelding) · locatie nog onbekend</span>`;
+    } else {
+      satvak.innerHTML = `<p class="geen">Nog geen satellietbeeld: de locatie van dit pand is nog niet bekend.</p>`;
     }
     const vak = blad.querySelector(".vak");
-    const { w, h } = mm(vak);
-    // Overzicht: liefst alle beelden op deze pagina, en dan zo groot mogelijk.
-    const vulling = rows => rows.reduce((s, r) => s + r.h * r.items.reduce((t, it) => t + it.a * r.h, 0), 0);
-    const aantal = rows => rows.reduce((n, r) => n + r.items.length, 0);
-    const score = rows => (aantal(rows) === lijst.length ? 1e9 : 0) + vulling(rows);
-    const opties = [1, 2, 3].flatMap(n => [schik(lijst, w, h, n)[0], schik(lijst, w, h, n, true)[0]]);
-    const eerste = lijst.length ? opties.reduce((a, b) => score(b) > score(a) ? b : a) : [];
-    vak.innerHTML = rijenHTML(eerste);
-    const getoond = eerste.reduce((n, r) => n + r.items.length, 0);
-    if (eigenGesch) voegToe(leegBlad(p, "Geschiedenis", `<div class="sec cols" style="flex:1">${geschHTML(p.geschiedenis)}</div>`));
+    const m1 = mm(vak);
+    vak.innerHTML = rijenHTML(besteSchikking(top.map(item), m1.w, m1.h));
 
-    await fotoPaginas(p, lijst.slice(getoond), "Foto's", actueel);
+    // Pagina 2 en verder. Luchtbeelden (schermafbeeldingen) vallen weg als er een satellietbeeld uit de kaart is.
+    const extra = [...p.fotos, ...p.streetview, ...(p.lngLat ? [] : p.luchtbeeld.slice(1))].filter(src => !top.includes(src)).map(item);
+    let rest = extra;
+    if (extra.length) {
+      const b2 = voegToe(blad2(p, true));
+      const tekst = b2.querySelector(".tekst");
+      if (tekst.scrollHeight > tekst.clientHeight + 2) {
+        // Te veel tekst voor de kolom: tekst over de hele breedte, foto's op de volgende pagina's.
+        b2.remove();
+        voegToe(blad2(p, false));
+      } else {
+        const v2 = b2.querySelector(".vak"), m2 = mm(v2);
+        const rows = besteSchikking(extra, m2.w, m2.h);
+        v2.innerHTML = rijenHTML(rows);
+        rest = extra.slice(rows.reduce((n, r) => n + r.items.length, 0));
+      }
+    } else voegToe(blad2(p, false));
+
+    await fotoPaginas(p, rest, "Extra foto's", actueel);
     p.grondplannen.forEach((src, i) => {
       const n = p.grondplannen.length > 1 ? ` · ${i + 1}/${p.grondplannen.length}` : "";
       const naam = decodeURIComponent(src.split("/").pop());
@@ -421,7 +521,7 @@ async function bouw() {
         ? `<figure class="plan"><p class="pdf">${esc(naam)}<br>Dit plan is een pdf. Druk het apart af vanaf de website.</p></figure>`
         : `<figure class="plan"><img src="${esc(src)}" alt="${esc(naam)}"></figure>`));
     });
-    await fotoPaginas(p, hist, "Historische foto's", actueel);
+    await fotoPaginas(p, p.historisch.map(item), "Historische foto's", actueel);
     if (!actueel()) return;
   }
 
