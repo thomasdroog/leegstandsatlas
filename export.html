@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Kies panden uit de Leegstandatlas en druk ze af als A3-liggende pagina's.">
+<title>Leegstandatlas · Export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Export: A3-liggende pagina's om af te drukken of als pdf te bewaren. Op het scherm kies je links de panden en zie je rechts het voorbeeld. */
+:root {
+  --bg: #eef0ee;
+  --fg: #262a27;
+  --muted: #6c726d;
+  --surface: #ffffff;
+  --surface-2: #f4f5f3;
+  --line: #e1e3e0;
+  --red: #d42b2b;
+  --accent: #d42b2b;
+  --accent-fg: #ffffff;
+  --shadow: 0 1px 2px rgba(30,34,31,.06), 0 6px 20px rgba(30,34,31,.08);
+  --font-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Kleuren op het papier blijven altijd licht. */
+  --p-fg: #262a27; --p-muted: #6c726d; --p-line: #e1e3e0; --p-soft: #f4f5f3; --p-red: #d42b2b; --p-red-soft: #fbe3e1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111312; --fg: #e8ebe8; --muted: #9aa19c; --surface: #1c201e; --surface-2: #242926; --line: #333935;
+    --red: #ff5a52; --accent: #ff5a52; --accent-fg: #1a0605; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111312; --fg: #e8ebe8; --muted: #9aa19c; --surface: #1c201e; --surface-2: #242926; --line: #333935;
+  --red: #ff5a52; --accent: #ff5a52; --accent-fg: #1a0605; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+@page { size: A3 landscape; margin: 0; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); }
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* Keuzepaneel */
+.ui { position: fixed; z-index: 2; top: 0; left: 0; bottom: 0; width: 340px; background: var(--surface); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.kies { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 20px 16px; display: flex; flex-direction: column; gap: 16px; }
+.actie { flex: none; padding: 16px 20px 20px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.back { font: 500 12px/1 var(--font-mono); color: var(--muted); text-decoration: none; }
+.back:hover { color: var(--fg); }
+.ui h1 { margin: 0; font: 700 30px/1 var(--font-ui); letter-spacing: -.03em; }
+.ui p { margin: 0; font: 400 13px/1.45 var(--font-ui); color: var(--muted); }
+.sel-head { display: flex; justify-content: space-between; align-items: center; }
+.sel-head b { font: 500 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.sel-head button { border: 0; background: none; padding: 4px 6px; border-radius: 6px; font: 500 12px/1 var(--font-mono); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.sel-head button:hover { background: var(--surface-2); }
+.list { display: grid; gap: 2px; }
+.list label { display: grid; grid-template-columns: 16px 1fr; gap: 3px 10px; align-items: center; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.list label:hover { background: var(--surface-2); }
+.list input { grid-row: span 2; width: 16px; height: 16px; margin: 0; accent-color: var(--red); }
+.list b { font: 600 13px/1.25 var(--font-ui); }
+.list small { font: 400 11px/1.35 var(--font-mono); color: var(--muted); }
+.sum { font: 500 12px/1.4 var(--font-mono); }
+.go { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border: 0; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font: 600 14px/1 var(--font-ui); cursor: pointer; }
+.go svg { width: 16px; height: 16px; }
+.go:disabled { opacity: .5; cursor: progress; }
+.ui p.hint { font: 400 11px/1.5 var(--font-mono); }
+
+.pages { margin-left: 340px; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.pages .sheet { zoom: var(--z, .5); box-shadow: var(--shadow); flex: none; }
+.leeg { font: 400 13px/1.5 var(--font-mono); color: var(--muted); }
+@media (max-width: 860px) {
+  .ui { position: static; width: auto; box-shadow: none; }
+  .actie { position: sticky; bottom: 0; background: var(--surface); }
+  .ui p.hint { display: none; }
+  .pages { margin-left: 0; padding: 16px; }
+}
+
+/* Pagina's */
+.sheet { width: 420mm; height: 297mm; overflow: hidden; position: relative; background: #fff; color: var(--p-fg); padding: 16mm 20mm 12mm; display: flex; flex-direction: column; gap: 6mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.foot { flex: none; display: flex; justify-content: space-between; gap: 10mm; font: 400 2.8mm/1.2 var(--font-mono); color: var(--p-muted); }
+
+.cover h1 { margin: 0; flex: none; font: 700 15mm/1 var(--font-ui); letter-spacing: -.035em; }
+.mapbox { position: relative; flex: none; width: 380mm; height: 236mm; overflow: hidden; background: #d8dbd8; }
+.mapbox img.base { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.mapbox .dot { position: absolute; width: 4.4mm; height: 4.4mm; margin: -2.2mm 0 0 -2.2mm; border-radius: 50%; background: var(--p-red); box-shadow: 0 0 0 1.2mm rgba(212,43,43,.25); }
+.mapbox .lab { position: absolute; height: 8mm; padding: 0 3mm; border-radius: 999px; background: #fff; color: var(--p-fg); font: 500 3.4mm/8mm var(--font-mono); white-space: nowrap; box-shadow: 0 .3mm .6mm rgba(30,34,31,.08), 0 1.5mm 5mm rgba(30,34,31,.12); }
+.mapbox .attr { position: absolute; right: 2mm; bottom: 2mm; padding: .8mm 2mm; border-radius: 1.5mm; background: rgba(255,255,255,.8); font: 400 2.4mm/1 var(--font-mono); color: var(--p-muted); }
+
+.ph { flex: none; display: flex; justify-content: space-between; align-items: flex-end; gap: 12mm; padding-bottom: 5mm; border-bottom: .3mm solid var(--p-line); }
+.ph .k { font: 500 2.8mm/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--p-muted); }
+.ph h2 { margin: 2.5mm 0 0; font: 700 12mm/1.02 var(--font-ui); letter-spacing: -.025em; text-wrap: balance; }
+.ph .addr { margin: 2mm 0 0; font: 400 4.2mm/1.3 var(--font-ui); color: var(--p-muted); }
+.chips { display: flex; gap: 2mm; margin-top: 3.5mm; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 1.6mm; height: 6mm; padding: 0 2.6mm; border-radius: 999px; font: 500 2.9mm/1 var(--font-mono); background: var(--p-soft); color: var(--p-muted); }
+.chip.st { background: var(--p-red-soft); color: var(--p-red); }
+.chip.st::before { content: ""; width: 1.6mm; height: 1.6mm; border-radius: 50%; background: currentColor; }
+.facts { display: grid; grid-template-columns: repeat(4, auto); gap: 4mm 9mm; margin: 0; flex: none; }
+.facts div { display: grid; gap: 1.6mm; }
+.facts dt { font: 500 2.6mm/1 var(--font-mono); color: var(--p-muted); text-transform: uppercase; letter-spacing: .06em; }
+.facts dd { margin: 0; font: 600 4.4mm/1.2 var(--font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ph.kort h2 { font-size: 8mm; margin-top: 2mm; }
+.ph.kort { padding-bottom: 4mm; }
+.ph .wat { font: 500 3.4mm/1 var(--font-mono); color: var(--p-muted); }
+
+.body { flex: 1; min-height: 0; display: grid; grid-template-columns: 128mm 1fr; gap: 12mm; }
+.tekst { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 7mm; }
+.sec h3 { margin: 0 0 3mm; font: 500 2.8mm/1 var(--font-mono); text-transform: uppercase; letter-spacing: .08em; color: var(--p-muted); }
+.sec p { margin: 0 0 2.6mm; font: 400 3.9mm/1.55 var(--font-ui); text-wrap: pretty; }
+.sec p.src, .sec p.niets { font: 400 2.8mm/1.5 var(--font-mono); color: var(--p-muted); }
+.sec ul { margin: 0; padding: 0; list-style: none; font: 400 3.6mm/1.4 var(--font-ui); }
+.sec li { padding: 2mm 0; border-top: .3mm solid var(--p-line); }
+.cols { columns: 3; column-gap: 12mm; }
+.cols p { break-inside: avoid-column; }
+.vak { position: relative; min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 3mm; }
+.rij { display: flex; gap: 3mm; flex: none; }
+.rij figure { position: relative; margin: 0; height: 100%; flex: none; background: var(--p-soft); }
+.rij img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.rij figcaption, .plan figcaption { position: absolute; left: 2mm; bottom: 2mm; padding: .8mm 2mm; border-radius: 1.5mm; background: rgba(255,255,255,.88); font: 500 2.5mm/1 var(--font-mono); color: var(--p-fg); }
+.plan { flex: 1; min-height: 0; margin: 0; position: relative; display: grid; place-items: center; }
+.plan img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.plan .pdf { font: 400 4mm/1.5 var(--font-mono); color: var(--p-muted); text-align: center; }
+
+@media print {
+  body { background: #fff; }
+  .ui { display: none !important; }
+  .pages { margin: 0; padding: 0; display: block; }
+  .pages .sheet { zoom: 1; box-shadow: none; break-after: page; }
+  .pages .sheet:last-child { break-after: auto; }
+}
+</style>
+</head>
+<body>
+<aside class="ui">
+ <div class="kies">
+  <a class="back" href="./">← Terug naar de kaart</a>
+  <h1>Exporteren</h1>
+  <p>Kies de panden voor de export. Je krijgt A3-liggende pagina's: eerst de kaart met de gekozen panden, dan per pand de geschiedenis, foto's, materialen en plannen.</p>
+  <div class="sel-head">
+    <b id="selCount">Panden</b>
+    <span><button type="button" id="selAll">Alles</button><button type="button" id="selNone">Geen</button></span>
+  </div>
+  <div class="list" id="list"></div>
+ </div>
+ <div class="actie">
+  <div class="sum" id="sum" aria-live="polite">Voorbeeld wordt gemaakt…</div>
+  <button type="button" class="go" id="print" disabled><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg>Afdrukken of opslaan als pdf</button>
+  <p class="hint">In het afdrukvenster: kies A3 liggend als dat niet vanzelf staat, en "Opslaan als pdf" voor een bestand. Zet "Achtergrondafbeeldingen" aan als je die optie ziet.</p>
+ </div>
+</aside>
+<main class="pages" id="pages"></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
+<script src="data/panden.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const MM = 96 / 25.4;
+const datum = s => new Date(s + "T12:00:00").toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" });
+const vandaag = new Date().toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" });
+const ALLE = [...PANDEN].sort((a, b) => a.naam.localeCompare(b.naam, "nl"));
+const GAP = 3;
+
+// Keuze, bewaard in de link (#panden=a,b) zodat je een selectie kunt delen.
+function uitLink() {
+  const m = location.hash.match(/panden=([^&]*)/);
+  return m ? decodeURIComponent(m[1]).split(",").filter(id => PANDEN.some(p => p.id === id)) : null;
+}
+const gekozen = new Set(uitLink() || ALLE.map(p => p.id));
+function inhoud(p) {
+  const d = [];
+  if (p.geschiedenis) d.push("geschiedenis");
+  if (p.fotos.length) d.push(`${p.fotos.length} foto's`);
+  const scherm = p.luchtbeeld.length + p.streetview.length;
+  if (scherm) d.push(`${scherm} schermbeeld${scherm > 1 ? "en" : ""}`);
+  if (p.grondplannen.length) d.push(`${p.grondplannen.length} plannen`);
+  if (p.historisch.length) d.push(`${p.historisch.length} historische foto's`);
+  if (p.materialen.length) d.push("materialen");
+  if (!p.lngLat) d.push("niet op de kaart");
+  return d.join(" · ");
+}
+$("list").innerHTML = ALLE.map(p => `<label><input type="checkbox" value="${p.id}"${gekozen.has(p.id) ? " checked" : ""}><b>${esc(p.naam)}</b><small>${esc(inhoud(p))}</small></label>`).join("");
+function keuzeGewijzigd() {
+  $("selCount").textContent = `Panden · ${gekozen.size} van ${ALLE.length}`;
+  try { history.replaceState(null, "", "#panden=" + ALLE.filter(p => gekozen.has(p.id)).map(p => p.id).join(",")); } catch (e) {}
+  clearTimeout(keuzeGewijzigd.t);
+  keuzeGewijzigd.t = setTimeout(bouw, 150);
+}
+$("list").addEventListener("change", e => { e.target.checked ? gekozen.add(e.target.value) : gekozen.delete(e.target.value); keuzeGewijzigd(); });
+const zetAlles = aan => { gekozen.clear(); if (aan) ALLE.forEach(p => gekozen.add(p.id)); $("list").querySelectorAll("input").forEach(i => i.checked = aan); keuzeGewijzigd(); };
+$("selAll").onclick = () => zetAlles(true);
+$("selNone").onclick = () => zetAlles(false);
+
+// Beeldverhoudingen, nodig om foto's zonder bijsnijden in rijen te zetten.
+const maten = new Map();
+const verhouding = src => {
+  if (!maten.has(src)) maten.set(src, new Promise(res => {
+    const i = new Image();
+    i.onload = () => res(i.naturalWidth / i.naturalHeight || 4 / 3);
+    i.onerror = () => res(4 / 3);
+    i.src = src;
+  }));
+  return maten.get(src);
+};
+
+// Rijen die het vak in de breedte vullen (zoals een fotoboek), maximaal `rijen` per pagina.
+// Met `slim` breekt een rij al vóór een foto als de rij dan dichter bij de gewenste hoogte blijft.
+function schik(items, W, H, rijen, slim = false) {
+  const doel = (H - GAP * (rijen - 1)) / rijen;
+  const alle = [];
+  let rij = [];
+  const som = r => r.reduce((s, it) => s + it.a, 0);
+  const breed = (r, h) => som(r) * h + GAP * (r.length - 1);
+  const vol = r => (W - GAP * (r.length - 1)) / som(r);
+  for (const it of items) {
+    if (slim && rij.length && breed([...rij, it], doel) >= W) {
+      const zonder = Math.min(doel, vol(rij));
+      if (Math.abs(zonder - doel) < Math.abs(vol([...rij, it]) - doel)) { alle.push({ items: rij, h: zonder }); rij = []; }
+    }
+    rij.push(it);
+    if (breed(rij, doel) >= W) { alle.push({ items: rij, h: vol(rij) }); rij = []; }
+  }
+  if (rij.length) alle.push({ items: rij, h: doel });
+  const paginas = [];
+  for (let i = 0; i < alle.length; i += rijen) paginas.push(alle.slice(i, i + rijen));
+  return paginas;
+}
+const rijenHTML = rows => rows.map(r => `<div class="rij" style="height:${r.h.toFixed(2)}mm">${r.items.map(it =>
+  `<figure style="width:${(it.a * r.h).toFixed(2)}mm"><img src="${esc(it.src)}" alt="${esc(it.cap || "Foto")}">${it.cap ? `<figcaption>${esc(it.cap)}</figcaption>` : ""}</figure>`).join("")}</div>`).join("");
+// Afmeting van een element in mm, los van de zoom van het voorbeeld.
+function mm(el) {
+  const s = el.closest(".sheet").getBoundingClientRect(), r = el.getBoundingClientRect();
+  return { w: r.width / s.width * 420, h: r.height / s.height * 297 };
+}
+
+// Kaart voor de voorpagina: buiten beeld getekend op het formaat van het kaartvak, dan als beeld op de pagina gezet.
+const MAPW = Math.round(380 * MM), MAPH = Math.round(236 * MM);
+let kaart = null, kaartKlaar = null;
+function maakKaart() {
+  const el = document.createElement("div");
+  el.style.cssText = `position:fixed;left:${-MAPW - 200}px;top:0;width:${MAPW}px;height:${MAPH}px`;
+  el.setAttribute("aria-hidden", "true");
+  document.body.append(el);
+  kaart = new maplibregl.Map({
+    container: el, center: [5.93, 50.71], zoom: 12, interactive: false, attributionControl: false,
+    pixelRatio: 2, fadeDuration: 0, canvasContextAttributes: { preserveDrawingBuffer: true },
+    style: {
+      version: 8,
+      sources: { osm: { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 19 } },
+      layers: [
+        { id: "bg", type: "background", paint: { "background-color": "#d8dbd8" } },
+        // Zelfde grijze OSM-kaart als op de website.
+        { id: "osm", type: "raster", source: "osm", paint: { "raster-saturation": -1, "raster-contrast": -0.1, "raster-brightness-min": 0.32, "raster-fade-duration": 0 } }
+      ]
+    }
+  });
+  kaartKlaar = new Promise(res => kaart.once("load", res));
+}
+const pilFont = `500 ${(3.4 * MM).toFixed(2)}px "JetBrains Mono"`;
+const meet = document.createElement("canvas").getContext("2d");
+const pilBreedte = naam => { meet.font = pilFont; return meet.measureText(naam).width + 6 * MM; };
+
+async function kaartbeeld(lijst) {
+  if (!kaart) maakKaart();
+  await kaartKlaar;
+  const ll = lijst.map(p => p.lngLat);
+  if (ll.length === 1) kaart.jumpTo({ center: ll[0], zoom: 14.5 });
+  else if (ll.length) {
+    const b = ll.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(ll[0], ll[0]));
+    const rechts = Math.max(...lijst.map(p => pilBreedte(p.naam))) + 40;
+    kaart.fitBounds(b, { padding: { top: 80, bottom: 80, left: 80, right: rechts }, maxZoom: 15, animate: false });
+  }
+  await new Promise(res => { const t = setTimeout(res, 15000); kaart.once("idle", () => { clearTimeout(t); res(); }); kaart.triggerRepaint(); });
+  let src = "";
+  try { src = kaart.getCanvas().toDataURL("image/jpeg", 0.9); } catch (e) {}
+  return { src, punten: lijst.map(p => { const q = kaart.project(p.lngLat); return { p, x: q.x, y: q.y }; }) };
+}
+
+// Namen naast de stippen, zonder dat ze elkaar of een andere stip raken.
+function plaatsNamen(punten) {
+  const H = 8 * MM, d = 3.4 * MM, R = 3.4 * MM, rand = 6;
+  const bezet = punten.map(({ x, y }) => ({ x0: x - R, y0: y - R, x1: x + R, y1: y + R }));
+  const raakt = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+  return [...punten].sort((a, b) => a.y - b.y || a.x - b.x).map(pt => {
+    const w = pilBreedte(pt.p.naam), op = H + MM;
+    const opties = [[d, 0], [-d - w, 0], [d, -op], [d, op], [-d - w, -op], [-d - w, op], [d, -2 * op], [d, 2 * op]];
+    let r = null;
+    for (const [dx, dy] of opties) {
+      const c = { x0: pt.x + dx, y0: pt.y + dy - H / 2, x1: pt.x + dx + w, y1: pt.y + dy + H / 2 };
+      if (c.x0 < rand || c.x1 > MAPW - rand || c.y0 < rand || c.y1 > MAPH - rand) continue;
+      if (bezet.some(b => raakt(b, c))) continue;
+      r = c; break;
+    }
+    r = r || { x0: pt.x + d, y0: pt.y - H / 2, x1: pt.x + d + w, y1: pt.y + H / 2 };
+    bezet.push(r);
+    return { ...pt, r };
+  });
+}
+
+const pct = (v, t) => (v / t * 100).toFixed(3) + "%";
+function voorblad(beeld, namen, lijst, zonder) {
+  const n = lijst.length + zonder.length;
+  return `<section class="sheet cover">
+  <h1>leegstandatlas</h1>
+  <div class="mapbox">${beeld.src ? `<img class="base" src="${beeld.src}" alt="Kaart van de gekozen panden">` : ""}
+    ${namen.map(l => `<span class="dot" style="left:${pct(l.x, MAPW)};top:${pct(l.y, MAPH)}"></span>`).join("")}
+    ${namen.map(l => `<span class="lab" style="left:${pct(l.r.x0, MAPW)};top:${pct(l.r.y0, MAPH)}">${esc(l.p.naam)}</span>`).join("")}
+    <span class="attr">Kaart © OpenStreetMap-bijdragers</span>
+  </div>
+  <div class="foot"><span>${n} ${n === 1 ? "pand" : "panden"} · Plombières${zonder.length ? ` · nog niet op de kaart: ${zonder.map(p => esc(p.naam)).join(", ")}` : ""}</span><span>Geëxporteerd op ${vandaag}</span></div>
+</section>`;
+}
+
+const kop = (p, wat) => `<header class="ph kort"><div><div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div><h2>${esc(p.naam)}</h2></div><div class="wat">${esc(wat)}</div></header>`;
+const voet = p => `<div class="foot"><span>leegstandatlas · ${esc(p.naam)}</span><span class="pn"></span></div>`;
+function bronnen(g) {
+  const b = [g.bronTekst && esc(g.bronTekst), ...g.bronnen.map(x => `${esc(x.titel)} (${esc(x.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))})`)].filter(Boolean);
+  return `<p class="src">Samenvatting. ${b.length ? "Bron: " + b.join(" · ") : "Bron niet vermeld."}</p>`;
+}
+const geschHTML = g => g.tekst.map(t => `<p>${esc(t)}</p>`).join("") + bronnen(g);
+
+function overzicht(p) {
+  const ll = p.lngLat;
+  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
+  const feiten = [["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"], ["Bezocht", bezocht], ["Eigen foto's", p.fotos.length]];
+  const secties = [];
+  secties.push(`<div class="sec" data-sec="gesch"><h3>Geschiedenis</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">Nog geen geschiedenis aangeleverd.</p>`}</div>`);
+  secties.push(`<div class="sec"><h3>Materialen</h3>${p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="niets">Nog geen materialen aangeleverd.</p>`}</div>`);
+  if (p.model3d.length) secties.push(`<div class="sec"><h3>3D-model</h3><p class="niets">Te bekijken op de website.</p></div>`);
+  return `<section class="sheet">
+  <header class="ph">
+    <div>
+      <div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div>
+      <h2>${esc(p.naam)}</h2>
+      <p class="addr">${esc(p.adres || p.gemeente || "")}</p>
+      <div class="chips"><span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span></div>
+    </div>
+    <dl class="facts">${feiten.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  </header>
+  <div class="body"><div class="tekst">${secties.join("")}</div><div class="vak"></div></div>
+  ${voet(p)}
+</section>`;
+}
+const leegBlad = (p, wat, inhoudHTML) => `<section class="sheet">${kop(p, wat)}${inhoudHTML}${voet(p)}</section>`;
+
+// Voegt een pagina toe en geeft het element terug, zodat we het kunnen opmeten.
+const pagesEl = $("pages");
+function voegToe(html) { pagesEl.insertAdjacentHTML("beforeend", html); return pagesEl.lastElementChild; }
+
+async function fotoPaginas(p, items, titel, actueel) {
+  if (!items.length) return;
+  const proef = voegToe(leegBlad(p, titel, `<div class="vak" style="flex:1"></div>`));
+  const { w, h } = mm(proef.querySelector(".vak"));
+  proef.remove();
+  // Twee rijen per pagina, of drie als dat een pagina uitspaart.
+  const paginas = [schik(items, w, h, 2), schik(items, w, h, 2, true), schik(items, w, h, 3), schik(items, w, h, 3, true)]
+    .reduce((a, b) => b.length < a.length ? b : a);
+  paginas.forEach((rows, i) => {
+    if (!actueel()) return;
+    voegToe(leegBlad(p, paginas.length > 1 ? `${titel} · ${i + 1}/${paginas.length}` : titel, `<div class="vak" style="flex:1">${rijenHTML(rows)}</div>`));
+  });
+}
+
+let bouwNr = 0, klaar = Promise.resolve();
+async function bouw() {
+  const nr = ++bouwNr, actueel = () => nr === bouwNr;
+  $("print").disabled = true;
+  $("sum").textContent = "Voorbeeld wordt gemaakt…";
+  let gedaan;
+  klaar = new Promise(r => gedaan = r);
+  const keuze = ALLE.filter(p => gekozen.has(p.id));
+  const opKaart = keuze.filter(p => p.lngLat), zonder = keuze.filter(p => !p.lngLat);
+  await document.fonts.ready;
+  await document.fonts.load(pilFont).catch(() => {});
+  let beeld = { src: "", punten: [] };
+  try { beeld = await kaartbeeld(opKaart); } catch (e) { beeld = { src: "", punten: [] }; }
+  if (!actueel()) return;
+  pagesEl.innerHTML = "";
+  voegToe(voorblad(beeld, plaatsNamen(beeld.punten), opKaart, zonder));
+
+  for (const p of keuze) {
+    // Volgorde van de beelden: eerste eigen foto, luchtbeeld en Street View, dan de rest van de foto's.
+    const lijst = [
+      ...p.fotos.slice(0, 1).map(src => ({ src })),
+      ...p.luchtbeeld.map(src => ({ src, cap: "Luchtbeeld" })),
+      ...p.streetview.map(src => ({ src, cap: "Street View" })),
+      ...p.fotos.slice(1).map(src => ({ src }))
+    ];
+    const hist = p.historisch.map(src => ({ src }));
+    await Promise.all([...lijst, ...hist].map(async it => it.a = await verhouding(it.src)));
+    if (!actueel()) return;
+
+    const blad = voegToe(overzicht(p));
+    const tekst = blad.querySelector(".tekst");
+    // Past de geschiedenis niet naast de foto's, dan krijgt ze een eigen pagina.
+    let eigenGesch = false;
+    if (p.geschiedenis && tekst.scrollHeight > tekst.clientHeight + 2) {
+      eigenGesch = true;
+      blad.querySelector('[data-sec="gesch"]').innerHTML = `<h3>Geschiedenis</h3><p class="niets">Zie de volgende pagina.</p>`;
+    }
+    const vak = blad.querySelector(".vak");
+    const { w, h } = mm(vak);
+    // Overzicht: liefst alle beelden op deze pagina, en dan zo groot mogelijk.
+    const vulling = rows => rows.reduce((s, r) => s + r.h * r.items.reduce((t, it) => t + it.a * r.h, 0), 0);
+    const aantal = rows => rows.reduce((n, r) => n + r.items.length, 0);
+    const score = rows => (aantal(rows) === lijst.length ? 1e9 : 0) + vulling(rows);
+    const opties = [1, 2, 3].flatMap(n => [schik(lijst, w, h, n)[0], schik(lijst, w, h, n, true)[0]]);
+    const eerste = lijst.length ? opties.reduce((a, b) => score(b) > score(a) ? b : a) : [];
+    vak.innerHTML = rijenHTML(eerste);
+    const getoond = eerste.reduce((n, r) => n + r.items.length, 0);
+    if (eigenGesch) voegToe(leegBlad(p, "Geschiedenis", `<div class="sec cols" style="flex:1">${geschHTML(p.geschiedenis)}</div>`));
+
+    await fotoPaginas(p, lijst.slice(getoond), "Foto's", actueel);
+    p.grondplannen.forEach((src, i) => {
+      const n = p.grondplannen.length > 1 ? ` · ${i + 1}/${p.grondplannen.length}` : "";
+      const naam = decodeURIComponent(src.split("/").pop());
+      voegToe(leegBlad(p, "Grondplannen en snedes" + n, /\.pdf$/i.test(src)
+        ? `<figure class="plan"><p class="pdf">${esc(naam)}<br>Dit plan is een pdf. Druk het apart af vanaf de website.</p></figure>`
+        : `<figure class="plan"><img src="${esc(src)}" alt="${esc(naam)}"></figure>`));
+    });
+    await fotoPaginas(p, hist, "Historische foto's", actueel);
+    if (!actueel()) return;
+  }
+
+  const bladen = [...pagesEl.querySelectorAll(".sheet")];
+  bladen.forEach((s, i) => { const pn = s.querySelector(".pn"); if (pn) pn.textContent = `${i + 1} / ${bladen.length}`; });
+  if (!keuze.length) pagesEl.insertAdjacentHTML("beforeend", `<p class="leeg">Kies links minstens één pand.</p>`);
+  schaal();
+  // Wachten tot alle beelden geladen zijn, anders ontbreken ze in de afdruk.
+  await Promise.all([...pagesEl.querySelectorAll("img")].map(i => i.decode().catch(() => {})));
+  if (!actueel()) return;
+  $("sum").textContent = `${keuze.length} ${keuze.length === 1 ? "pand" : "panden"} · ${bladen.length} ${bladen.length === 1 ? "pagina" : "pagina's"} A3`;
+  $("print").disabled = false;
+  gedaan();
+}
+
+function schaal() {
+  const beschikbaar = pagesEl.clientWidth - (innerWidth > 860 ? 64 : 32);
+  document.documentElement.style.setProperty("--z", Math.min(1, beschikbaar / (420 * MM)).toFixed(4));
+}
+addEventListener("resize", schaal);
+$("print").onclick = async () => { await klaar; window.print(); };
+
+keuzeGewijzigd();
+</script>
+</body>
+</html>

@@ -91,6 +91,9 @@ button, input { font: inherit; color: inherit; }
 .search input { height: 36px; width: 180px; border-radius: 999px; border: 0; padding: 0 14px 0 34px; background: var(--surface); box-shadow: var(--shadow); font: 500 12px/1 var(--font-mono); }
 .search input::placeholder { color: var(--muted); }
 .search svg { position: absolute; left: 12px; top: 11px; width: 14px; height: 14px; color: var(--muted); }
+.exp { height: 36px; padding: 0 14px; text-decoration: none; }
+.exp svg { width: 14px; height: 14px; flex: none; }
+.exp:hover { background: var(--accent); color: var(--accent-fg); }
 .results { position: absolute; bottom: 44px; right: 0; width: 280px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
 .results button { display: grid; grid-template-columns: 10px 1fr; gap: 2px 10px; align-items: center; text-align: left; border: 0; background: transparent; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
 .results button:hover, .results button:focus-visible { background: var(--surface-2); }
@@ -173,6 +176,8 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   .count .results { left: 0; right: auto; top: 34px; max-height: 50vh; }
   .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
   .search input { width: 130px; }
+  .exp { width: 36px; padding: 0; justify-content: center; }
+  .exp span { display: none; }
   .notice { display: none; }
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; height: 74%; border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .panel[hidden] { transform: translateY(105%); }
@@ -237,6 +242,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
     <input id="q" type="search" placeholder="Zoeken" autocomplete="off" aria-label="Zoek een gebouw of gemeente">
     <div class="results" id="results" hidden></div>
   </div>
+  <a class="pill exp" href="export.html" aria-label="Exporteren naar A3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span>Exporteren</span></a>
 </div>
 
 <aside class="panel" id="panel" hidden aria-labelledby="pTitle">
