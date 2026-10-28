@@ -73,8 +73,13 @@ button, input { font: inherit; color: inherit; }
 .brand h1, .brand p { text-shadow: 0 0 2px var(--bg), 0 0 10px var(--bg), 0 0 18px var(--bg); }
 .brand h1 { margin: 0; font: 700 clamp(34px, 4.4vw, 56px)/1 var(--font-ui); letter-spacing: -.035em; }
 .brand p { margin: 0; font: 400 15px/1.4 var(--font-ui); color: var(--muted); max-width: 34ch; text-wrap: balance; }
-.count { position: absolute; z-index: 3; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
+.count { position: absolute; z-index: 4; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
+.count .pill { cursor: pointer; }
+.count .pill:hover { background: var(--surface-2); }
+.count .pill svg { width: 10px; height: 10px; color: var(--muted); transition: transform .15s; }
+.count .pill[aria-expanded="true"] svg { transform: rotate(180deg); }
 .count .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+.count .results { top: 38px; bottom: auto; max-height: min(60vh, 440px); overflow-y: auto; }
 
 /* Center control bar, like the reference */
 .bar { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; max-width: calc(100vw - 32px); }
@@ -90,6 +95,7 @@ button, input { font: inherit; color: inherit; }
 .results button { display: grid; grid-template-columns: 10px 1fr; gap: 2px 10px; align-items: center; text-align: left; border: 0; background: transparent; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
 .results button:hover, .results button:focus-visible { background: var(--surface-2); }
 .results .d { width: 8px; height: 8px; border-radius: 50%; background: var(--red); grid-row: span 2; }
+.results .d.off { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
 .results b { font: 600 13px/1.2 var(--font-ui); }
 .results small { font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
 .results .none { padding: 10px; font: 400 12px var(--font-mono); color: var(--muted); }
@@ -162,7 +168,9 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 @media (max-width: 760px) {
   .brand { top: calc(16px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); gap: 6px; }
   .brand p { font-size: 13px; max-width: 30ch; }
-  .count { top: calc(124px + env(safe-area-inset-top, 0px)); right: auto; left: max(16px, env(safe-area-inset-left, 0px)); height: 26px; font-size: 11px; }
+  .count { top: calc(124px + env(safe-area-inset-top, 0px)); right: auto; left: max(16px, env(safe-area-inset-left, 0px)); }
+  .count .pill { height: 26px; font-size: 11px; }
+  .count .results { left: 0; right: auto; top: 34px; max-height: 50vh; }
   .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
   .search input { width: 130px; }
   .notice { display: none; }
@@ -178,6 +186,9 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 .grid2.wide .img { aspect-ratio: 16/10; }
 .empty { display: grid; gap: 6px; padding: 18px; border-radius: 12px; border: 1px dashed var(--line); font-size: 13px; line-height: 1.45; }
 .empty span { color: var(--muted); font: 400 12px/1.45 var(--font-mono); }
+.hist { display: grid; gap: 10px; }
+.hist p { margin: 0; font: 400 14px/1.6 var(--font-ui); text-wrap: pretty; }
+.pb p.note a { color: var(--fg); text-underline-offset: 2px; }
 .lb { position: fixed; inset: 0; z-index: 20; background: rgba(10,12,11,.92); display: grid; place-items: center; padding: calc(56px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(56px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .lb img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
 .lb button { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; cursor: pointer; font: 500 18px/1 var(--font-mono); }
@@ -199,7 +210,10 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   <h1>Leegstandatlas</h1>
   <p>Leegstaande gebouwen in kaart gebracht, met alle beelden en gegevens per pand op één plek.</p>
 </header>
-<div class="count pill" id="count"><span class="dot"></span><span id="countText">0 panden</span></div>
+<div class="count" id="count">
+  <button type="button" class="pill" id="countBtn" aria-expanded="false" aria-controls="allList"><span class="dot"></span><span id="countText">0 panden</span><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m2 3.5 3 3 3-3"/></svg></button>
+  <div class="results" id="allList" hidden></div>
+</div>
 
 <p class="notice" id="notice" hidden></p>
 
@@ -246,7 +260,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 <script>
 // De panden staan in data/panden.js.
 
-const TABS = [["fotos", "Foto's"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Historische foto's"], ["materialen", "Materialen"]];
+const TABS = [["fotos", "Foto's"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
 const LIVE = {
   osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers' },
   sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: 'Satelliet © Esri, Maxar, Earthstar Geographics' }
@@ -347,9 +361,10 @@ map.on("load", async () => {
   }
 });
 
-// Markers
+// Markers. Panden zonder coördinaten staan alleen in de lijst en de zoekfunctie.
 const markers = {};
-PANDEN.forEach(p => {
+const OPKAART = PANDEN.filter(p => p.lngLat);
+OPKAART.forEach(p => {
   const el = document.createElement("button");
   el.type = "button";
   el.className = "mk";
@@ -358,15 +373,31 @@ PANDEN.forEach(p => {
   markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
   el.setAttribute("aria-label", `${p.naam}, ${p.status}`);
 });
-const bounds = PANDEN.reduce((b, p) => b.extend(p.lngLat), new maplibregl.LngLatBounds(PANDEN[0].lngLat, PANDEN[0].lngLat));
+const bounds = OPKAART.reduce((b, p) => b.extend(p.lngLat), new maplibregl.LngLatBounds(OPKAART[0].lngLat, OPKAART[0].lngLat));
 const agg = document.createElement("button");
 agg.type = "button";
 agg.className = "agg";
-agg.innerHTML = `<span class="d"></span><span class="pill">Plombières · ${PANDEN.length} panden</span>`;
+agg.innerHTML = `<span class="d"></span><span class="pill">Plombières · ${OPKAART.length} panden</span>`;
 agg.onclick = e => { e.stopPropagation(); flyCluster(); };
 new maplibregl.Marker({ element: agg, anchor: "left", offset: [-11, 0] }).setLngLat(bounds.getCenter()).addTo(map);
-agg.setAttribute("aria-label", `Zoom in op Plombières, ${PANDEN.length} panden`);
+agg.setAttribute("aria-label", `Zoom in op Plombières, ${OPKAART.length} panden`);
 $("countText").textContent = `${PANDEN.length} panden · Plombières`;
+
+// Lijst van alle panden onder de teller
+const allList = $("allList"), countBtn = $("countBtn");
+const rij = p => `<button type="button" data-id="${p.id}"><span class="d${p.lngLat ? "" : " off"}"></span><b>${esc(p.naam)}</b><small>${esc(p.lngLat ? (p.adres || p.gemeente) : "Locatie nog onbekend")}</small></button>`;
+function toggleAll(open) {
+  if (open) allList.innerHTML = [...PANDEN].sort((a, b) => a.naam.localeCompare(b.naam, "nl")).map(rij).join("");
+  allList.hidden = !open;
+  countBtn.setAttribute("aria-expanded", open);
+}
+countBtn.onclick = e => { e.stopPropagation(); toggleAll(allList.hidden); };
+allList.addEventListener("click", e => {
+  const b = e.target.closest("button[data-id]");
+  if (!b) return;
+  toggleAll(false);
+  openPand(b.dataset.id);
+});
 
 function flyCluster() {
   stopSpin();
@@ -402,7 +433,7 @@ function renderResults() {
   if (!t) { results.hidden = true; return; }
   const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status].join(" ").toLowerCase().includes(t));
   results.innerHTML = hits.length
-    ? hits.map(p => `<button type="button" data-id="${p.id}"><span class="d"></span><b>${esc(p.naam)}</b><small>${esc(p.adres || p.gemeente)}</small></button>`).join("")
+    ? hits.map(rij).join("")
     : `<div class="none">Geen pand gevonden voor “${esc(q.value)}”.</div>`;
   results.hidden = false;
 }
@@ -418,7 +449,10 @@ results.addEventListener("click", e => {
   results.hidden = true; q.blur();
   openPand(b.dataset.id);
 });
-document.addEventListener("click", e => { if (!e.target.closest(".search")) results.hidden = true; });
+document.addEventListener("click", e => {
+  if (!e.target.closest(".search")) results.hidden = true;
+  if (!e.target.closest(".count")) toggleAll(false);
+});
 
 // Detailpaneel
 let tab = "fotos";
@@ -435,16 +469,17 @@ function openPand(id, fly = true) {
   stopSpin();
   current = p;
   Object.values(markers).forEach(o => o.el.classList.remove("on"));
-  markers[id].el.classList.add("on");
-  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span>`;
+  if (markers[id]) markers[id].el.classList.add("on");
+  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span>${p.lngLat ? "" : `<span class="chip">nog niet op de kaart</span>`}`;
   $("pTitle").textContent = p.naam;
   $("pAddr").textContent = p.adres || p.gemeente;
-  const [lng, lat] = p.lngLat;
-  $("pFacts").innerHTML = [["Eigen foto's", p.fotos.length], ["Bezocht", datum(p.fotosGenomen)], ["Breedte", `${lat.toFixed(5)}° N`], ["Lengte", `${lng.toFixed(5)}° O`]]
+  const ll = p.lngLat;
+  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
+  $("pFacts").innerHTML = [["Eigen foto's", p.fotos.length], ["Bezocht", bezocht], ["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"]]
     .map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
   $("panel").hidden = false;
   showTab(tab);
-  if (fly) {
+  if (fly && ll) {
     map.flyTo({ center: p.lngLat, zoom: Math.max(map.getZoom(), live ? 17 : 13.5), speed: 1.2, essential: true, padding: panelPadding() });
   } else {
     map.easeTo({ padding: panelPadding(), duration: reduce ? 0 : 500 });
@@ -461,6 +496,7 @@ function closePand() {
 $("pClose").onclick = closePand;
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !$("lb").hidden) return closeLb();
+  if (e.key === "Escape" && !allList.hidden) return toggleAll(false);
   if (e.key === "Escape" && current && document.activeElement !== q) closePand();
   if (!$("lb").hidden && (e.key === "ArrowRight" || e.key === "ArrowLeft")) stepLb(e.key === "ArrowRight" ? 1 : -1);
 });
@@ -469,7 +505,8 @@ const tabsEl = $("tabs");
 function renderTabs() {
   tabsEl.innerHTML = TABS.map(([k, l]) => {
     const n = current ? current[TABKEY[k]].length : 0;
-    return `<button type="button" role="tab" data-tab="${k}" id="tab-${k}">${l}${k === "fotos" ? "" : n ? ` <span class="n">${n}</span>` : ""}</button>`;
+    const tel = k === "fotos" ? "" : n ? ` <span class="n">${n}</span>` : k === "historisch" && current && current.geschiedenis ? ` <span class="n">•</span>` : "";
+    return `<button type="button" role="tab" data-tab="${k}" id="tab-${k}">${l}${tel}</button>`;
   }).join("");
 }
 tabsEl.addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
@@ -487,13 +524,22 @@ function showTab(k) {
   const p = current, body = $("pBody");
   if (k === "fotos") {
     const parts = [];
-    if (p.fotos.length) parts.push(`<h3>Eigen foto's <small>${datum(p.fotosGenomen)} · ${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
+    if (p.fotos.length) parts.push(`<h3>Eigen foto's <small>${p.fotosGenomen ? datum(p.fotosGenomen) + " · " : ""}${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
     if (p.streetview.length) parts.push(`<h3>Street View <small>${p.streetview.length}</small></h3>${gallery(p.streetview, "Street View-beeld", true)}`);
     if (p.luchtbeeld.length) parts.push(`<h3>Luchtbeeld <small>${p.luchtbeeld.length}</small></h3>${gallery(p.luchtbeeld, "Luchtbeeld", true)}`);
     if (!p.fotos.length) parts.push(`<p class="note">Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.</p>`);
+    if (!p.lngLat) parts.push(`<div class="empty"><b>Dit pand staat nog niet op de kaart.</b><span>Zet een document “Coördinaten” met de breedte en lengte (bv. 50.72319, 5.91306) in de map van dit pand, dan verschijnt het op de bol.</span></div>`);
     body.innerHTML = parts.join("");
   } else if (k === "historisch") {
-    body.innerHTML = p.historisch.length ? gallery(p.historisch, "Historische foto") : empty("historische foto's", "historisch");
+    const g = p.geschiedenis, parts = [];
+    if (g) {
+      const bron = [g.bronTekst && esc(g.bronTekst), ...g.bronnen.map(b => `<a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.titel)}</a>`)].filter(Boolean);
+      parts.push(`<div class="hist">${g.tekst.map(t => `<p>${esc(t)}</p>`).join("")}</div><p class="note">Samenvatting. ${bron.length ? "Bron: " + bron.join(" · ") : "Bron niet vermeld."}</p>`);
+    }
+    if (p.historisch.length) parts.push(`<h3>Historische foto's <small>${p.historisch.length}</small></h3>${gallery(p.historisch, "Historische foto")}`);
+    else if (g) parts.push(`<p class="note">Nog geen historische foto's. Zet ze in de submap “historisch” van dit pand.</p>`);
+    else parts.push(`<div class="empty"><b>Nog geen geschiedenis voor dit pand.</b><span>Zet een document “geschiedenis” in de map van dit pand, en oude foto's in de submap “historisch”. Dan verschijnen ze hier.</span></div>`);
+    body.innerHTML = parts.join("");
   } else if (k === "grondplan") {
     body.innerHTML = p.grondplannen.length ? gallery(p.grondplannen, "Grondplan", true) : empty("grondplannen", "grondplannen");
   } else if (k === "model") {
