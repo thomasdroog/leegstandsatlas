@@ -322,7 +322,10 @@ const PANDEN = [
   "status": "leegstaand",
   "adres": "Rue du Casino 21, 4850 Plombières",
   "gemeente": "Plombières (Blieberg)",
-  "lngLat": null,
+  "lngLat": [
+   5.962441,
+   50.737087
+  ],
   "fotos": [
    "media/waterkrachtcentrale-plombieres/fotos/fotos-01.jpg",
    "media/waterkrachtcentrale-plombieres/fotos/fotos-02.jpg",
@@ -374,7 +377,10 @@ const PANDEN = [
   "status": "niet leegstaand",
   "adres": "Gulpen 11, 4852 Plombières",
   "gemeente": "Plombières (Blieberg)",
-  "lngLat": null,
+  "lngLat": [
+   5.914631,
+   50.715385
+  ],
   "fotos": [],
   "luchtbeeld": [
    "media/moulins-meyers/luchtbeeld/luchtbeeld-01.jpg"
