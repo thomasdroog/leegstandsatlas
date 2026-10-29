@@ -136,7 +136,7 @@ button, input { font: inherit; color: inherit; }
 .rij figure { position: relative; margin: 0; height: 100%; flex: none; background: var(--p-soft); }
 .rij img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .rij figcaption, .plan figcaption { position: absolute; left: 2mm; bottom: 2mm; padding: .8mm 2mm; border-radius: 1.5mm; background: rgba(255,255,255,.88); font: 500 2.5mm/1 var(--font-mono); color: var(--p-fg); }
-.plan { flex: 1; min-height: 0; margin: 0; position: relative; display: grid; place-items: center; }
+.plan { flex: 1; min-height: 0; margin: 0; position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; }
 .plan img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
 .plan .pdf { font: 400 4mm/1.5 var(--font-mono); color: var(--p-muted); text-align: center; }
 
@@ -376,6 +376,10 @@ function beste(p) {
   const eigen = [...p.fotos].sort((a, b) => (pixels.get(b) || 0) - (pixels.get(a) || 0));
   return [...eigen, ...p.streetview].slice(0, 5);
 }
+const bijschriftPlan = (p, src) => {
+  const t = [p.planinfo?.[src]?.titel, p.planMaker && `Plannen: ${p.planMaker}`].filter(Boolean).join(" · ");
+  return t ? `<figcaption>${esc(t)}</figcaption>` : "";
+};
 const bijschrift = (p, src) => p.streetview.includes(src) ? "Street View" : p.luchtbeeld.includes(src) ? "Luchtbeeld" : "";
 
 // Satellietbeeld per pand, uit dezelfde Esri-kaart als de satellietmodus van de website.
@@ -525,7 +529,7 @@ async function bouw() {
       const naam = decodeURIComponent(src.split("/").pop());
       voegToe(leegBlad(p, "Grondplannen en snedes" + n, /\.pdf$/i.test(src)
         ? `<figure class="plan"><p class="pdf">${esc(naam)}<br>Dit plan is een pdf. Druk het apart af vanaf de website.</p></figure>`
-        : `<figure class="plan"><img src="${esc(src)}" alt="${esc(naam)}"></figure>`));
+        : `<figure class="plan"><img src="${esc(src)}" alt="${esc(naam)}">${bijschriftPlan(p, src)}</figure>`));
     });
     await fotoPaginas(p, p.historisch.map(item), "Historische foto's", actueel);
     if (!actueel()) return;

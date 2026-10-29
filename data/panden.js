@@ -60,7 +60,33 @@ const PANDEN = [
    "media/gensterbloem-klooster/luchtbeeld/luchtbeeld-01.jpg"
   ],
   "streetview": [],
-  "grondplannen": [],
+  "grondplannen": [
+   "media/gensterbloem-klooster/grondplannen/plan-01.jpg",
+   "media/gensterbloem-klooster/grondplannen/plan-02.jpg",
+   "media/gensterbloem-klooster/grondplannen/plan-03.jpg"
+  ],
+  "planinfo": {
+   "media/gensterbloem-klooster/grondplannen/plan-01.jpg": {
+    "titel": "Blad 1/3 · Bestaande toestand (maart 2025)",
+    "klein": "media/gensterbloem-klooster/grondplannen/plan-01-klein.jpg",
+    "pdf": "media/gensterbloem-klooster/grondplannen/plan-01.pdf",
+    "grootte": "1,1 MB"
+   },
+   "media/gensterbloem-klooster/grondplannen/plan-02.jpg": {
+    "titel": "Blad 2/3 · Inplanting, gevels, plannen en snedes (versie B, november 2025)",
+    "klein": "media/gensterbloem-klooster/grondplannen/plan-02-klein.jpg",
+    "pdf": "media/gensterbloem-klooster/grondplannen/plan-02.pdf",
+    "grootte": "3,6 MB"
+   },
+   "media/gensterbloem-klooster/grondplannen/plan-03.jpg": {
+    "titel": "Blad 3/3 · Gevels, plannen en snedes (versie B, november 2025)",
+    "klein": "media/gensterbloem-klooster/grondplannen/plan-03-klein.jpg",
+    "pdf": "media/gensterbloem-klooster/grondplannen/plan-03.pdf",
+    "grootte": "2,3 MB"
+   }
+  },
+  "planBron": "Bouwaanvraag van YA Architecture SRL voor de verbouwing van de kapel en het klooster tot 7 woningen (2025). Namen en contactgegevens zijn weggelaten.",
+  "planMaker": "YA Architecture SRL",
   "model3d": [],
   "historisch": [],
   "materialen": [],

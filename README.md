@@ -28,7 +28,8 @@ Alles komt uit de gedeelde Drive-map “leegstand”. Elke submap is één pand.
 | Document “geschiedenis” | Tabblad Geschiedenis, als korte samenvatting met de bron |
 | Eigen foto's (JPG of HEIC van de gsm) | Foto's |
 | Schermafbeeldingen van Street View of een luchtbeeld | Street View en Luchtbeeld |
-| Submappen “grondplannen”, “3d-model”, “historisch”, “materialen” | De gelijknamige tabbladen |
+| Submap “Plannen” of “grondplannen” (pdf of beeld) | Tabblad Grondplannen, als beeld en als pdf om te openen of te downloaden. Namen, e-mailadressen en telefoonnummers worden er eerst uit gehaald. |
+| Submappen “3d-model”, “historisch”, “materialen” | De gelijknamige tabbladen |
 
 De site wordt dagelijks bijgewerkt vanuit die map.
 
@@ -36,4 +37,4 @@ De site wordt dagelijks bijgewerkt vanuit die map.
 
 1. Zet de beelden in `media/<pand-id>/fotos/` (en eventueel `streetview/`, `luchtbeeld/`).
 2. Voeg in `data/panden.js` een blok toe met dezelfde velden als de bestaande panden. Coördinaten staan als `[lengtegraad, breedtegraad]`.
-3. Lijsten voor `grondplannen`, `model3d`, `historisch` en `materialen` mogen leeg blijven; het tabblad toont dan dat er nog niets is aangeleverd. `geschiedenis` is optioneel: `{ "tekst": [alinea's], "bronnen": [{ "titel", "url" }] }`.
+3. Lijsten voor `grondplannen`, `model3d`, `historisch` en `materialen` mogen leeg blijven; het tabblad toont dan dat er nog niets is aangeleverd. `geschiedenis` is optioneel: `{ "tekst": [alinea's], "bronnen": [{ "titel", "url" }] }`. Bij plannen geeft `planinfo` per beeld de titel, een kleine versie en de pdf: `{ "<beeld>": { "titel", "klein", "pdf", "grootte" } }`, met `planBron` en `planMaker` voor de bronvermelding.
