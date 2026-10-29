@@ -482,5 +482,76 @@ const PANDEN = [
     }
    ]
   }
+ },
+ {
+  "id": "burcht-raaf",
+  "naam": "Burcht Raaf",
+  "type": "burchtruïne / donjon",
+  "status": "ruïne",
+  "adres": "Stestertstraße 32, 4731 Raeren (Eynatten)",
+  "gemeente": "Raeren (Eynatten)",
+  "lngLat": [
+   6.103081,
+   50.697942
+  ],
+  "fotos": [],
+  "luchtbeeld": [
+   "media/burcht-raaf/luchtbeeld/luchtbeeld-01.jpg"
+  ],
+  "streetview": [],
+  "grondplannen": [],
+  "model3d": [],
+  "historisch": [],
+  "materialen": [
+   "Zandsteenblokken (donjon, 14e eeuw)"
+  ],
+  "geschiedenis": {
+   "tekst": [
+    "Burcht Raaf (Duits: Burg Raaf of Raaff) is de ruïne van een woontoren (donjon) in het gehucht Berlotte bij Eynatten, een deelgemeente van Raeren, aan de Stestertstraße. De burcht was een leen van het Onze-Lieve-Vrouwekapittel in Aken en was tot ongeveer het midden van de 14e eeuw waarschijnlijk in handen van de familie Rave.",
+    "In 1380 wordt voor het eerst een kasteelheer bij naam genoemd: Johann Krümmel, die ook Kasteel Ruyf in Hendrik-Kapelle bezat. De familie Krümmel hield het goed lang in handen. Daarna ging het via huwelijken, erfenissen en verkopen over op verschillende andere families.",
+    "Van de burcht staat nog de vervallen 14e-eeuwse donjon in zandsteenblokken, met een rechthoekig grondplan van ongeveer 12 bij 8 meter en zo'n 12 meter hoog. Op de vier hoeken zijn resten van kleine hoektorentjes (erkertorens) te zien. De toren was vroeger omgracht en bereikbaar via een ophaalbrug. Ten oosten ervan liggen twee evenwijdige, langgerekte gebouwen uit de 18e en 19e eeuw, die later sterk verbouwd zijn; de toegangsweg naar de donjon loopt ertussen."
+   ],
+   "bronnen": [
+    {
+     "titel": "Burcht Raaf, Wikipedia",
+     "url": "https://nl.wikipedia.org/wiki/Burcht_Raaf"
+    }
+   ]
+  }
+ },
+ {
+  "id": "kasteel-commanderie",
+  "naam": "Kasteel Commanderie",
+  "type": "kasteel / commanderij",
+  "status": "status onbekend",
+  "adres": "Commanderie 1, 3792 Voeren (Sint-Pietersvoeren)",
+  "gemeente": "Voeren (Sint-Pietersvoeren)",
+  "lngLat": [
+   5.822028,
+   50.736731
+  ],
+  "fotos": [],
+  "luchtbeeld": [],
+  "streetview": [],
+  "grondplannen": [],
+  "model3d": [],
+  "historisch": [
+   "media/kasteel-commanderie/historisch/historisch-01.jpg"
+  ],
+  "materialen": [],
+  "geschiedenis": {
+   "tekst": [
+    "Het kasteel van de Commanderie in Sint-Pietersvoeren gaat terug op een vrij erfgoed (allodium) van ridder Daniël de Fouron. Toen hij in 1242 toetrad tot de Duitse Orde, schonk hij het kasteel met alles wat erbij hoorde aan de landcommanderij Alden Biesen (Vieux-Joncs) bij Bilzen. Hertog Hendrik I van Brabant en Walram van Limburg keurden de schenking goed en zagen af van hun rechten op het goed. Wanneer de commanderij precies is opgericht, is niet bekend.",
+    "Sint-Pietersvoeren werd zo een heerlijkheid van de Duitse Orde en een rechtstreeks leen van het keizerrijk, tot aan de Franse Revolutie. De landcommandeur van Alden Biesen was er de heer: hij sprak recht en benoemde de burgemeesters, schepenen en griffiers. De commandeur ter plaatse trad op als zijn vertegenwoordiger.",
+    "In het begin van de 17e eeuw maakte de oorspronkelijke burcht plaats voor uitgestrekte nieuwe gebouwen in Luikse barokstijl, vooral onder commandeur Guillaume Quadt op de Beek en zijn opvolger baron Ferdinand de Rolshausen. Jaartallen, wapenstenen en initialen op de gebouwen tonen de bouwfasen. Het bordes kwam er rond 1760 onder baron Wennemar de Hövel. De hoofdingang met ophaalbrug en drie torens is nog intact. In 1633 werden de bronnen in het park met ondergrondse leidingen verbonden om de grachten van water te voorzien, en tussen 1631 en 1661 werd ook de dorpskerk gebouwd.",
+    "In de 20e eeuw was het kasteel van de familie Ernst de la Graete, nu van de familie Van Rijckevorsel, die ook de boerderijen, de grachten en de waterwerken bezit. In de grachten en de bron wordt sinds het begin van de 20e eeuw vis gekweekt, eerst forel en later zalm; die kwekerij was volgens de bron (laatst bijgewerkt in 2021) te bezoeken."
+   ],
+   "bronnen": [
+    {
+     "titel": "Kasteel Commanderie, Sint-Pietersvoeren, VVV Drie Grenzen",
+     "url": "https://www.trois-frontieres.be/N/chat_commanderie.php"
+    }
+   ]
+  }
  }
 ];

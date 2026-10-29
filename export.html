@@ -430,10 +430,10 @@ function rek(rows, W, H) {
   }
   return rows;
 }
+const vulling = rows => rows.reduce((s, r) => s + r.h * r.items.reduce((t, it) => t + it.a * r.h, 0), 0);
 // Liefst alle beelden in het vak, en dan zo groot mogelijk.
 function besteSchikking(items, w, h) {
   if (!items.length) return [];
-  const vulling = rows => rows.reduce((s, r) => s + r.h * r.items.reduce((t, it) => t + it.a * r.h, 0), 0);
   const aantal = rows => rows.reduce((n, r) => n + r.items.length, 0);
   const score = rows => (aantal(rows) === items.length ? 1e9 : 0) + vulling(rows);
   return [1, 2, 3].flatMap(n => [schik(items, w, h, n)[0], schik(items, w, h, n, true)[0]]).map(rows => rek(rows, w, h)).reduce((a, b) => score(b) > score(a) ? b : a);
@@ -444,9 +444,10 @@ async function fotoPaginas(p, items, titel, actueel) {
   const proef = voegToe(leegBlad(p, titel, `<div class="vak" style="flex:1"></div>`));
   const { w, h } = mm(proef.querySelector(".vak"));
   proef.remove();
-  // Twee rijen per pagina, of drie als dat een pagina uitspaart.
-  const paginas = [schik(items, w, h, 2), schik(items, w, h, 2, true), schik(items, w, h, 3), schik(items, w, h, 3, true)]
-    .reduce((a, b) => b.length < a.length ? b : a);
+  // Zo weinig mogelijk pagina's, en bij gelijke stand de grootste beelden (bv. één foto over de hele pagina).
+  const groot = paginas => paginas.reduce((s, rows) => s + vulling(rek(rows, w, h)), 0);
+  const paginas = [1, 2, 3].flatMap(n => [schik(items, w, h, n), schik(items, w, h, n, true)])
+    .reduce((a, b) => b.length < a.length || (b.length === a.length && groot(b) > groot(a)) ? b : a);
   paginas.forEach((rows, i) => {
     if (!actueel()) return;
     voegToe(leegBlad(p, paginas.length > 1 ? `${titel} · ${i + 1}/${paginas.length}` : titel, `<div class="vak" style="flex:1">${rijenHTML(rek(rows, w, h))}</div>`));
