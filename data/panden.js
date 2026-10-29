@@ -406,5 +406,81 @@ const PANDEN = [
     }
    ]
   }
+ },
+ {
+  "id": "kasteel-eyneburg",
+  "naam": "Kasteel Eyneburg (Emmaburg)",
+  "type": "kasteel / burcht",
+  "status": "leegstaand",
+  "adres": "Emmaburgerweg 24, 4728 Kelmis (Hergenrath)",
+  "gemeente": "Kelmis (Hergenrath)",
+  "lngLat": [
+   6.01579,
+   50.70553
+  ],
+  "fotos": [],
+  "luchtbeeld": [],
+  "streetview": [],
+  "grondplannen": [],
+  "model3d": [],
+  "historisch": [],
+  "materialen": [
+   "Breuksteen, in lagen gemetseld (ronde donjon, het oudste deel)",
+   "Stenen consoles uit de 15e eeuw (tweede verdieping van het woongebouw)",
+   "Vakwerk (kleine verdieping bovenop de donjon, restauratie rond 1900)",
+   "Houten consoles onder het vernieuwde dak van het woongebouw",
+   "Neogotische glas-in-loodramen (kapel, begin 20e eeuw)"
+  ],
+  "geschiedenis": {
+   "tekst": [
+    "De Eyneburg, in de volksmond Emmaburg, is een hooggelegen burcht op de linkeroever van de Geul in Hergenrath (Kelmis), net ten oosten van Plombières. Ze wordt voor het eerst vermeld in 1260, als leen van het Mariastift in Aken in handen van het riddergeslacht Van Eyneberghe, dat de burcht haar naam gaf. De bijnaam Emmaburg komt van een 19e-eeuwse legende over Emma, een dochter van Karel de Grote, en Einhard.",
+    "Via huwelijken kwam de burcht in 1371 bij de familie Van den Bongaert en in 1430 bij de familie Van Tzevel, daarna bleef ze zo'n drie eeuwen bij de familie Dobbelstein. In de 15e eeuw kwam er een woongebouw tegen de ronde donjon, en in de 16e eeuw draaide onder de burcht een kopermolen op de Geul. In 1640 brandde de burcht uit. Johann von Dobbelstein en Helwige von Horion bouwden ze in 1648 weer op en maakten het woongebouw een verdieping hoger. Een wapensteen uit 1722 boven een poort van de voorburcht herinnert nog aan de familie.",
+    "Vanaf 1786 wisselde het kasteel vaak van eigenaar, onder meer de Luikse bankier Gérard Nagelmackers (1809) en baron Thiriart (1836), en in de 19e eeuw raakte het sterk in verval. In 1897 kocht de Akense textielfabrikant Theodor Nellessen de burcht. Hij liet ze tot 1901 restaureren en uitbreiden door Ludwig Arntz, bouwmeester van de kathedraal van Straatsburg. De donjon kreeg toen een kleine vakwerkverdieping en een nieuw kegeldak, en er kwam een neogotische kapel bij.",
+    "In 1958 verkocht de familie Nellessen het kasteel aan de Hergenrather Kalkwerke; een deel van de kunstcollectie werd geveild. Sinds 18 juli 1966 is de Eyneburg een beschermd monument. In 2001 kocht de firma Eyne het kasteel, dat daarna een tijd open was voor bezoekers. Sinds 2011 is het gesloten. Een vaste bestemming was er niet meer: af en toe filmopnames of middeleeuwse feesten, en veel kamers stonden decennialang leeg en onverwarmd.",
+    "Omdat de eigenaars de nodige herstellingen niet uitvoerden en delen van het monument, zoals de kapel, dreigden in te storten, startte de Duitstalige Gemeenschap eind 2022 een onteigening. Het werd uiteindelijk een minnelijke aankoop voor 2,1 miljoen euro: sinds 26 januari 2023 is de Gemeenschap eigenaar. Een studie telde 65 dringende gebreken. Begin 2024 volgde een intentieverklaring met een Brusselse investeerder voor een historisch belevingspark met horeca, rondleidingen, overnachtingen en escape rooms, al zou het jaren duren voor dat open kan. Intussen dient het kasteel af en toe als filmlocatie (laatst begin 2026). Hoe ver de restauratie staat, blijkt niet uit de bronnen."
+   ],
+   "bronnen": [
+    {
+     "titel": "Eyneburg, Wikipedia (Duits)",
+     "url": "https://de.wikipedia.org/wiki/Eyneburg"
+    },
+    {
+     "titel": "Château Eyneburg, Wikipédia (Frans)",
+     "url": "https://fr.wikipedia.org/wiki/Ch%C3%A2teau_Eyneburg"
+    },
+    {
+     "titel": "Persbericht Duitstalige Gemeenschap over de onteigening, 25 november 2022",
+     "url": "https://prodg.be/wp-content/uploads/pm20221125-enteignung-der-eyneburg.pdf"
+    },
+    {
+     "titel": "Persbericht Duitstalige Gemeenschap over de aankoop, 30 januari 2023",
+     "url": "https://prodg.be/wp-content/uploads/pm20230130-eyneburg-nun-endgueltig-im-besitz-der-deutschsprachigen-gemeinschaft.pdf"
+    },
+    {
+     "titel": "BRF, 6 december 2022",
+     "url": "https://brf.be/regional/1670105"
+    },
+    {
+     "titel": "BRF, 3 februari 2023",
+     "url": "https://brf.be/regional/1687813"
+    },
+    {
+     "titel": "BRF, 6 december 2023",
+     "url": "https://brf.be/regional/1781999"
+    },
+    {
+     "titel": "BRF, 29 januari 2024",
+     "url": "https://brf.be/regional/1797725"
+    },
+    {
+     "titel": "BRF, 25 maart 2026",
+     "url": "https://brf.be/regional/2062153"
+    },
+    {
+     "titel": "Eyneburg, Burgenwelt",
+     "url": "https://www.burgenwelt.org/belgien/eyneburg/burgenwelt-eyneburg-objektseite.pdf"
+    }
+   ]
+  }
  }
 ];

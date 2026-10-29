@@ -533,7 +533,8 @@ function showTab(k) {
     if (p.fotos.length) parts.push(`<h3>Eigen foto's <small>${p.fotosGenomen ? datum(p.fotosGenomen) + " · " : ""}${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
     if (p.streetview.length) parts.push(`<h3>Street View <small>${p.streetview.length}</small></h3>${gallery(p.streetview, "Street View-beeld", true)}`);
     if (p.luchtbeeld.length) parts.push(`<h3>Luchtbeeld <small>${p.luchtbeeld.length}</small></h3>${gallery(p.luchtbeeld, "Luchtbeeld", true)}`);
-    if (!p.fotos.length) parts.push(`<p class="note">Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.</p>`);
+    if (!p.fotos.length && !p.streetview.length && !p.luchtbeeld.length) parts.push(`<div class="empty"><b>Nog geen foto's van dit pand.</b><span>Zet eigen foto's of schermafbeeldingen in de map van dit pand in de map “leegstand”, dan verschijnen ze hier.</span></div>`);
+    else if (!p.fotos.length) parts.push(`<p class="note">Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.</p>`);
     if (!p.lngLat) parts.push(`<div class="empty"><b>Dit pand staat nog niet op de kaart.</b><span>Zet een document “Coördinaten” met de breedte en lengte (bv. 50.72319, 5.91306) in de map van dit pand, dan verschijnt het op de bol.</span></div>`);
     body.innerHTML = parts.join("");
   } else if (k === "historisch") {

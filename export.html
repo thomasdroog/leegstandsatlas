@@ -107,6 +107,8 @@ button, input { font: inherit; color: inherit; }
 
 .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 128mm 1fr; gap: 12mm; }
 .body.b1 { grid-template-columns: 176mm 1fr; gap: 6mm; }
+.body.b1.zonder { grid-template-columns: 1fr; }
+.body.b1.zonder .vak { display: none; }
 .body.b2 { grid-template-columns: 140mm 1fr; }
 .satvak { position: relative; min-height: 0; overflow: hidden; background: #3a3f3b; }
 .satvak img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -355,7 +357,8 @@ function hoofd(p) {
   </header>`;
 }
 // Pagina 1: satellietbeeld uit de kaart en de vijf beste foto's.
-const blad1 = p => `<section class="sheet">${hoofd(p)}<div class="body b1"><div class="satvak"></div><div class="vak"></div></div>${voet(p)}</section>`;
+// Zonder foto's krijgt het satellietbeeld de hele breedte.
+const blad1 = (p, fotos) => `<section class="sheet">${hoofd(p)}<div class="body b1${fotos ? "" : " zonder"}"><div class="satvak"></div><div class="vak"></div></div>${voet(p)}</section>`;
 // Pagina 2: geschiedenis en materialen, met de extra foto's ernaast (of de tekst over de hele breedte).
 function blad2(p, metFotos) {
   const secties = [`<div class="sec"><h3>Geschiedenis</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">Nog geen geschiedenis aangeleverd.</p>`}</div>`,
@@ -476,7 +479,7 @@ async function bouw() {
 
     // Pagina 1
     const top = beste(p);
-    const blad = voegToe(blad1(p));
+    const blad = voegToe(blad1(p, top.length));
     const satvak = blad.querySelector(".satvak");
     if (p.lngLat) {
       const { w, h } = mm(satvak), wpx = Math.round(w * MM), hpx = Math.round(h * MM);
