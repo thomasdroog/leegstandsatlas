@@ -267,7 +267,18 @@ const PANDEN = [
    "media/station-montzen/fotos/fotos-02.jpg",
    "media/station-montzen/fotos/fotos-03.jpg",
    "media/station-montzen/fotos/fotos-04.jpg",
-   "media/station-montzen/fotos/fotos-05.jpg"
+   "media/station-montzen/fotos/fotos-05.jpg",
+   "media/station-montzen/fotos/fotos-06.jpg",
+   "media/station-montzen/fotos/fotos-07.jpg",
+   "media/station-montzen/fotos/fotos-08.jpg",
+   "media/station-montzen/fotos/fotos-09.jpg",
+   "media/station-montzen/fotos/fotos-10.jpg",
+   "media/station-montzen/fotos/fotos-11.jpg",
+   "media/station-montzen/fotos/fotos-12.jpg",
+   "media/station-montzen/fotos/fotos-13.jpg",
+   "media/station-montzen/fotos/fotos-14.jpg",
+   "media/station-montzen/fotos/fotos-15.jpg",
+   "media/station-montzen/fotos/fotos-16.jpg"
   ],
   "luchtbeeld": [
    "media/station-montzen/luchtbeeld/luchtbeeld-01.jpg"
@@ -286,11 +297,11 @@ const PANDEN = [
    "bronnen": []
   },
   "uitgelicht": [
+   "media/station-montzen/fotos/fotos-16.jpg",
    "media/station-montzen/fotos/fotos-01.jpg",
-   "media/station-montzen/fotos/fotos-02.jpg",
-   "media/station-montzen/fotos/fotos-03.jpg",
-   "media/station-montzen/fotos/fotos-04.jpg",
-   "media/station-montzen/fotos/fotos-05.jpg"
+   "media/station-montzen/fotos/fotos-10.jpg",
+   "media/station-montzen/fotos/fotos-09.jpg",
+   "media/station-montzen/fotos/fotos-15.jpg"
   ]
  },
  {
