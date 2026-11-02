@@ -92,6 +92,23 @@ button, input { font: inherit; color: inherit; }
 .search input::placeholder { color: var(--muted); }
 .search svg { position: absolute; left: 12px; top: 11px; width: 14px; height: 14px; color: var(--muted); }
 .exp { height: 36px; padding: 0 14px; text-decoration: none; }
+/* Oude kaarten */
+.oud { position: relative; }
+.oud > .pill { height: 36px; padding: 0 14px; cursor: pointer; }
+.oud > .pill svg { width: 14px; height: 14px; flex: none; }
+.oud > .pill:hover { background: var(--surface-2); }
+.oud > .pill.on { background: var(--fg); color: var(--bg); }
+.oudmenu { position: absolute; bottom: 44px; left: 50%; transform: translateX(-50%); width: 300px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
+.oudmenu .kop { padding: 8px 10px 4px; font: 500 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.oudmenu button { display: grid; grid-template-columns: 14px 1fr auto; gap: 10px; align-items: center; text-align: left; border: 0; background: transparent; padding: 8px 10px; border-radius: 10px; cursor: pointer; color: var(--fg); }
+.oudmenu button:hover, .oudmenu button:focus-visible { background: var(--surface-2); }
+.oudmenu button .r { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--muted); }
+.oudmenu button[aria-checked="true"] .r { box-shadow: inset 0 0 0 4px var(--red); }
+.oudmenu b { font: 600 13px/1.2 var(--font-ui); }
+.oudmenu small { font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
+.oudmenu label { display: grid; gap: 6px; padding: 8px 10px 6px; border-top: 1px solid var(--line); margin-top: 4px; font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
+.oudmenu input[type=range] { width: 100%; accent-color: var(--red); }
+.oudmenu p { margin: 0; padding: 0 10px 8px; font: 400 11px/1.4 var(--font-mono); color: var(--muted); }
 .exp svg { width: 14px; height: 14px; flex: none; }
 .exp:hover { background: var(--accent); color: var(--accent-fg); }
 .results { position: absolute; bottom: 44px; right: 0; width: 280px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
@@ -175,7 +192,9 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   .count .pill { height: 26px; font-size: 11px; }
   .count .results { left: 0; right: auto; top: 34px; max-height: 50vh; }
   .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
-  .search input { width: 130px; }
+  .search input { width: 110px; }
+  .oud > .pill { width: 36px; padding: 0; justify-content: center; }
+  .oud > .pill span { display: none; }
   .exp { width: 36px; padding: 0; justify-content: center; }
   .exp span { display: none; }
   .notice { display: none; }
@@ -245,6 +264,10 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   <div class="seg" role="group" aria-label="Kaartweergave">
     <button type="button" id="btnKaart" aria-pressed="true">Kaart</button>
     <button type="button" id="btnSat" aria-pressed="false">Satelliet</button>
+  </div>
+  <div class="oud">
+    <button type="button" class="pill" id="oudBtn" aria-expanded="false" aria-controls="oudMenu" aria-label="Oude kaarten"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z"/><path d="M5.5 2v10.5M10.5 3.5V14"/></svg><span id="oudTxt">Oude kaarten</span></button>
+    <div class="oudmenu" id="oudMenu" role="radiogroup" aria-label="Kies een oude kaart" hidden></div>
   </div>
   <div class="search">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
@@ -345,6 +368,67 @@ function setMode(m) {
 }
 $("btnKaart").onclick = () => setMode("kaart");
 $("btnSat").onclick = () => setMode("satelliet");
+
+// Oude kaarten van de Waalse overheid (WalOnMap / geoservices.wallonie.be). Ze dekken alleen Wallonië.
+const WAL = "https://geoservices.wallonie.be/arcgis/rest/services/";
+const OUD = [
+  { id: "ferraris", naam: "Ferraris-kaart", jaar: "1777", pad: "CARTES_ANCIENNES/FERRARIS" },
+  { id: "vdml", naam: "Vandermaelen-kaart", jaar: "1846–1854", pad: "CARTES_ANCIENNES/VDML" },
+  { id: "depot", naam: "Dépôt de la Guerre", jaar: "1865–1880", pad: "CARTES_ANCIENNES/DEPOT_GUERRE_1865_1880" },
+  { id: "o1971", naam: "Luchtfoto", jaar: "1971", pad: "IMAGERIE/ORTHO_1971" },
+  { id: "o1990", naam: "Luchtfoto", jaar: "1978–1990", pad: "IMAGERIE/ORTHO_1978_1990" },
+  { id: "o2000", naam: "Luchtfoto", jaar: "1994–2000", pad: "IMAGERIE/ORTHO_1994_2000" }
+];
+const WALLONIE = [2.84, 49.48, 6.43, 50.82];
+let oud = null, oudOpacity = 1;
+const oudMenu = $("oudMenu"), oudBtn = $("oudBtn");
+function renderOud() {
+  const knop = (id, b, s) => `<button type="button" role="radio" data-oud="${id}" aria-checked="${(oud || "") === id}"><span class="r"></span><b>${b}</b><small>${s}</small></button>`;
+  oudMenu.innerHTML = `<div class="kop">Oude kaarten</div>` + knop("", "Geen", "vandaag") +
+    OUD.map(o => knop(o.id, o.naam, o.jaar)).join("") +
+    `<label>Zichtbaarheid<input type="range" id="oudOp" min="0" max="100" value="${Math.round(oudOpacity * 100)}" aria-label="Zichtbaarheid van de oude kaart"></label>` +
+    `<p>Alleen voor Wallonië. Bron: Service public de Wallonie, WalOnMap.</p>`;
+  $("oudOp").oninput = e => { oudOpacity = e.target.value / 100; if (map.getLayer("oud")) map.setPaintProperty("oud", "raster-opacity", oudOpacity); };
+  const o = OUD.find(x => x.id === oud);
+  $("oudTxt").textContent = o ? `${o.naam === "Luchtfoto" ? "Luchtfoto" : o.naam.replace("-kaart", "")} ${o.jaar}` : "Oude kaarten";
+  oudBtn.classList.toggle("on", !!o);
+}
+function toggleOud(open) {
+  if (open) renderOud();
+  oudMenu.hidden = !open;
+  oudBtn.setAttribute("aria-expanded", open);
+}
+function setOud(id) {
+  oud = id || null;
+  if (map.getLayer("oud")) map.removeLayer("oud");
+  if (map.getSource("oud")) map.removeSource("oud");
+  const o = OUD.find(x => x.id === oud);
+  if (o) {
+    map.addSource("oud", {
+      type: "raster",
+      tiles: [`${WAL}${o.pad}/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=512,512&format=png32&transparent=true&f=image`],
+      tileSize: 512, minzoom: 6, maxzoom: 19, bounds: WALLONIE,
+      attribution: `${o.naam} ${o.jaar} © <a href="https://geoportail.wallonie.be/walonmap" target="_blank" rel="noopener">SPW, WalOnMap</a>`
+    });
+    map.addLayer({ id: "oud", type: "raster", source: "oud", paint: { "raster-opacity": oudOpacity, "raster-fade-duration": 200 } }, "grens");
+    // Ver uitgezoomd is er niets te zien: zoom dan in op de panden.
+    if (map.getZoom() < 9) flyCluster();
+  }
+  renderOud();
+}
+oudBtn.onclick = e => { e.stopPropagation(); toggleOud(oudMenu.hidden); };
+oudMenu.addEventListener("click", e => {
+  e.stopPropagation();
+  const b = e.target.closest("button[data-oud]");
+  if (b) setOud(b.dataset.oud);
+});
+map.on("error", e => {
+  if (e.sourceId !== "oud" || !oud) return;
+  const n = $("notice");
+  n.innerHTML = "<b>Oude kaart.</b> De server van WalOnMap antwoordt nu niet. Probeer het later opnieuw.";
+  n.hidden = false;
+  clearTimeout(n._t); n._t = setTimeout(() => { n.hidden = true; }, 5000);
+});
 
 // Live kaarttegels proberen; lukt dat niet (zoals in deze preview), dan blijft de ingebouwde basiskaart staan.
 function probe(url) {
@@ -467,6 +551,7 @@ results.addEventListener("click", e => {
 document.addEventListener("click", e => {
   if (!e.target.closest(".search")) results.hidden = true;
   if (!e.target.closest(".count")) toggleAll(false);
+  if (!e.target.closest(".oud")) toggleOud(false);
 });
 
 // Detailpaneel
@@ -511,6 +596,7 @@ function closePand() {
 $("pClose").onclick = closePand;
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && !$("lb").hidden) return closeLb();
+  if (e.key === "Escape" && !oudMenu.hidden) return toggleOud(false);
   if (e.key === "Escape" && !allList.hidden) return toggleAll(false);
   if (e.key === "Escape" && current && document.activeElement !== q) closePand();
   if (!$("lb").hidden && (e.key === "ArrowRight" || e.key === "ArrowLeft")) stepLb(e.key === "ArrowRight" ? 1 : -1);

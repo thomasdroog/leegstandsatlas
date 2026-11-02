@@ -16,6 +16,7 @@ De site is een statische pagina en draait op GitHub Pages. Er is geen build-stap
 
 - Kaart: OpenStreetMap, in grijstinten weergegeven. © OpenStreetMap-bijdragers.
 - Satelliet: Esri World Imagery. © Esri, Maxar, Earthstar Geographics.
+- Oude kaarten (knop “Oude kaarten” onderaan): Ferraris-kaart (1777), Vandermaelen-kaart (1846–1854), Dépôt de la Guerre (1865–1880) en luchtfoto's van 1971, 1978–1990 en 1994–2000. Ze komen live van de Waalse overheid (geoservices.wallonie.be, WalOnMap) en dekken alleen Wallonië. Een schuifbalk regelt hoe sterk de oude kaart over de huidige ligt. © Service public de Wallonie.
 - Reservekaart: Natural Earth (publiek domein).
 
 ## Aanleveren via Google Drive
