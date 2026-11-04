@@ -26,7 +26,7 @@ Elk pand in `data/panden.js` heeft een `categorie` (de kleur op de kaart) en een
 | `industrie` | Industrie of bedrijf (fabriek, molen, centrale, garage, winkel) | bruin |
 | `spoorweg` | Spoorweg (station, wagons) | blauwgroen |
 
-`staat` is `{ "score": 1-5, "toelichting", "bron" }`: 1 ruïne (ingestort), 2 slecht (dak of structuur zwaar beschadigd), 3 matig (verwaarloosd, structuur intact), 4 redelijk (kleine gebreken), 5 goed (onderhouden of in gebruik). De eerste scores zijn een inschatting op basis van de foto's.
+`staat` is `{ "score": 1-5, "toelichting", "bron" }`: 1 ingestort (alleen nog muren of resten), 2 slecht (dak of structuur zwaar beschadigd), 3 matig (verwaarloosd, structuur intact), 4 redelijk (kleine gebreken), 5 goed (onderhouden of in gebruik). De eerste scores zijn een inschatting op basis van de foto's.
 
 ## Aanpassen en discussie op de site
 

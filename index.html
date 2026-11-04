@@ -433,7 +433,7 @@ const SOORTEN = [
   ["ruine", "Ruïne"], ["kasteel", "Kasteel of burcht"], ["religieus", "Klooster, kerk of kapel"],
   ["hoeve", "Hoeve of landbouw"], ["woning", "Woning of villa"], ["industrie", "Industrie of bedrijf"], ["spoorweg", "Spoorweg"]
 ];
-const STAAT = ["Onbekend", "Ruïne", "Slecht", "Matig", "Redelijk", "Goed"];
+const STAAT = ["Onbekend", "Ingestort", "Slecht", "Matig", "Redelijk", "Goed"];
 const STAAT_UITLEG = ["Nog niet beoordeeld", "Ingestort, alleen nog muren of resten", "Dak of draagstructuur zwaar beschadigd", "Verwaarloosd, maar de structuur is nog intact", "Kleine gebreken, goed te herstellen", "Onderhouden of nog in gebruik"];
 const soortLabel = id => (SOORTEN.find(x => x[0] === id) || [id, "Andere"])[1];
 const soortKleur = id => SOORTEN.some(x => x[0] === id) ? `var(--c-${id})` : "var(--s0)";
@@ -662,7 +662,7 @@ function renderLegend() {
   const tel = g => PANDEN.filter(p => groepen(p).includes(g)).length;
   const items = kleurOp === "soort"
     ? SOORTEN.map(([id, l]) => [id, l, soortKleur(id)])
-    : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} · ${STAAT[n]}` : STAAT[0], staatKleur(n)]);
+    : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} / 5` : "Nog niet beoordeeld", staatKleur(n)]);
   $("lgList").innerHTML = items.map(([g, l, c]) =>
     `<li><button type="button" data-g="${g}" aria-pressed="${!verborgen.has(g)}" style="--c:${c}"><span class="sw"></span>${esc(l)}<small>${tel(g)}</small></button></li>`).join("");
   $("lgSw").innerHTML = items.slice(0, 5).map(([, , c]) => `<i style="background:${c}"></i>`).join("");
@@ -809,7 +809,7 @@ function vulPaneel() {
   $("pAddr").textContent = [p.adres || p.gemeente, p.type, ll ? `${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O` : ""].filter(Boolean).join(" · ");
   const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
   const n = score(p);
-  const staatHtml = `<span class="sc" style="--c:${staatKleur(n)}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>${esc(STAAT[n])}`;
+  const staatHtml = `<span class="sc" style="--c:${staatKleur(n)}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>${n ? `${n}/5` : "?"}`;
   $("pFacts").innerHTML = [["Eigen foto's", esc(p.fotos.length)], ["Bezocht", esc(bezocht)], ["Staat", staatHtml], ["Soort", esc(soortLabel(p.categorie))]]
     .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
   showTab(tab);
@@ -914,29 +914,29 @@ const meldingHtml = () => { if (!melding) return ""; const h = `<p class="ok">${
 
 function staatTab(p) {
   const n = score(p), c = staatKleur(n), st = p.staat || {};
-  const parts = [`<div class="staat-kop" style="--c:${c}"><b>${n || "?"}<small style="font-size:14px;color:var(--muted)"> / 5</small></b><span>${esc(STAAT[n])}</span></div>`,
+  const parts = [`<div class="staat-kop" style="--c:${c}"><b>${n || "?"}<small style="font-size:14px;color:var(--muted)"> / 5</small></b></div>`,
     `<div class="schaal" style="--c:${c}">${[1, 2, 3, 4, 5].map(i => `<div class="${i <= n ? "on" : ""}"></div>`).join("")}</div>`,
-    `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${STAAT[i]}</span>`).join("")}</div>`];
+    `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${i}</span>`).join("")}</div>`];
   if (st.toelichting) parts.push(`<p class="txt">${esc(st.toelichting)}</p>`);
   parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? ` Laatst aangepast door ${esc(st.naam)}, ${wanneer(st.tijd)}.` : st.bron ? ` Beoordeling: ${esc(st.bron)}.` : ""}</p>`);
   if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
     const onder = [o.staat && o.staat.toelichting, o.door && `Toegevoegd door ${o.door}, ${wanneer(o.tijd)}`].filter(Boolean).map(esc).join(" · ");
     const plaats = kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
-    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} · ${esc(STAAT[m])}` : "staat onbekend"}</span><small>${onder}${plaats}</small></li>`;
+    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} / 5` : "?"}</span><small>${onder}${plaats}</small></li>`;
   }).join("")}</ul>`);
   parts.push(meldingHtml());
   parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button>${kanToevoegen() && p.lngLat ? `<button type="button" class="knop" id="deelNieuw">Onderdeel toevoegen</button>` : ""}</div>`);
   parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
     ${naamVeld()}
     <label>Soort pand<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
-    <fieldset><legend>Staat</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"${i === n ? " checked" : ""}><b>${i}</b>${STAAT[i]}</label>`).join("")}</div></fieldset>
+    <fieldset><legend>Staat (1 = ingestort, 5 = goed)</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"${i === n ? " checked" : ""}><b>${i}</b></label>`).join("")}</div></fieldset>
     <label>Toelichting bij de staat<textarea name="toel" maxlength="1000" placeholder="Bv. wat je ter plaatse zag: dak ingestort, ramen dichtgetimmerd, ...">${esc(st.toelichting || "")}</textarea></label>
     ${privacy}
     <div class="knoppen"><button type="submit" class="knop hoofd">Opslaan</button><button type="button" class="knop" id="bewerkWeg">Annuleren</button></div>
   </form>`);
   if (p.aanpassingen.length) parts.push(`<h3>Eerdere aanpassingen <small>${p.aanpassingen.length}</small></h3><ul class="opm">${[...p.aanpassingen].reverse().map(a => {
-    const wat = [a.categorie && `soort: ${soortLabel(a.categorie)}`, a.score && `staat ${a.score} (${STAAT[a.score]})`, a.toelichting && `“${a.toelichting}”`].filter(Boolean).join(", ");
+    const wat = [a.categorie && `soort: ${soortLabel(a.categorie)}`, a.score && `staat ${a.score}/5`, a.toelichting && `“${a.toelichting}”`].filter(Boolean).join(", ");
     return `<li><b>${esc(a.naam)}</b> ${esc(wat)}<small>${wanneer(a.tijd)}</small></li>`;
   }).join("")}</ul>`);
   return parts.join("");
@@ -1038,17 +1038,30 @@ function pasToe(rijen) {
 // Toevoegen op de kaart verschijnt pas als het script versie 2 of later is (anders zou het oude script het verkeerd bewaren).
 let opslagVersie = 0;
 const kanToevoegen = () => opslagVersie >= 2 && !zonderBol;
-if (OPSLAG) fetch(OPSLAG).then(r => r.json()).then(data => {
+
+const plek = r => { const lng = Number(r.lng), lat = Number(r.lat); return r.lng !== "" && r.lat !== "" && isFinite(lng) && isFinite(lat) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90 && (lng || lat) ? [lng, lat] : null; };
+// De aanpassingen uit de Sheet laden duurt soms enkele seconden. Daarom tonen we eerst de laatst bekende
+// aanpassingen (bewaard in deze browser) en vullen we daarna aan met wat er nieuw is.
+const gezien = new Set();
+const rijSleutel = r => [r.tijd, r.type, r.id, r.naam, r.titel || "", r.tekst || "", r.lng || ""].join("|");
+function verwerk(data) {
   const rijen = Array.isArray(data) ? data : data && Array.isArray(data.rijen) ? data.rijen : null;
-  if (!rijen) return;
-  opslagVersie = Array.isArray(data) ? 1 : Number(data.versie) || 1;
+  if (!rijen) return false;
+  opslagVersie = Math.max(opslagVersie, Array.isArray(data) ? 1 : Number(data.versie) || 1);
   $("addBtn").hidden = !kanToevoegen();
-  pasToe(rijen); kleurMarkers(); renderLegend(); zetTeller();
+  const nieuw = rijen.filter(r => { const k = rijSleutel(r); if (gezien.has(k)) return false; gezien.add(k); return true; });
+  if (nieuw.length) { pasToe(nieuw); kleurMarkers(); renderLegend(); zetTeller(); }
   const h = decodeURIComponent(location.hash.slice(1));
   if (!current && h && PANDEN.some(p => p.id === h)) openPand(h);
-  else if (current) vulPaneel();
-}).catch(() => {});
-const plek = r => { const lng = Number(r.lng), lat = Number(r.lat); return r.lng !== "" && r.lat !== "" && isFinite(lng) && isFinite(lat) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90 && (lng || lat) ? [lng, lat] : null; };
+  else if (current && nieuw.length) vulPaneel();
+  return true;
+}
+if (OPSLAG) {
+  try { const c = localStorage.getItem("opslag"); if (c) verwerk(JSON.parse(c)); } catch (e) {}
+  fetch(OPSLAG).then(r => r.json()).then(data => {
+    if (verwerk(data)) { try { localStorage.setItem("opslag", JSON.stringify(data)); } catch (e) {} }
+  }).catch(() => {});
+}
 
 // Zelf toevoegen: een nieuw gebouw, een onderdeel van een pand, of de plek van een bestaand onderdeel.
 let kiesVoor = null, nieuwPunt = null;
@@ -1092,7 +1105,7 @@ function toonFormulier(k, ll) {
     <p class="note">Gekozen plek: ${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O. Klopt het niet? Kies Annuleren en klik opnieuw.</p>
     ${metGegevens ? `<label>${k.soort === "nieuw" ? "Naam van het gebouw" : "Naam van het onderdeel"}<input type="text" name="titel" required maxlength="100" placeholder="${k.soort === "nieuw" ? "Bv. Oude hoeve Kloosterstraat" : "Bv. Ruïne 3, schuur, kapel"}"></label>
     <label>Soort<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === (k.soort === "onderdeel" ? "ruine" : "woning") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
-    <fieldset><legend>Staat (optioneel)</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"><b>${i}</b>${STAAT[i]}</label>`).join("")}</div></fieldset>
+    <fieldset><legend>Staat (optioneel, 1 = ingestort, 5 = goed)</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"><b>${i}</b></label>`).join("")}</div></fieldset>
     <label>Beschrijving (optioneel)<textarea name="toel" maxlength="1000" placeholder="Wat is het, en in welke staat is het?"></textarea></label>
     ${k.soort === "nieuw" ? `<label>Adres (optioneel)<input type="text" name="adres" maxlength="200" placeholder="Straat, gemeente"></label>` : ""}` : ""}
     ${naamVeld()}
