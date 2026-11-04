@@ -645,7 +645,7 @@ const PANDEN = [
   "id": "burcht-raaf",
   "naam": "Burcht Raaf",
   "type": "burchtruïne / donjon",
-  "status": "ruïne",
+  "status": "leegstaand",
   "categorie": "ruine",
   "staat": {
    "score": 1,

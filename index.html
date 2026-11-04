@@ -433,7 +433,7 @@ const SOORTEN = [
   ["ruine", "Ruïne"], ["kasteel", "Kasteel of burcht"], ["religieus", "Klooster, kerk of kapel"],
   ["hoeve", "Hoeve of landbouw"], ["woning", "Woning of villa"], ["industrie", "Industrie of bedrijf"], ["spoorweg", "Spoorweg"]
 ];
-const STAAT = ["Onbekend", "Ruïne", "Slecht", "Matig", "Redelijk", "Goed"];
+const STAAT = ["Onbekend", "Ingestort", "Slecht", "Matig", "Redelijk", "Goed"];
 const STAAT_UITLEG = ["Nog niet beoordeeld", "Ingestort, alleen nog muren of resten", "Dak of draagstructuur zwaar beschadigd", "Verwaarloosd, maar de structuur is nog intact", "Kleine gebreken, goed te herstellen", "Onderhouden of nog in gebruik"];
 const soortLabel = id => (SOORTEN.find(x => x[0] === id) || [id, "Andere"])[1];
 const soortKleur = id => SOORTEN.some(x => x[0] === id) ? `var(--c-${id})` : "var(--s0)";
