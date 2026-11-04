@@ -34,7 +34,7 @@ Elk pand in `data/panden.js` heeft een `categorie` (de kleur op de kaart) en een
 - Tabblad **Discussie**: bezoekers delen hun mening of ideeën over het gebouw. Elke reactie toont de naam en de datum.
 - Een naam is altijd verplicht en voor iedereen zichtbaar. E-mailadressen en telefoonnummers worden automatisch uit de tekst gehaald.
 
-- **Zelf toevoegen**: met “Toevoegen” onderaan zet een bezoeker een nieuw gebouw op de kaart (klik op de plek, geef naam, soort en eventueel staat). In het tabblad Staat kan je een onderdeel van een pand toevoegen (bv. een ruïne naast een kasteel) of een bestaand onderdeel op de kaart zetten. Zo'n onderdeel krijgt een klein punt dat naar het pand leidt.
+- **Zelf toevoegen**: met “Toevoegen” onderaan zet een bezoeker een nieuw gebouw op de kaart (klik op de plek, geef naam, soort en eventueel staat). In het tabblad Staat kan je met “Plek aanpassen” het punt van een pand verplaatsen, een onderdeel van een pand toevoegen (bv. een ruïne naast een kasteel) of een bestaand onderdeel op de kaart zetten. Zo'n onderdeel krijgt een klein punt dat naar het pand leidt.
 
 Alles wordt bewaard in een Google Sheet met een klein script (`tools/opslag-apps-script.gs`, de stappen staan bovenaan in het bestand). De web-app-URL staat in `const OPSLAG` in `index.html`. Bezoekers zien de Sheet niet en hebben geen account nodig. Elke aanpassing of reactie wordt een rij in het blad “aanpassingen”; een rij wissen haalt ze van de site. Zolang `OPSLAG` leeg is, opent “Opslaan” een vooraf ingevuld voorstel (issue) op GitHub.
 
