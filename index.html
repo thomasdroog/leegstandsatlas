@@ -417,6 +417,23 @@ const OPSLAG = "https://script.google.com/a/macros/student.uhasselt.be/s/AKfycbz
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const small = matchMedia("(max-width: 760px)").matches;
 
+// Zonder WebGL (sommige privévensters, browsers met strenge privacy-instellingen, oude toestellen) kan de
+// wereldbol niet laden. De rest van de site (lijst, zoeken, panelen, discussie) blijft dan wel werken.
+let zonderBol = (() => { try { const c = document.createElement("canvas"); return !(c.getContext("webgl2") || c.getContext("webgl")); } catch (e) { return true; } })();
+function nepKaart() {
+  const vast = { getZoom: () => 1, getCenter: () => ({ lng: 5.9, lat: 50.7 }), getLayer: () => undefined, getSource: () => undefined, isStyleLoaded: () => false };
+  return new Proxy({}, { get: (t, k) => vast[k] || (() => undefined) });
+}
+{
+  const Echt = maplibregl.Map;
+  maplibregl.Map = function (o) {
+    if (!zonderBol) { try { return new Echt(o); } catch (e) { zonderBol = true; } }
+    maplibregl.Marker = class { constructor(o) { this.o = o || {}; } setLngLat() { return this; } addTo() { return this; } remove() { return this; } getElement() { return this.o.element; } };
+    maplibregl.AttributionControl = function () {};
+    document.body.classList.add("zonder-bol");
+    return nepKaart();
+  };
+}
 const map = new maplibregl.Map({
   container: "map",
   center: [8, 38],
@@ -624,6 +641,12 @@ agg.onclick = e => { e.stopPropagation(); flyCluster(); };
 new maplibregl.Marker({ element: agg, anchor: "left", offset: [-11, 0] }).setLngLat(bounds.getCenter()).addTo(map);
 agg.setAttribute("aria-label", `Zoom in op Plombières, ${OPKAART.length} panden`);
 $("countText").textContent = `${PANDEN.length} panden · Plombières`;
+if (zonderBol) {
+  const n = $("notice");
+  n.innerHTML = "<b>De wereldbol kan hier niet laden.</b> Je browser laat de 3D-weergave (WebGL) niet toe, wat soms gebeurt in een privévenster. Alle panden staan in de lijst rechtsboven; klik er een aan voor de foto's, de staat en de discussie.";
+  n.hidden = false;
+  setTimeout(() => toggleAll(true), 0);
+}
 
 // Lijst van alle panden onder de teller
 const allList = $("allList"), countBtn = $("countBtn");
