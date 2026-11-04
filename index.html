@@ -413,6 +413,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
 <script src="data/panden.js"></script>
+<script src="data/aanpassingen.js"></script>
 <script>
 // De panden staan in data/panden.js.
 
@@ -1050,7 +1051,7 @@ const plek = r => { const lng = Number(r.lng), lat = Number(r.lat); return r.lng
 // De aanpassingen uit de Sheet laden duurt soms enkele seconden. Daarom tonen we eerst de laatst bekende
 // aanpassingen (bewaard in deze browser) en vullen we daarna aan met wat er nieuw is.
 const gezien = new Set();
-const rijSleutel = r => [r.tijd, r.type, r.id, r.naam, r.titel || "", r.tekst || "", r.lng || ""].join("|");
+const rijSleutel = r => [String(r.tijd).slice(0, 19), r.type, r.id, r.naam, r.titel || "", r.tekst || "", r.lng || ""].join("|");
 function verwerk(data) {
   const rijen = Array.isArray(data) ? data : data && Array.isArray(data.rijen) ? data.rijen : null;
   if (!rijen) return false;
@@ -1063,6 +1064,9 @@ function verwerk(data) {
   else if (current && nieuw.length) vulPaneel();
   return true;
 }
+// 1. data/aanpassingen.js: kopie van de Sheet die bij elke update in de site gezet wordt, dus meteen beschikbaar.
+// 2. wat deze browser bij het vorige bezoek zag. 3. de Sheet zelf, voor de allerlaatste aanpassingen.
+if (typeof AANPASSINGEN !== "undefined") verwerk(AANPASSINGEN);
 if (OPSLAG) {
   try { const c = localStorage.getItem("opslag"); if (c) verwerk(JSON.parse(c)); } catch (e) {}
   fetch(OPSLAG).then(r => r.json()).then(data => {
