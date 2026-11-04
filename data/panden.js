@@ -2,12 +2,20 @@
 // lngLat is [lengte, breedte]. Een pand zonder lngLat (null) staat niet op de kaart, maar wel in de lijst en de zoekfunctie.
 // geschiedenis: korte samenvatting in eigen woorden van het document "geschiedenis" in de map van het pand, met de bron.
 // uitgelicht: de vijf beste foto's voor de eerste pagina van de A3-export (zonder dit veld: de scherpste eigen foto's).
+// categorie: soort pand, bepaalt de kleur op de kaart (zie CATEGORIEEN in index.html).
+// staat: beoordeling van de toestand, score 1 (ruïne) tot 5 (goed), met toelichting en bron. Bezoekers kunnen dit aanpassen op de site.
 const PANDEN = [
  {
   "id": "brico-jardin",
   "naam": "Brico-Jardin (ex-winkelpand)",
   "type": "handelspand / winkel",
   "status": "leegstaand",
+  "categorie": "industrie",
+  "staat": {
+   "score": 4,
+   "toelichting": "Winkelpand en parking zien er op het Street View-beeld nog intact uit; geen eigen foto's, dus alleen de buitenkant beoordeeld.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "gemeente": "Plombières (Blieberg)",
   "lngLat": [
    5.853333,
@@ -30,6 +38,12 @@ const PANDEN = [
   "naam": "Klooster Gensterbloem",
   "type": "klooster / hoevecomplex",
   "status": "leegstaand",
+  "categorie": "religieus",
+  "staat": {
+   "score": 3,
+   "toelichting": "Gebouwen staan nog recht met dak, maar het terrein ligt vol puin en afbraakhout en de kapel raakt overwoekerd.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Rue du Mémorial Américain, Plombières",
   "gemeente": "Plombières (Blieberg)",
   "fotosGenomen": "2026-10-22",
@@ -116,6 +130,12 @@ const PANDEN = [
   "naam": "Kasteel Graaf (Streversdorp)",
   "type": "kasteel",
   "status": "leegstaand",
+  "categorie": "kasteel",
+  "staat": {
+   "score": 3,
+   "toelichting": "Muren en daken grotendeels intact, maar het domein is verwilderd en de bijgebouwen zijn verwaarloosd.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Rue du Château de Graaf, 4850 Plombières",
   "gemeente": "Plombières (Blieberg)",
   "fotosGenomen": "2026-10-22",
@@ -167,6 +187,12 @@ const PANDEN = [
   "naam": "Leegstaand huis met stallen",
   "type": "woning met stallen (hoeve)",
   "status": "leegstaand",
+  "categorie": "hoeve",
+  "staat": {
+   "score": 3,
+   "toelichting": "Bakstenen gebouwen en daken nog in orde; verwaarloosd erf en houten schuur in slechte staat.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Merckhof, Plombières",
   "gemeente": "Plombières (Blieberg)",
   "fotosGenomen": "2026-10-22",
@@ -208,6 +234,12 @@ const PANDEN = [
   "naam": "Leegstaande garage",
   "type": "garage / tankstation met woning",
   "status": "leegstaand",
+  "categorie": "industrie",
+  "staat": {
+   "score": 4,
+   "toelichting": "Gebouwen zien er op Street View nog intact uit; alleen de buitenkant beoordeeld.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Rue du Cheval Blanc (N608), Plombières",
   "gemeente": "Plombières (Blieberg)",
   "lngLat": [
@@ -231,6 +263,12 @@ const PANDEN = [
   "naam": "Villa in Montzen",
   "type": "villa / woning (natuursteen)",
   "status": "leegstaand",
+  "categorie": "woning",
+  "staat": {
+   "score": 4,
+   "toelichting": "Natuurstenen gevels, ramen en dak zien er op Street View nog goed uit; alleen de buitenkant beoordeeld.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Montzen, Plombières",
   "gemeente": "Plombières (Blieberg)",
   "lngLat": [
@@ -255,6 +293,12 @@ const PANDEN = [
   "naam": "Station Montzen",
   "type": "stationsgebouw / spoorwegterrein",
   "status": "leegstaand",
+  "categorie": "spoorweg",
+  "staat": {
+   "score": 2,
+   "toelichting": "Glazen overkapping grotendeels weg, overal graffiti, en de bijgebouwen raken overwoekerd.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Rue de la Gare 85, 4850 Plombières",
   "gemeente": "Plombières (Blieberg)",
   "fotosGenomen": "2026-10-22",
@@ -309,6 +353,12 @@ const PANDEN = [
   "naam": "Verlaten wagons Station Homburg",
   "type": "spoorwagons / stationsterrein",
   "status": "verlaten",
+  "categorie": "spoorweg",
+  "staat": {
+   "score": 2,
+   "toelichting": "Wagons roesten weg en staan al jaren in weer en wind.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Oud station Hombourg (lijn 24), Plombières",
   "gemeente": "Plombières (Blieberg)",
   "fotosGenomen": "2026-10-22",
@@ -357,6 +407,12 @@ const PANDEN = [
   "naam": "Voormalige waterkrachtcentrale",
   "type": "waterkrachtcentrale / industrieel erfgoed",
   "status": "leegstaand",
+  "categorie": "industrie",
+  "staat": {
+   "score": 3,
+   "toelichting": "Gevels en dak intact, maar binnen hangen de plafonds los en zijn de turbines en leidingen sterk verroest.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Rue du Casino 21, 4850 Plombières",
   "gemeente": "Plombières (Blieberg)",
   "lngLat": [
@@ -382,7 +438,13 @@ const PANDEN = [
    "media/waterkrachtcentrale-plombieres/fotos/fotos-16.jpg",
    "media/waterkrachtcentrale-plombieres/fotos/fotos-17.jpg",
    "media/waterkrachtcentrale-plombieres/fotos/fotos-18.jpg",
-   "media/waterkrachtcentrale-plombieres/fotos/fotos-19.jpg"
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-19.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-20.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-21.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-22.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-23.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-24.jpg",
+   "media/waterkrachtcentrale-plombieres/fotos/fotos-25.jpg"
   ],
   "luchtbeeld": [],
   "streetview": [],
@@ -412,13 +474,31 @@ const PANDEN = [
   "naam": "Moulins Meyers",
   "type": "maalderij / industrieel",
   "status": "niet leegstaand",
+  "categorie": "industrie",
+  "staat": {
+   "score": 5,
+   "toelichting": "Nog in gebruik als maalderij; gebouwen onderhouden.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Gulpen 11, 4852 Plombières",
   "gemeente": "Plombières (Blieberg)",
   "lngLat": [
    5.914631,
    50.715385
   ],
-  "fotos": [],
+  "fotos": [
+   "media/moulins-meyers/fotos/fotos-01.jpg",
+   "media/moulins-meyers/fotos/fotos-02.jpg",
+   "media/moulins-meyers/fotos/fotos-03.jpg",
+   "media/moulins-meyers/fotos/fotos-04.jpg",
+   "media/moulins-meyers/fotos/fotos-05.jpg",
+   "media/moulins-meyers/fotos/fotos-06.jpg",
+   "media/moulins-meyers/fotos/fotos-07.jpg",
+   "media/moulins-meyers/fotos/fotos-08.jpg",
+   "media/moulins-meyers/fotos/fotos-09.jpg",
+   "media/moulins-meyers/fotos/fotos-10.jpg",
+   "media/moulins-meyers/fotos/fotos-11.jpg"
+  ],
   "luchtbeeld": [
    "media/moulins-meyers/luchtbeeld/luchtbeeld-01.jpg"
   ],
@@ -442,20 +522,43 @@ const PANDEN = [
      "url": "https://lesmoulinsduvaldieu.be/le-moulin-meyers-de-hombourg/"
     }
    ]
-  }
+  },
+  "uitgelicht": [
+   "media/moulins-meyers/fotos/fotos-01.jpg",
+   "media/moulins-meyers/fotos/fotos-04.jpg",
+   "media/moulins-meyers/fotos/fotos-05.jpg",
+   "media/moulins-meyers/fotos/fotos-08.jpg",
+   "media/moulins-meyers/fotos/fotos-07.jpg"
+  ]
  },
  {
   "id": "kasteel-eyneburg",
   "naam": "Kasteel Eyneburg (Emmaburg)",
   "type": "kasteel / burcht",
   "status": "leegstaand",
+  "categorie": "kasteel",
+  "staat": {
+   "score": 3,
+   "toelichting": "Beschermd monument met tientallen dringende gebreken; daken deels onder dekzeil en er lopen dringende instandhoudingswerken.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Emmaburgerweg 24, 4728 Kelmis (Hergenrath)",
   "gemeente": "Kelmis (Hergenrath)",
   "lngLat": [
    6.01579,
    50.70553
   ],
-  "fotos": [],
+  "fotos": [
+   "media/kasteel-eyneburg/fotos/fotos-01.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-02.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-03.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-04.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-05.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-06.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-07.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-08.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-09.jpg"
+  ],
   "luchtbeeld": [],
   "streetview": [],
   "grondplannen": [],
@@ -474,7 +577,8 @@ const PANDEN = [
     "Via huwelijken kwam de burcht in 1371 bij de familie Van den Bongaert en in 1430 bij de familie Van Tzevel, daarna bleef ze zo'n drie eeuwen bij de familie Dobbelstein. In de 15e eeuw kwam er een woongebouw tegen de ronde donjon, en in de 16e eeuw draaide onder de burcht een kopermolen op de Geul. In 1640 brandde de burcht uit. Johann von Dobbelstein en Helwige von Horion bouwden ze in 1648 weer op en maakten het woongebouw een verdieping hoger. Een wapensteen uit 1722 boven een poort van de voorburcht herinnert nog aan de familie.",
     "Vanaf 1786 wisselde het kasteel vaak van eigenaar, onder meer de Luikse bankier Gérard Nagelmackers (1809) en baron Thiriart (1836), en in de 19e eeuw raakte het sterk in verval. In 1897 kocht de Akense textielfabrikant Theodor Nellessen de burcht. Hij liet ze tot 1901 restaureren en uitbreiden door Ludwig Arntz, bouwmeester van de kathedraal van Straatsburg. De donjon kreeg toen een kleine vakwerkverdieping en een nieuw kegeldak, en er kwam een neogotische kapel bij.",
     "In 1958 verkocht de familie Nellessen het kasteel aan de Hergenrather Kalkwerke; een deel van de kunstcollectie werd geveild. Sinds 18 juli 1966 is de Eyneburg een beschermd monument. In 2001 kocht de firma Eyne het kasteel, dat daarna een tijd open was voor bezoekers. Sinds 2011 is het gesloten. Een vaste bestemming was er niet meer: af en toe filmopnames of middeleeuwse feesten, en veel kamers stonden decennialang leeg en onverwarmd.",
-    "Omdat de eigenaars de nodige herstellingen niet uitvoerden en delen van het monument, zoals de kapel, dreigden in te storten, startte de Duitstalige Gemeenschap eind 2022 een onteigening. Het werd uiteindelijk een minnelijke aankoop voor 2,1 miljoen euro: sinds 26 januari 2023 is de Gemeenschap eigenaar. Een studie telde 65 dringende gebreken. Begin 2024 volgde een intentieverklaring met een Brusselse investeerder voor een historisch belevingspark met horeca, rondleidingen, overnachtingen en escape rooms, al zou het jaren duren voor dat open kan. Intussen dient het kasteel af en toe als filmlocatie (laatst begin 2026). Hoe ver de restauratie staat, blijkt niet uit de bronnen."
+    "Omdat de eigenaars de nodige herstellingen niet uitvoerden en delen van het monument, zoals de kapel, dreigden in te storten, startte de Duitstalige Gemeenschap eind 2022 een onteigening. Het werd uiteindelijk een minnelijke aankoop voor 2,1 miljoen euro: sinds 26 januari 2023 is de Gemeenschap eigenaar. Een studie telde 65 dringende gebreken. Begin 2024 volgde een intentieverklaring met een Brusselse investeerder voor een historisch belevingspark met horeca, rondleidingen, overnachtingen en escape rooms, al zou het jaren duren voor dat open kan. Intussen dient het kasteel af en toe als filmlocatie (laatst begin 2026). Hoe ver de restauratie staat, blijkt niet uit de bronnen.",
+    "Bij een bezoek in november 2026 hingen er dekzeilen over een deel van de daken en stond aan de poort een bord van een openbare aanbesteding voor dringende instandhoudingswerken aan het beschermde kasteel, voor ongeveer 311.000 euro exclusief btw."
    ],
    "bronnen": [
     {
@@ -516,15 +620,32 @@ const PANDEN = [
     {
      "titel": "Eyneburg, Burgenwelt",
      "url": "https://www.burgenwelt.org/belgien/eyneburg/burgenwelt-eyneburg-objektseite.pdf"
+    },
+    {
+     "titel": "Castle Eyneburg, Ancient History Sites",
+     "url": "https://www.ancient-history-sites.com/sites/castle-eyneburg/"
     }
    ]
-  }
+  },
+  "uitgelicht": [
+   "media/kasteel-eyneburg/fotos/fotos-04.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-03.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-01.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-07.jpg",
+   "media/kasteel-eyneburg/fotos/fotos-09.jpg"
+  ]
  },
  {
   "id": "burcht-raaf",
   "naam": "Burcht Raaf",
   "type": "burchtruïne / donjon",
   "status": "ruïne",
+  "categorie": "ruine",
+  "staat": {
+   "score": 1,
+   "toelichting": "Burchtruïne: alleen de donjon en muurresten staan nog recht.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Stestertstraße 32, 4731 Raeren (Eynatten)",
   "gemeente": "Raeren (Eynatten)",
   "lngLat": [
@@ -561,13 +682,22 @@ const PANDEN = [
   "naam": "Kasteel Commanderie",
   "type": "kasteel / commanderij",
   "status": "status onbekend",
+  "categorie": "kasteel",
+  "staat": {
+   "score": 4,
+   "toelichting": "Poortgebouw en bijgebouwen zien er van buiten nog redelijk uit; enkele daken verzakt of bemost.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
   "adres": "Commanderie 1, 3792 Voeren (Sint-Pietersvoeren)",
   "gemeente": "Voeren (Sint-Pietersvoeren)",
   "lngLat": [
    5.822028,
    50.736731
   ],
-  "fotos": [],
+  "fotos": [
+   "media/kasteel-commanderie/fotos/fotos-01.jpg",
+   "media/kasteel-commanderie/fotos/fotos-02.jpg"
+  ],
   "luchtbeeld": [],
   "streetview": [],
   "grondplannen": [],
@@ -590,5 +720,107 @@ const PANDEN = [
     }
    ]
   }
+ },
+ {
+  "id": "braesberg",
+  "naam": "Hoeve Braesberg",
+  "type": "hoeve met stallen en schuren",
+  "status": "leegstaand",
+  "categorie": "hoeve",
+  "staat": {
+   "score": 2,
+   "toelichting": "Woonhuis heeft nog een dak maar is binnen gestript; schuren zonder dak, deels afgebroken, en het erf is verwilderd.",
+   "bron": "inschatting op basis van de foto's, november 2026"
+  },
+  "adres": "Braesberg 46, 4852 Hombourg (Plombières)",
+  "gemeente": "Plombières (Hombourg)",
+  "fotosGenomen": "2026-11-04",
+  "lngLat": [
+   5.960488,
+   50.739396
+  ],
+  "fotos": [
+   "media/braesberg/fotos/fotos-01.jpg",
+   "media/braesberg/fotos/fotos-02.jpg",
+   "media/braesberg/fotos/fotos-03.jpg",
+   "media/braesberg/fotos/fotos-04.jpg",
+   "media/braesberg/fotos/fotos-05.jpg",
+   "media/braesberg/fotos/fotos-06.jpg",
+   "media/braesberg/fotos/fotos-07.jpg",
+   "media/braesberg/fotos/fotos-08.jpg",
+   "media/braesberg/fotos/fotos-09.jpg",
+   "media/braesberg/fotos/fotos-10.jpg",
+   "media/braesberg/fotos/fotos-11.jpg",
+   "media/braesberg/fotos/fotos-12.jpg",
+   "media/braesberg/fotos/fotos-13.jpg",
+   "media/braesberg/fotos/fotos-14.jpg",
+   "media/braesberg/fotos/fotos-15.jpg",
+   "media/braesberg/fotos/fotos-16.jpg",
+   "media/braesberg/fotos/fotos-17.jpg",
+   "media/braesberg/fotos/fotos-18.jpg",
+   "media/braesberg/fotos/fotos-19.jpg",
+   "media/braesberg/fotos/fotos-20.jpg",
+   "media/braesberg/fotos/fotos-21.jpg",
+   "media/braesberg/fotos/fotos-22.jpg",
+   "media/braesberg/fotos/fotos-23.jpg",
+   "media/braesberg/fotos/fotos-24.jpg",
+   "media/braesberg/fotos/fotos-25.jpg",
+   "media/braesberg/fotos/fotos-26.jpg",
+   "media/braesberg/fotos/fotos-27.jpg",
+   "media/braesberg/fotos/fotos-28.jpg",
+   "media/braesberg/fotos/fotos-29.jpg",
+   "media/braesberg/fotos/fotos-30.jpg",
+   "media/braesberg/fotos/fotos-31.jpg",
+   "media/braesberg/fotos/fotos-32.jpg",
+   "media/braesberg/fotos/fotos-33.jpg",
+   "media/braesberg/fotos/fotos-34.jpg",
+   "media/braesberg/fotos/fotos-35.jpg",
+   "media/braesberg/fotos/fotos-36.jpg",
+   "media/braesberg/fotos/fotos-37.jpg",
+   "media/braesberg/fotos/fotos-38.jpg",
+   "media/braesberg/fotos/fotos-39.jpg",
+   "media/braesberg/fotos/fotos-40.jpg",
+   "media/braesberg/fotos/fotos-41.jpg",
+   "media/braesberg/fotos/fotos-42.jpg",
+   "media/braesberg/fotos/fotos-43.jpg",
+   "media/braesberg/fotos/fotos-44.jpg",
+   "media/braesberg/fotos/fotos-45.jpg",
+   "media/braesberg/fotos/fotos-46.jpg",
+   "media/braesberg/fotos/fotos-47.jpg",
+   "media/braesberg/fotos/fotos-48.jpg",
+   "media/braesberg/fotos/fotos-49.jpg",
+   "media/braesberg/fotos/fotos-50.jpg",
+   "media/braesberg/fotos/fotos-51.jpg",
+   "media/braesberg/fotos/fotos-52.jpg",
+   "media/braesberg/fotos/fotos-53.jpg",
+   "media/braesberg/fotos/fotos-54.jpg",
+   "media/braesberg/fotos/fotos-55.jpg",
+   "media/braesberg/fotos/fotos-56.jpg",
+   "media/braesberg/fotos/fotos-57.jpg",
+   "media/braesberg/fotos/fotos-58.jpg",
+   "media/braesberg/fotos/fotos-59.jpg",
+   "media/braesberg/fotos/fotos-60.jpg"
+  ],
+  "luchtbeeld": [],
+  "streetview": [],
+  "grondplannen": [],
+  "model3d": [],
+  "historisch": [],
+  "materialen": [],
+  "geschiedenis": {
+   "tekst": [
+    "Hoeve Braesberg ligt in het buurtschap Braesberg bij Hombourg, op een helling met uitzicht over het Geuldal. Het complex bestaat uit een natuurstenen woonhuis, stallen en enkele schuren; een deel van de schuren is al afgebroken of staat zonder dak.",
+    "In oktober en november 2026 liep bij de gemeente Plombières een openbaar onderzoek over een bouwaanvraag van een stichting om de hoeve te restaureren tot een centrum voor productie en innovatie in regeneratieve landbouw en tuinbouw. Of die aanvraag werd goedgekeurd, is nog niet bekend."
+   ],
+   "bronTekst": "Bericht van openbaar onderzoek van de gemeente Plombières aan de hoeve (gefotografeerd op 4 november 2026)",
+   "bronnen": []
+  },
+  "uitgelicht": [
+   "media/braesberg/fotos/fotos-21.jpg",
+   "media/braesberg/fotos/fotos-45.jpg",
+   "media/braesberg/fotos/fotos-48.jpg",
+   "media/braesberg/fotos/fotos-32.jpg",
+   "media/braesberg/fotos/fotos-16.jpg"
+  ]
  }
 ];
