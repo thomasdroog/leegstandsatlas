@@ -923,7 +923,7 @@ function staatTab(p) {
   if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
     const onder = [o.staat && o.staat.toelichting, o.door && `Toegevoegd door ${o.door}, ${wanneer(o.tijd)}`].filter(Boolean).map(esc).join(" · ");
-    const plaats = kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Verplaatsen</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
+    const plaats = kanToevoegen() && o.hoofd ? ` <button type="button" class="linkknop" data-plekpand="1">Verplaatsen</button>` : kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Verplaatsen</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
     return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} / 5` : "?"}</span><small>${onder}${plaats}</small></li>`;
   }).join("")}</ul>`);
   parts.push(meldingHtml());
@@ -962,7 +962,7 @@ $("pBody").addEventListener("click", e => {
   if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("input").focus(); }
   if (e.target.id === "bewerkWeg") showTab("staat");
   if (e.target.id === "deelNieuw") startKiezen({ soort: "onderdeel", p: current });
-  if (e.target.id === "plekPand") startKiezen({ soort: "plaats", p: current, titel: current.naam });
+  if (e.target.id === "plekPand" || e.target.dataset.plekpand) startKiezen({ soort: "plaats", p: current, titel: current.naam });
   if (e.target.dataset.plaats) startKiezen({ soort: "plaats", p: current, titel: e.target.dataset.plaats });
 });
 $("pBody").addEventListener("submit", async e => {
