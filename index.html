@@ -922,11 +922,11 @@ function staatTab(p) {
   if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
     const onder = [o.staat && o.staat.toelichting, o.door && `Toegevoegd door ${o.door}, ${wanneer(o.tijd)}`].filter(Boolean).map(esc).join(" · ");
-    const plaats = kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
+    const plaats = kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Verplaatsen</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
     return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} / 5` : "?"}</span><small>${onder}${plaats}</small></li>`;
   }).join("")}</ul>`);
   parts.push(meldingHtml());
-  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button>${kanToevoegen() && p.lngLat ? `<button type="button" class="knop" id="deelNieuw">Onderdeel toevoegen</button>` : ""}</div>`);
+  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button>${kanToevoegen() ? `<button type="button" class="knop" id="plekPand">${p.lngLat ? "Plek aanpassen" : "Op de kaart zetten"}</button>` : ""}${kanToevoegen() && p.lngLat ? `<button type="button" class="knop" id="deelNieuw">Onderdeel toevoegen</button>` : ""}</div>`);
   parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
     ${naamVeld()}
     <label>Soort pand<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
@@ -961,6 +961,7 @@ $("pBody").addEventListener("click", e => {
   if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("input").focus(); }
   if (e.target.id === "bewerkWeg") showTab("staat");
   if (e.target.id === "deelNieuw") startKiezen({ soort: "onderdeel", p: current });
+  if (e.target.id === "plekPand") startKiezen({ soort: "plaats", p: current, titel: current.naam });
   if (e.target.dataset.plaats) startKiezen({ soort: "plaats", p: current, titel: e.target.dataset.plaats });
 });
 $("pBody").addEventListener("submit", async e => {
@@ -1022,7 +1023,13 @@ function pasToe(rijen) {
     }
     if (r.type === "plaats") {
       const o = delen(p).find(x => x.naam === String(r.titel));
-      if (!o || !ll) return;
+      if (!ll) return;
+      if (!o && String(r.titel) === p.naam) {
+        p.lngLat = ll;
+        if (markers[p.id]) markers[p.id].m.setLngLat(ll); else { OPKAART.push(p); maakMarker(p); }
+        return;
+      }
+      if (!o) return;
       const oud = deelMarkers.find(x => x.o === o);
       if (oud) oud.m.setLngLat(ll); else if (markers[p.id]) { o.lngLat = ll; maakDeelMarker(p, o); }
       o.lngLat = ll;
@@ -1067,12 +1074,12 @@ if (OPSLAG) {
 let kiesVoor = null, nieuwPunt = null;
 function startKiezen(k) {
   kiesVoor = k;
-  $("kiesTxt").textContent = k.soort === "nieuw" ? "Klik op de kaart waar het gebouw staat." : `Klik op de kaart waar ${k.titel ? "“" + k.titel + "”" : "het onderdeel"} van ${k.p.naam} ligt.`;
+  $("kiesTxt").textContent = k.soort === "nieuw" ? "Klik op de kaart waar het gebouw staat." : k.titel === k.p.naam ? `Klik op de kaart waar ${k.p.naam} precies ligt. Zoom in of kies Satelliet om het gebouw te zien.` : `Klik op de kaart waar ${k.titel ? "“" + k.titel + "”" : "het onderdeel"} van ${k.p.naam} ligt.`;
   $("kies").hidden = false;
   document.body.classList.add("kiezen");
   toggleAll(false);
   stopSpin();
-  if (k.p) map.easeTo({ center: k.p.lngLat, zoom: Math.max(map.getZoom(), live ? 18 : 14), padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: reduce ? 0 : 600 });
+  if (k.p && k.p.lngLat) map.easeTo({ center: k.p.lngLat, zoom: Math.max(map.getZoom(), live ? 18 : 14), padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: reduce ? 0 : 600 });
   else if (map.getZoom() < 11) map.flyTo({ center: bounds.getCenter(), zoom: 12.5, padding: { top: 0, bottom: 0, left: 0, right: 0 }, essential: true });
 }
 function stopKiezen(terug) {
