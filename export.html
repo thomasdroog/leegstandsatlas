@@ -97,7 +97,7 @@ button, input { font: inherit; color: inherit; }
 .chip { display: inline-flex; align-items: center; gap: 1.6mm; height: 6mm; padding: 0 2.6mm; border-radius: 999px; font: 500 2.9mm/1 var(--font-mono); background: var(--p-soft); color: var(--p-muted); }
 .chip.st { background: var(--p-red-soft); color: var(--p-red); }
 .chip.st::before { content: ""; width: 1.6mm; height: 1.6mm; border-radius: 50%; background: currentColor; }
-.facts { display: grid; grid-template-columns: repeat(4, auto); gap: 4mm 9mm; margin: 0; flex: none; }
+.facts { display: grid; grid-template-columns: repeat(5, auto); gap: 4mm 9mm; margin: 0; flex: none; }
 .facts div { display: grid; gap: 1.6mm; }
 .facts dt { font: 500 2.6mm/1 var(--font-mono); color: var(--p-muted); text-transform: uppercase; letter-spacing: .06em; }
 .facts dd { margin: 0; font: 600 4.4mm/1.2 var(--font-ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -281,6 +281,7 @@ function maakKaart() {
 }
 const pilFont = `500 ${(3.4 * MM).toFixed(2)}px "JetBrains Mono"`;
 const meet = document.createElement("canvas").getContext("2d");
+const SOORT_LBL = { ruine: "ruïne", kasteel: "kasteel of burcht", religieus: "klooster, kerk of kapel", hoeve: "hoeve of landbouw", woning: "woning of villa", industrie: "industrie of bedrijf", spoorweg: "spoorweg" };
 const pilBreedte = naam => { meet.font = pilFont; return meet.measureText(naam).width + 6 * MM; };
 
 async function kaartbeeld(lijst) {
@@ -345,13 +346,13 @@ const geschHTML = g => g.tekst.map(t => `<p>${esc(t)}</p>`).join("") + bronnen(g
 function hoofd(p) {
   const ll = p.lngLat;
   const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
-  const feiten = [["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"], ["Bezocht", bezocht], ["Eigen foto's", p.fotos.length]];
+  const feiten = [["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"], ["Bezocht", bezocht], ["Eigen foto's", p.fotos.length], ["Staat", p.staat && p.staat.score ? `${p.staat.score}/5 · ${["", "ruïne", "slecht", "matig", "redelijk", "goed"][p.staat.score]}` : "Onbekend"]];
   return `<header class="ph">
     <div>
       <div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div>
       <h2>${esc(p.naam)}</h2>
       <p class="addr">${esc(p.adres || p.gemeente || "")}</p>
-      <div class="chips"><span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span></div>
+      <div class="chips"><span class="chip st">${esc(p.status)}</span><span class="chip">${esc(SOORT_LBL[p.categorie] || p.type)}</span>${SOORT_LBL[p.categorie] ? `<span class="chip">${esc(p.type)}</span>` : ""}</div>
     </div>
     <dl class="facts">${feiten.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
   </header>`;

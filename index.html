@@ -25,6 +25,11 @@
   --accent-fg: #ffffff;
   --ok: #2f7d4f;
   --warn: #b37a12;
+  /* Soort pand (kleur van de stip op de kaart) */
+  --c-ruine: #d42b2b; --c-kasteel: #2f5fd0; --c-religieus: #8a44c2; --c-hoeve: #3f8a2f;
+  --c-woning: #e07a12; --c-industrie: #8a5a32; --c-spoorweg: #0f8c8c;
+  /* Staat, van 1 (ruïne) tot 5 (goed) */
+  --s1: #b3261e; --s2: #e4641c; --s3: #d6a20f; --s4: #79a83a; --s5: #2f8a4f; --s0: #9aa19c;
   --shadow: 0 1px 2px rgba(30,34,31,.06), 0 6px 20px rgba(30,34,31,.08);
   --font-ui: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -35,6 +40,8 @@
     --fg: #e8ebe8; --muted: #9aa19c; --surface: #1c201e; --surface-2: #242926; --line: #333935;
     --red: #ff5a52; --red-soft: #3a1d1b; --accent: #ff5a52; --accent-fg: #1a0605;
     --ok: #6cc28f; --warn: #e0b04a; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    --c-ruine: #ff5a52; --c-kasteel: #6f95ff; --c-religieus: #be8af0; --c-hoeve: #74c25f; --c-woning: #ffa24a; --c-industrie: #c99566; --c-spoorweg: #3fc4c4;
+    --s1: #ff5a52; --s2: #ff8a45; --s3: #f0c443; --s4: #a5d46a; --s5: #5fc48a; --s0: #6c726d;
     color-scheme: dark;
   }
 }
@@ -43,6 +50,8 @@
   --fg: #e8ebe8; --muted: #9aa19c; --surface: #1c201e; --surface-2: #242926; --line: #333935;
   --red: #ff5a52; --red-soft: #3a1d1b; --accent: #ff5a52; --accent-fg: #1a0605;
   --ok: #6cc28f; --warn: #e0b04a; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  --c-ruine: #ff5a52; --c-kasteel: #6f95ff; --c-religieus: #be8af0; --c-hoeve: #74c25f; --c-woning: #ffa24a; --c-industrie: #c99566; --c-spoorweg: #3fc4c4;
+  --s1: #ff5a52; --s2: #ff8a45; --s3: #f0c443; --s4: #a5d46a; --s5: #5fc48a; --s0: #6c726d;
   color-scheme: dark;
 }
 html, body { height: 100%; }
@@ -114,7 +123,7 @@ button, input { font: inherit; color: inherit; }
 .results { position: absolute; bottom: 44px; right: 0; width: 280px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
 .results button { display: grid; grid-template-columns: 10px 1fr; gap: 2px 10px; align-items: center; text-align: left; border: 0; background: transparent; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
 .results button:hover, .results button:focus-visible { background: var(--surface-2); }
-.results .d { width: 8px; height: 8px; border-radius: 50%; background: var(--red); grid-row: span 2; }
+.results .d { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--red)); grid-row: span 2; }
 .results .d.off { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
 .results b { font: 600 13px/1.2 var(--font-ui); }
 .results small { font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
@@ -122,12 +131,28 @@ button, input { font: inherit; color: inherit; }
 
 /* Markers */
 .mk { display: flex; align-items: center; gap: 8px; cursor: pointer; border: 0; background: none; padding: 0; }
-.mk .d { width: 14px; height: 14px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent); flex: none; transition: transform .15s; }
+.mk { --c: var(--red); }
+.mk .d { width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px var(--surface), 0 0 0 5px color-mix(in srgb, var(--c) 30%, transparent); flex: none; transition: transform .15s, background .2s; }
 .mk .pill { height: 26px; padding: 0 10px; font-size: 11px; transition: background .15s, opacity .2s; }
 .mk:hover .d, .mk.on .d { transform: scale(1.25); }
-.mk:hover .pill, .mk.on .pill { background: var(--accent); color: var(--accent-fg); }
-.mk.on .d { box-shadow: 0 0 0 4px var(--surface), 0 0 0 7px var(--red); }
-.mk.ruine .d { background: var(--surface); box-shadow: inset 0 0 0 4px var(--red), 0 0 0 3px color-mix(in srgb, var(--red) 25%, transparent); }
+.mk:hover .pill, .mk.on .pill { background: var(--c); color: #fff; }
+.mk.on .d { box-shadow: 0 0 0 4px var(--surface), 0 0 0 7px var(--c); }
+.mk.uit { display: none !important; }
+
+/* Legende: kleur per soort of per staat, klik om te filteren */
+.legend { position: absolute; z-index: 3; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 230px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); border-radius: 14px; box-shadow: var(--shadow); padding: 8px; display: grid; gap: 6px; }
+.legend > .lg-kop { display: none; }
+.legend > .lg-in { display: grid; gap: 6px; }
+.legend .seg { height: 30px; width: 100%; box-shadow: none; background: var(--surface-2); }
+.legend .seg button { flex: 1; padding: 0 8px; font-size: 11px; }
+.legend ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.legend li button { width: 100%; display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; border: 0; background: transparent; padding: 5px 6px; border-radius: 8px; cursor: pointer; text-align: left; font: 500 12px/1.2 var(--font-ui); }
+.legend li button:hover { background: var(--surface-2); }
+.legend li .sw { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.legend li small { font: 400 11px var(--font-mono); color: var(--muted); }
+.legend li button[aria-pressed="false"] { opacity: .4; }
+.legend li button[aria-pressed="false"] .sw { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c); }
+.legend .hint { margin: 0; padding: 0 6px 2px; font: 400 10px/1.35 var(--font-mono); color: var(--muted); }
 body.far .mk { display: none; }
 body.mid .mk .pill { opacity: 0; pointer-events: none; }
 body.mid .mk:hover .pill { opacity: 1; }
@@ -182,7 +207,48 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 .state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .state.goed { color: var(--ok); } .state.matig { color: var(--warn); } .state.slecht { color: var(--red); }
 
-.notice { position: absolute; z-index: 3; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); max-width: 260px; font: 400 11px/1.4 var(--font-mono); color: var(--muted); }
+/* Staat (beoordeling) */
+.chip.cat { background: color-mix(in srgb, var(--c) 16%, var(--surface)); color: var(--c); }
+.chip.cat::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.facts dd .sc { display: inline-flex; gap: 2px; vertical-align: middle; margin-right: 6px; }
+.facts dd .sc i { width: 6px; height: 12px; border-radius: 2px; background: var(--line); }
+.facts dd .sc i.on { background: var(--c); }
+.schaal { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.schaal div { height: 10px; border-radius: 3px; background: var(--line); }
+.schaal div.on { background: var(--c); }
+.schaal-lbl { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; font: 400 10px/1.2 var(--font-mono); color: var(--muted); }
+.schaal-lbl span.on { color: var(--fg); font-weight: 500; }
+.staat-kop { display: flex; align-items: baseline; gap: 10px; }
+.staat-kop b { font: 700 28px/1 var(--font-ui); color: var(--c); font-variant-numeric: tabular-nums; }
+.staat-kop span { font: 600 15px/1.2 var(--font-ui); }
+.pb p.txt { margin: 0; font: 400 14px/1.55 var(--font-ui); }
+.opm { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.opm li { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font: 400 13px/1.45 var(--font-ui); }
+.opm li b { font-weight: 600; margin-right: 4px; }
+.reacties li b, .reacties li span { display: block; }
+.reacties li span { margin-top: 2px; }
+.opm li small { display: block; margin-top: 4px; font: 400 10px var(--font-mono); color: var(--muted); }
+.edit { display: grid; gap: 12px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); }
+.edit[hidden] { display: none; }
+.edit label, .edit fieldset { display: grid; gap: 6px; font: 500 11px/1.2 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border: 0; margin: 0; padding: 0; }
+.edit legend { padding: 0; margin-bottom: 6px; }
+.edit select, .edit textarea, .edit input[type=text] { font: 400 14px/1.4 var(--font-ui); color: var(--fg); text-transform: none; letter-spacing: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
+.edit textarea { min-height: 70px; resize: vertical; }
+.edit .rad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.edit .rad label { display: grid; place-items: center; gap: 4px; padding: 8px 2px; border-radius: 8px; border: 1px solid var(--line); cursor: pointer; text-transform: none; letter-spacing: 0; font: 500 11px/1.1 var(--font-ui); color: var(--fg); text-align: center; }
+.edit .rad input { position: absolute; opacity: 0; pointer-events: none; }
+.edit .rad label b { font: 700 16px/1 var(--font-ui); color: var(--c); }
+.edit .rad label:has(input:checked) { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--surface)); }
+.edit .rad label:has(input:focus-visible) { outline: 2px solid var(--fg); outline-offset: 2px; }
+.knoppen { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.knop { height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font: 500 12px/1 var(--font-mono); cursor: pointer; }
+.knop:hover { border-color: var(--fg); }
+.knop.hoofd { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.knop.hoofd:hover { filter: brightness(1.08); }
+.knop:disabled { opacity: .5; cursor: default; }
+.pb p.ok { margin: 0; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--ok) 14%, var(--surface)); font: 400 12px/1.45 var(--font-mono); }
+
+.notice { position: absolute; z-index: 3; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(300px + env(safe-area-inset-bottom, 0px)); max-width: 260px; font: 400 11px/1.4 var(--font-mono); color: var(--muted); }
 .notice b { color: var(--fg); font-weight: 500; }
 
 @media (max-width: 760px) {
@@ -198,6 +264,12 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   .exp { width: 36px; padding: 0; justify-content: center; }
   .exp span { display: none; }
   .notice { display: none; }
+  .legend { top: calc(158px + env(safe-area-inset-top, 0px)); bottom: auto; width: auto; padding: 0; background: none; box-shadow: none; backdrop-filter: none; }
+  .legend > .lg-kop { display: inline-flex; height: 26px; font-size: 11px; cursor: pointer; justify-self: start; }
+  .legend > .lg-kop .sw { display: inline-flex; gap: 2px; }
+  .legend > .lg-kop .sw i { width: 6px; height: 6px; border-radius: 50%; }
+  .legend > .lg-in { display: none; }
+  .legend.open > .lg-in { display: grid; gap: 6px; width: 230px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 8px; }
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; height: 74%; border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .panel[hidden] { transform: translateY(105%); }
   .facts { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -246,6 +318,18 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 <div class="count" id="count">
   <button type="button" class="pill" id="countBtn" aria-expanded="false" aria-controls="allList"><span class="dot"></span><span id="countText">0 panden</span><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m2 3.5 3 3 3-3"/></svg></button>
   <div class="results" id="allList" hidden></div>
+</div>
+
+<div class="legend" id="legend">
+  <button type="button" class="pill lg-kop" id="lgKop" aria-expanded="false" aria-controls="lgIn"><span class="sw" id="lgSw"></span>Legende</button>
+  <div class="lg-in" id="lgIn">
+    <div class="seg" role="group" aria-label="Kleur de panden volgens">
+      <button type="button" id="lgSoort" aria-pressed="true">Soort</button>
+      <button type="button" id="lgStaat" aria-pressed="false">Staat</button>
+    </div>
+    <ul id="lgList"></ul>
+    <p class="hint">Klik om een groep te verbergen of te tonen.</p>
+  </div>
 </div>
 
 <p class="notice" id="notice" hidden></p>
@@ -298,7 +382,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 <script>
 // De panden staan in data/panden.js.
 
-const TABS = [["fotos", "Foto's"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
+const TABS = [["fotos", "Foto's"], ["staat", "Staat"], ["discussie", "Discussie"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
 const LIVE = {
   osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers' },
   sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: 'Satelliet © Esri, Maxar, Earthstar Geographics' }
@@ -309,6 +393,27 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 let mode = "kaart", live = false, current = null;
+
+// Soort pand en staat. De stip op de kaart krijgt de kleur van de soort, of van de staat (keuze in de legende).
+const SOORTEN = [
+  ["ruine", "Ruïne"], ["kasteel", "Kasteel of burcht"], ["religieus", "Klooster, kerk of kapel"],
+  ["hoeve", "Hoeve of landbouw"], ["woning", "Woning of villa"], ["industrie", "Industrie of bedrijf"], ["spoorweg", "Spoorweg"]
+];
+const STAAT = ["Onbekend", "Ruïne", "Slecht", "Matig", "Redelijk", "Goed"];
+const STAAT_UITLEG = ["Nog niet beoordeeld", "Ingestort, alleen nog muren of resten", "Dak of draagstructuur zwaar beschadigd", "Verwaarloosd, maar de structuur is nog intact", "Kleine gebreken, goed te herstellen", "Onderhouden of nog in gebruik"];
+const soortLabel = id => (SOORTEN.find(x => x[0] === id) || [id, "Andere"])[1];
+const soortKleur = id => SOORTEN.some(x => x[0] === id) ? `var(--c-${id})` : "var(--s0)";
+const score = p => (p.staat && Number(p.staat.score)) || 0;
+const staatKleur = n => `var(--s${n})`;
+let kleurOp = "soort";
+const verborgen = new Set();
+const groep = p => kleurOp === "soort" ? p.categorie : "s" + score(p);
+const kleur = p => kleurOp === "soort" ? soortKleur(p.categorie) : staatKleur(score(p));
+try { if (localStorage.getItem("kleurOp") === "staat") kleurOp = "staat"; } catch (e) {}
+
+// Aanpassingen en reacties van bezoekers. Uitleg in de README onder "Aanpassen op de site".
+// Web-app van de Google Sheet "Leegstandatlas aanpassingen". Leeg: "Opslaan" opent dan een voorstel op GitHub.
+const OPSLAG = "https://script.google.com/a/macros/student.uhasselt.be/s/AKfycbzMuOaxYkdyBi5yKxS8PTsJoyKoFwsKZtyyeQwoNTxPbDY0_q2ANbQ_qw1hrIvX1XP7zQ/exec";
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const small = matchMedia("(max-width: 760px)").matches;
 
@@ -467,11 +572,49 @@ OPKAART.forEach(p => {
   const el = document.createElement("button");
   el.type = "button";
   el.className = "mk";
+  el.style.setProperty("--c", kleur(p));
   el.innerHTML = `<span class="d"></span><span class="pill">${esc(p.naam)}</span>`;
   el.addEventListener("click", e => { e.stopPropagation(); openPand(p.id); });
   markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
-  el.setAttribute("aria-label", `${p.naam}, ${p.status}`);
+  el.setAttribute("aria-label", `${p.naam}, ${soortLabel(p.categorie)}, staat: ${STAAT[score(p)]}`);
 });
+function kleurMarkers() {
+  OPKAART.forEach(p => {
+    const el = markers[p.id].el;
+    el.style.setProperty("--c", kleur(p));
+    el.classList.toggle("uit", verborgen.has(groep(p)));
+    el.setAttribute("aria-label", `${p.naam}, ${soortLabel(p.categorie)}, staat: ${STAAT[score(p)]}`);
+  });
+}
+
+// Legende
+function renderLegend() {
+  const tel = g => PANDEN.filter(p => groep(p) === g).length;
+  const items = kleurOp === "soort"
+    ? SOORTEN.map(([id, l]) => [id, l, soortKleur(id)])
+    : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} · ${STAAT[n]}` : STAAT[0], staatKleur(n)]);
+  $("lgList").innerHTML = items.map(([g, l, c]) =>
+    `<li><button type="button" data-g="${g}" aria-pressed="${!verborgen.has(g)}" style="--c:${c}"><span class="sw"></span>${esc(l)}<small>${tel(g)}</small></button></li>`).join("");
+  $("lgSw").innerHTML = items.slice(0, 5).map(([, , c]) => `<i style="background:${c}"></i>`).join("");
+  $("lgSoort").setAttribute("aria-pressed", kleurOp === "soort");
+  $("lgStaat").setAttribute("aria-pressed", kleurOp === "staat");
+}
+function zetKleurOp(m) {
+  kleurOp = m; verborgen.clear();
+  try { localStorage.setItem("kleurOp", m); } catch (e) {}
+  kleurMarkers(); renderLegend();
+}
+$("lgSoort").onclick = () => zetKleurOp("soort");
+$("lgStaat").onclick = () => zetKleurOp("staat");
+$("lgList").addEventListener("click", e => {
+  const b = e.target.closest("button[data-g]");
+  if (!b) return;
+  const g = b.dataset.g;
+  verborgen.has(g) ? verborgen.delete(g) : verborgen.add(g);
+  kleurMarkers(); renderLegend();
+});
+$("lgKop").onclick = e => { e.stopPropagation(); const open = !$("legend").classList.contains("open"); $("legend").classList.toggle("open", open); $("lgKop").setAttribute("aria-expanded", open); };
+renderLegend();
 const bounds = OPKAART.reduce((b, p) => b.extend(p.lngLat), new maplibregl.LngLatBounds(OPKAART[0].lngLat, OPKAART[0].lngLat));
 const agg = document.createElement("button");
 agg.type = "button";
@@ -484,7 +627,7 @@ $("countText").textContent = `${PANDEN.length} panden · Plombières`;
 
 // Lijst van alle panden onder de teller
 const allList = $("allList"), countBtn = $("countBtn");
-const rij = p => `<button type="button" data-id="${p.id}"><span class="d${p.lngLat ? "" : " off"}"></span><b>${esc(p.naam)}</b><small>${esc(p.lngLat ? (p.adres || p.gemeente) : "Locatie nog onbekend")}</small></button>`;
+const rij = p => `<button type="button" data-id="${p.id}"><span class="d${p.lngLat ? "" : " off"}" style="--c:${kleur(p)}"></span><b>${esc(p.naam)}</b><small>${esc(p.lngLat ? (p.adres || p.gemeente) : "Locatie nog onbekend")}</small></button>`;
 function toggleAll(open) {
   if (open) allList.innerHTML = [...PANDEN].sort((a, b) => a.naam.localeCompare(b.naam, "nl")).map(rij).join("");
   allList.hidden = !open;
@@ -530,7 +673,7 @@ const q = $("q"), results = $("results");
 function renderResults() {
   const t = q.value.trim().toLowerCase();
   if (!t) { results.hidden = true; return; }
-  const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status].join(" ").toLowerCase().includes(t));
+  const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status, soortLabel(p.categorie), STAAT[score(p)]].join(" ").toLowerCase().includes(t));
   results.innerHTML = hits.length
     ? hits.map(rij).join("")
     : `<div class="none">Geen pand gevonden voor “${esc(q.value)}”.</div>`;
@@ -552,6 +695,7 @@ document.addEventListener("click", e => {
   if (!e.target.closest(".search")) results.hidden = true;
   if (!e.target.closest(".count")) toggleAll(false);
   if (!e.target.closest(".oud")) toggleOud(false);
+  if (!e.target.closest(".legend")) { $("legend").classList.remove("open"); $("lgKop").setAttribute("aria-expanded", false); }
 });
 
 // Detailpaneel
@@ -570,21 +714,28 @@ function openPand(id, fly = true) {
   current = p;
   Object.values(markers).forEach(o => o.el.classList.remove("on"));
   if (markers[id]) markers[id].el.classList.add("on");
-  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip">${esc(p.type)}</span>${p.lngLat ? "" : `<span class="chip">nog niet op de kaart</span>`}`;
-  $("pTitle").textContent = p.naam;
-  $("pAddr").textContent = p.adres || p.gemeente;
+  vulPaneel();
   const ll = p.lngLat;
-  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
-  $("pFacts").innerHTML = [["Eigen foto's", p.fotos.length], ["Bezocht", bezocht], ["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"]]
-    .map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
   $("panel").hidden = false;
-  showTab(tab);
   if (fly && ll) {
     map.flyTo({ center: p.lngLat, zoom: Math.max(map.getZoom(), live ? 17 : 13.5), speed: 1.2, essential: true, padding: panelPadding() });
   } else {
     map.easeTo({ padding: panelPadding(), duration: reduce ? 0 : 500 });
   }
   try { history.replaceState(null, "", "#" + id); } catch (e) {}
+}
+function vulPaneel() {
+  const p = current;
+  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip cat" style="--c:${soortKleur(p.categorie)}">${esc(soortLabel(p.categorie))}</span>${p.lngLat ? "" : `<span class="chip">nog niet op de kaart</span>`}`;
+  $("pTitle").textContent = p.naam;
+  const ll = p.lngLat;
+  $("pAddr").textContent = [p.adres || p.gemeente, p.type, ll ? `${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O` : ""].filter(Boolean).join(" · ");
+  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
+  const n = score(p);
+  const staatHtml = `<span class="sc" style="--c:${staatKleur(n)}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>${esc(STAAT[n])}`;
+  $("pFacts").innerHTML = [["Eigen foto's", esc(p.fotos.length)], ["Bezocht", esc(bezocht)], ["Staat", staatHtml], ["Soort", esc(soortLabel(p.categorie))]]
+    .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+  showTab(tab);
 }
 function closePand() {
   $("panel").hidden = true;
@@ -605,13 +756,13 @@ document.addEventListener("keydown", e => {
 const tabsEl = $("tabs");
 function renderTabs() {
   tabsEl.innerHTML = TABS.map(([k, l]) => {
-    const n = current ? current[TABKEY[k]].length : 0;
+    const n = current && TABKEY[k] ? current[TABKEY[k]].length : 0;
     const tel = k === "fotos" ? "" : n ? ` <span class="n">${n}</span>` : k === "historisch" && current && current.geschiedenis ? ` <span class="n">•</span>` : "";
     return `<button type="button" role="tab" data-tab="${k}" id="tab-${k}">${l}${tel}</button>`;
   }).join("");
 }
 tabsEl.addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
-const TABKEY = { fotos: "fotos", grondplan: "grondplannen", model: "model3d", historisch: "historisch", materialen: "materialen" };
+const TABKEY = { fotos: "fotos", discussie: "reacties", grondplan: "grondplannen", model: "model3d", historisch: "historisch", materialen: "materialen" };
 
 const gallery = (list, label, wide) => `<div class="grid2${wide ? " wide" : ""}">${list.map((src, i) =>
   `<figure class="ph-tile"><button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(label)} ${i + 1} vergroten"><img src="${esc(src)}" alt="${esc(label)} ${i + 1}" loading="lazy"></button></figure>`).join("")}</div>`;
@@ -646,6 +797,10 @@ function showTab(k) {
     else if (!p.fotos.length) parts.push(`<p class="note">Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.</p>`);
     if (!p.lngLat) parts.push(`<div class="empty"><b>Dit pand staat nog niet op de kaart.</b><span>Zet een document “Coördinaten” met de breedte en lengte (bv. 50.72319, 5.91306) in de map van dit pand, dan verschijnt het op de bol.</span></div>`);
     body.innerHTML = parts.join("");
+  } else if (k === "staat") {
+    body.innerHTML = staatTab(p);
+  } else if (k === "discussie") {
+    body.innerHTML = discussieTab(p);
   } else if (k === "historisch") {
     const g = p.geschiedenis, parts = [];
     if (g) {
@@ -664,6 +819,116 @@ function showTab(k) {
     body.innerHTML = p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : empty("materialenlijst", "materialen");
   }
 }
+
+// Staat en discussie: bezoekers passen de staat aan of schrijven een reactie, altijd met hun naam.
+PANDEN.forEach(p => { p.reacties = p.reacties || []; p.aanpassingen = p.aanpassingen || []; });
+let melding = "";
+let mijnNaam = "";
+try { mijnNaam = localStorage.getItem("naam") || ""; } catch (e) {}
+// E-mailadressen en telefoonnummers uit vrije tekst halen (de site is openbaar).
+const wis = t => String(t || "").replace(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/gi, "[e-mail verwijderd]")
+  .replace(/\+?\d[\d ./-]{7,}\d/g, m => (m.match(/\d/g) || []).length >= 9 ? "[nummer verwijderd]" : m)
+  .replace(/\s+/g, " ").trim();
+const naamVeld = () => `<label>Je naam (verplicht, zichtbaar voor iedereen)<input type="text" name="naam" required maxlength="60" autocomplete="name" value="${esc(mijnNaam)}" placeholder="Bv. Thomas D."></label>`;
+const privacy = `<p class="note">Je naam en je tekst zijn voor iedereen zichtbaar. Zet er geen e-mailadressen of telefoonnummers in.</p>`;
+const wanneer = t => t ? esc(datum(String(t).slice(0, 10))) : "";
+const meldingHtml = () => { if (!melding) return ""; const h = `<p class="ok">${melding}</p>`; melding = ""; return h; };
+
+function staatTab(p) {
+  const n = score(p), c = staatKleur(n), st = p.staat || {};
+  const parts = [`<div class="staat-kop" style="--c:${c}"><b>${n || "?"}<small style="font-size:14px;color:var(--muted)"> / 5</small></b><span>${esc(STAAT[n])}</span></div>`,
+    `<div class="schaal" style="--c:${c}">${[1, 2, 3, 4, 5].map(i => `<div class="${i <= n ? "on" : ""}"></div>`).join("")}</div>`,
+    `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${STAAT[i]}</span>`).join("")}</div>`];
+  if (st.toelichting) parts.push(`<p class="txt">${esc(st.toelichting)}</p>`);
+  parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? ` Laatst aangepast door ${esc(st.naam)}, ${wanneer(st.tijd)}.` : st.bron ? ` Beoordeling: ${esc(st.bron)}.` : ""}</p>`);
+  parts.push(meldingHtml());
+  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button></div>`);
+  parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
+    ${naamVeld()}
+    <label>Soort pand<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+    <fieldset><legend>Staat</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"${i === n ? " checked" : ""}><b>${i}</b>${STAAT[i]}</label>`).join("")}</div></fieldset>
+    <label>Toelichting bij de staat<textarea name="toel" maxlength="1000" placeholder="Bv. wat je ter plaatse zag: dak ingestort, ramen dichtgetimmerd, ...">${esc(st.toelichting || "")}</textarea></label>
+    ${privacy}
+    <div class="knoppen"><button type="submit" class="knop hoofd">Opslaan</button><button type="button" class="knop" id="bewerkWeg">Annuleren</button></div>
+  </form>`);
+  if (p.aanpassingen.length) parts.push(`<h3>Eerdere aanpassingen <small>${p.aanpassingen.length}</small></h3><ul class="opm">${[...p.aanpassingen].reverse().map(a => {
+    const wat = [a.categorie && `soort: ${soortLabel(a.categorie)}`, a.score && `staat ${a.score} (${STAAT[a.score]})`, a.toelichting && `“${a.toelichting}”`].filter(Boolean).join(", ");
+    return `<li><b>${esc(a.naam)}</b> ${esc(wat)}<small>${wanneer(a.tijd)}</small></li>`;
+  }).join("")}</ul>`);
+  return parts.join("");
+}
+
+function discussieTab(p) {
+  const parts = [`<h3>Discussie <small>${p.reacties.length}</small></h3>`,
+    `<p class="note">Deel je mening of ideeën over dit gebouw: wat er mee zou kunnen gebeuren, wat je weet over de geschiedenis, of wat je ter plaatse zag.</p>`];
+  parts.push(meldingHtml());
+  parts.push(`<form class="edit" id="reageer" data-soort="reactie">
+    ${naamVeld()}
+    <label>Je reactie<textarea name="tekst" required maxlength="1000" placeholder="Schrijf hier je mening of idee"></textarea></label>
+    ${privacy}
+    <div class="knoppen"><button type="submit" class="knop hoofd">Plaatsen</button></div>
+  </form>`);
+  if (p.reacties.length) parts.push(`<ul class="opm reacties">${[...p.reacties].reverse().map(r => `<li><b>${esc(r.naam)}</b><span>${esc(r.tekst)}</span><small>${wanneer(r.tijd)}</small></li>`).join("")}</ul>`);
+  else parts.push(`<div class="empty"><b>Nog geen reacties.</b><span>Schrijf als eerste wat je van dit gebouw vindt.</span></div>`);
+  return parts.join("");
+}
+
+$("pBody").addEventListener("click", e => {
+  if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("input").focus(); }
+  if (e.target.id === "bewerkWeg") showTab("staat");
+});
+$("pBody").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target, p = current, soort = f.dataset.soort;
+  const naam = wis(f.naam.value).slice(0, 60);
+  if (!naam) { f.naam.focus(); return; }
+  mijnNaam = naam;
+  try { localStorage.setItem("naam", naam); } catch (err) {}
+  let d;
+  if (soort === "reactie") {
+    d = { type: "reactie", id: p.id, naam, tekst: wis(f.tekst.value).slice(0, 1000) };
+    if (!d.tekst) { f.tekst.focus(); return; }
+  } else {
+    d = { type: "aanpassing", id: p.id, naam, categorie: f.soort.value, score: Number(f.score.value) || "", toelichting: wis(f.toel.value).slice(0, 1000) };
+    if (d.categorie === p.categorie) d.categorie = "";
+    if (d.score === score(p) && d.toelichting === ((p.staat && p.staat.toelichting) || "")) { d.score = ""; d.toelichting = ""; }
+    if (!d.categorie && !d.score && !d.toelichting) { melding = "Er is niets veranderd."; return showTab("staat"); }
+  }
+  f.querySelector("button[type=submit]").disabled = true;
+  const terug = soort === "reactie" ? "discussie" : "staat";
+  if (OPSLAG) {
+    try {
+      await fetch(OPSLAG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
+      pasToe([{ ...d, tijd: new Date().toISOString() }]);
+      melding = soort === "reactie" ? "Geplaatst. Iedereen ziet je reactie nu." : "Opgeslagen. Iedereen ziet je aanpassing nu op de site.";
+    } catch (err) { melding = "Opslaan lukte niet. Probeer het later opnieuw."; }
+  } else {
+    const regels = [`Pand: ${p.naam} (${p.id})`, `Naam: ${naam}`, d.tekst && `Reactie: ${d.tekst}`, d.categorie && `Soort: ${soortLabel(d.categorie)}`, d.score && `Staat: ${d.score} (${STAAT[d.score]})`, d.toelichting && `Toelichting: ${d.toelichting}`].filter(Boolean);
+    const url = `https://github.com/thomasdroog/leegstandsatlas/issues/new?title=${encodeURIComponent((soort === "reactie" ? "Reactie: " : "Aanpassing: ") + p.naam)}&body=${encodeURIComponent(regels.join("\n\n"))}`;
+    window.open(url, "_blank", "noopener");
+    melding = "Je bericht staat klaar op GitHub. Klik daar op “Submit new issue”; het verschijnt op de site zodra het verwerkt is.";
+  }
+  tab = terug;
+  kleurMarkers(); renderLegend(); vulPaneel();
+});
+// Rijen uit de gedeelde opslag over de gegevens uit panden.js leggen (laatste aanpassing wint).
+function pasToe(rijen) {
+  [...rijen].sort((a, b) => String(a.tijd).localeCompare(String(b.tijd))).forEach(r => {
+    const p = PANDEN.find(x => x.id === r.id);
+    if (!p || !r.naam) return;
+    const naam = String(r.naam);
+    if (r.type === "reactie") { if (r.tekst) p.reacties.push({ naam, tekst: String(r.tekst), tijd: r.tijd }); return; }
+    const n = Number(r.score), cat = SOORTEN.some(x => x[0] === r.categorie) ? r.categorie : "";
+    if (cat) p.categorie = cat;
+    if ((n >= 1 && n <= 5) || r.toelichting) p.staat = { score: n >= 1 && n <= 5 ? n : score(p), toelichting: r.toelichting ? String(r.toelichting) : (p.staat && p.staat.toelichting) || "", naam, tijd: r.tijd };
+    if (cat || n || r.toelichting) p.aanpassingen.push({ naam, categorie: cat, score: n >= 1 && n <= 5 ? n : "", toelichting: r.toelichting ? String(r.toelichting) : "", tijd: r.tijd });
+  });
+}
+if (OPSLAG) fetch(OPSLAG).then(r => r.json()).then(rijen => {
+  if (!Array.isArray(rijen)) return;
+  pasToe(rijen); kleurMarkers(); renderLegend();
+  if (current) vulPaneel();
+}).catch(() => {});
 
 // Foto's vergroten
 let lbList = [], lbIdx = 0;
