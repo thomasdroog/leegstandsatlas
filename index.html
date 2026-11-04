@@ -224,12 +224,15 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 .pb p.txt { margin: 0; font: 400 14px/1.55 var(--font-ui); }
 .opm { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .opm li { padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font: 400 13px/1.45 var(--font-ui); }
+.opm li b { font-weight: 600; margin-right: 4px; }
+.reacties li b, .reacties li span { display: block; }
+.reacties li span { margin-top: 2px; }
 .opm li small { display: block; margin-top: 4px; font: 400 10px var(--font-mono); color: var(--muted); }
 .edit { display: grid; gap: 12px; padding: 14px; border-radius: 12px; border: 1px solid var(--line); }
 .edit[hidden] { display: none; }
 .edit label, .edit fieldset { display: grid; gap: 6px; font: 500 11px/1.2 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border: 0; margin: 0; padding: 0; }
 .edit legend { padding: 0; margin-bottom: 6px; }
-.edit select, .edit textarea { font: 400 14px/1.4 var(--font-ui); color: var(--fg); text-transform: none; letter-spacing: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
+.edit select, .edit textarea, .edit input[type=text] { font: 400 14px/1.4 var(--font-ui); color: var(--fg); text-transform: none; letter-spacing: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; }
 .edit textarea { min-height: 70px; resize: vertical; }
 .edit .rad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .edit .rad label { display: grid; place-items: center; gap: 4px; padding: 8px 2px; border-radius: 8px; border: 1px solid var(--line); cursor: pointer; text-transform: none; letter-spacing: 0; font: 500 11px/1.1 var(--font-ui); color: var(--fg); text-align: center; }
@@ -379,7 +382,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 <script>
 // De panden staan in data/panden.js.
 
-const TABS = [["fotos", "Foto's"], ["staat", "Staat"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
+const TABS = [["fotos", "Foto's"], ["staat", "Staat"], ["discussie", "Discussie"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
 const LIVE = {
   osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers' },
   sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: 'Satelliet © Esri, Maxar, Earthstar Geographics' }
@@ -408,7 +411,7 @@ const groep = p => kleurOp === "soort" ? p.categorie : "s" + score(p);
 const kleur = p => kleurOp === "soort" ? soortKleur(p.categorie) : staatKleur(score(p));
 try { if (localStorage.getItem("kleurOp") === "staat") kleurOp = "staat"; } catch (e) {}
 
-// Aanpassingen van bezoekers (soort, staat, aanvullingen). Uitleg in de README onder "Aanpassen op de site".
+// Aanpassingen en reacties van bezoekers. Uitleg in de README onder "Aanpassen op de site".
 // Leeg: er is nog geen gedeelde opslag, dan opent "Opslaan" een vooraf ingevuld voorstel op GitHub.
 const OPSLAG = "";
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -759,7 +762,7 @@ function renderTabs() {
   }).join("");
 }
 tabsEl.addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
-const TABKEY = { fotos: "fotos", grondplan: "grondplannen", model: "model3d", historisch: "historisch", materialen: "materialen" };
+const TABKEY = { fotos: "fotos", discussie: "reacties", grondplan: "grondplannen", model: "model3d", historisch: "historisch", materialen: "materialen" };
 
 const gallery = (list, label, wide) => `<div class="grid2${wide ? " wide" : ""}">${list.map((src, i) =>
   `<figure class="ph-tile"><button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(label)} ${i + 1} vergroten"><img src="${esc(src)}" alt="${esc(label)} ${i + 1}" loading="lazy"></button></figure>`).join("")}</div>`;
@@ -796,6 +799,8 @@ function showTab(k) {
     body.innerHTML = parts.join("");
   } else if (k === "staat") {
     body.innerHTML = staatTab(p);
+  } else if (k === "discussie") {
+    body.innerHTML = discussieTab(p);
   } else if (k === "historisch") {
     const g = p.geschiedenis, parts = [];
     if (g) {
@@ -815,63 +820,108 @@ function showTab(k) {
   }
 }
 
-// Staat: beoordeling, aanvullingen en het formulier om aan te passen
+// Staat en discussie: bezoekers passen de staat aan of schrijven een reactie, altijd met hun naam.
+PANDEN.forEach(p => { p.reacties = p.reacties || []; p.aanpassingen = p.aanpassingen || []; });
 let melding = "";
+let mijnNaam = "";
+try { mijnNaam = localStorage.getItem("naam") || ""; } catch (e) {}
+// E-mailadressen en telefoonnummers uit vrije tekst halen (de site is openbaar).
+const wis = t => String(t || "").replace(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/gi, "[e-mail verwijderd]")
+  .replace(/\+?\d[\d ./-]{7,}\d/g, m => (m.match(/\d/g) || []).length >= 9 ? "[nummer verwijderd]" : m)
+  .replace(/\s+/g, " ").trim();
+const naamVeld = () => `<label>Je naam (verplicht, zichtbaar voor iedereen)<input type="text" name="naam" required maxlength="60" autocomplete="name" value="${esc(mijnNaam)}" placeholder="Bv. Thomas D."></label>`;
+const privacy = `<p class="note">Je naam en je tekst zijn voor iedereen zichtbaar. Zet er geen e-mailadressen of telefoonnummers in.</p>`;
+const wanneer = t => t ? esc(datum(String(t).slice(0, 10))) : "";
+const meldingHtml = () => { if (!melding) return ""; const h = `<p class="ok">${melding}</p>`; melding = ""; return h; };
+
 function staatTab(p) {
   const n = score(p), c = staatKleur(n), st = p.staat || {};
   const parts = [`<div class="staat-kop" style="--c:${c}"><b>${n || "?"}<small style="font-size:14px;color:var(--muted)"> / 5</small></b><span>${esc(STAAT[n])}</span></div>`,
     `<div class="schaal" style="--c:${c}">${[1, 2, 3, 4, 5].map(i => `<div class="${i <= n ? "on" : ""}"></div>`).join("")}</div>`,
     `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${STAAT[i]}</span>`).join("")}</div>`];
   if (st.toelichting) parts.push(`<p class="txt">${esc(st.toelichting)}</p>`);
-  parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.bron ? ` Beoordeling: ${esc(st.bron)}${st.tijd ? ", " + esc(datum(String(st.tijd).slice(0, 10))) : ""}.` : ""}</p>`);
-  if (p.opmerkingen && p.opmerkingen.length) parts.push(`<h3>Aanvullingen <small>${p.opmerkingen.length}</small></h3><ul class="opm">${p.opmerkingen.map(o => `<li>${esc(o.tekst)}${o.tijd ? `<small>${esc(datum(String(o.tijd).slice(0, 10)))}</small>` : ""}</li>`).join("")}</ul>`);
-  if (melding) { parts.push(`<p class="ok">${melding}</p>`); melding = ""; }
-  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Aanpassen of aanvullen</button></div>`);
-  parts.push(`<form class="edit" id="bewerk" hidden>
+  parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? ` Laatst aangepast door ${esc(st.naam)}, ${wanneer(st.tijd)}.` : st.bron ? ` Beoordeling: ${esc(st.bron)}.` : ""}</p>`);
+  parts.push(meldingHtml());
+  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button></div>`);
+  parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
+    ${naamVeld()}
     <label>Soort pand<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
     <fieldset><legend>Staat</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"${i === n ? " checked" : ""}><b>${i}</b>${STAAT[i]}</label>`).join("")}</div></fieldset>
-    <label>Toelichting bij de staat<textarea name="toel" maxlength="1000">${esc(st.toelichting || "")}</textarea></label>
-    <label>Aanvulling of opmerking (optioneel)<textarea name="opm" maxlength="1000" placeholder="Bv. wat je ter plaatse zag, een bron, of wat er veranderd is"></textarea></label>
-    <p class="note">Alles wat je hier zet, is voor iedereen zichtbaar. Zet er geen namen, e-mailadressen of telefoonnummers in.</p>
+    <label>Toelichting bij de staat<textarea name="toel" maxlength="1000" placeholder="Bv. wat je ter plaatse zag: dak ingestort, ramen dichtgetimmerd, ...">${esc(st.toelichting || "")}</textarea></label>
+    ${privacy}
     <div class="knoppen"><button type="submit" class="knop hoofd">Opslaan</button><button type="button" class="knop" id="bewerkWeg">Annuleren</button></div>
   </form>`);
+  if (p.aanpassingen.length) parts.push(`<h3>Eerdere aanpassingen <small>${p.aanpassingen.length}</small></h3><ul class="opm">${[...p.aanpassingen].reverse().map(a => {
+    const wat = [a.categorie && `soort: ${soortLabel(a.categorie)}`, a.score && `staat ${a.score} (${STAAT[a.score]})`, a.toelichting && `“${a.toelichting}”`].filter(Boolean).join(", ");
+    return `<li><b>${esc(a.naam)}</b> ${esc(wat)}<small>${wanneer(a.tijd)}</small></li>`;
+  }).join("")}</ul>`);
   return parts.join("");
 }
+
+function discussieTab(p) {
+  const parts = [`<h3>Discussie <small>${p.reacties.length}</small></h3>`,
+    `<p class="note">Deel je mening of ideeën over dit gebouw: wat er mee zou kunnen gebeuren, wat je weet over de geschiedenis, of wat je ter plaatse zag.</p>`];
+  parts.push(meldingHtml());
+  parts.push(`<form class="edit" id="reageer" data-soort="reactie">
+    ${naamVeld()}
+    <label>Je reactie<textarea name="tekst" required maxlength="1000" placeholder="Schrijf hier je mening of idee"></textarea></label>
+    ${privacy}
+    <div class="knoppen"><button type="submit" class="knop hoofd">Plaatsen</button></div>
+  </form>`);
+  if (p.reacties.length) parts.push(`<ul class="opm reacties">${[...p.reacties].reverse().map(r => `<li><b>${esc(r.naam)}</b><span>${esc(r.tekst)}</span><small>${wanneer(r.tijd)}</small></li>`).join("")}</ul>`);
+  else parts.push(`<div class="empty"><b>Nog geen reacties.</b><span>Schrijf als eerste wat je van dit gebouw vindt.</span></div>`);
+  return parts.join("");
+}
+
 $("pBody").addEventListener("click", e => {
-  if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("select").focus(); }
+  if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("input").focus(); }
   if (e.target.id === "bewerkWeg") showTab("staat");
 });
 $("pBody").addEventListener("submit", async e => {
   e.preventDefault();
-  const f = e.target, p = current;
-  const d = { id: p.id, categorie: f.soort.value, score: Number(f.score.value) || "", toelichting: f.toel.value.trim(), opmerking: f.opm.value.trim() };
-  if (d.categorie === p.categorie) d.categorie = "";
-  if (d.score === score(p) && d.toelichting === ((p.staat && p.staat.toelichting) || "")) { d.score = ""; d.toelichting = ""; }
-  if (!d.categorie && !d.score && !d.toelichting && !d.opmerking) { melding = "Er is niets veranderd."; return showTab("staat"); }
+  const f = e.target, p = current, soort = f.dataset.soort;
+  const naam = wis(f.naam.value).slice(0, 60);
+  if (!naam) { f.naam.focus(); return; }
+  mijnNaam = naam;
+  try { localStorage.setItem("naam", naam); } catch (err) {}
+  let d;
+  if (soort === "reactie") {
+    d = { type: "reactie", id: p.id, naam, tekst: wis(f.tekst.value).slice(0, 1000) };
+    if (!d.tekst) { f.tekst.focus(); return; }
+  } else {
+    d = { type: "aanpassing", id: p.id, naam, categorie: f.soort.value, score: Number(f.score.value) || "", toelichting: wis(f.toel.value).slice(0, 1000) };
+    if (d.categorie === p.categorie) d.categorie = "";
+    if (d.score === score(p) && d.toelichting === ((p.staat && p.staat.toelichting) || "")) { d.score = ""; d.toelichting = ""; }
+    if (!d.categorie && !d.score && !d.toelichting) { melding = "Er is niets veranderd."; return showTab("staat"); }
+  }
   f.querySelector("button[type=submit]").disabled = true;
+  const terug = soort === "reactie" ? "discussie" : "staat";
   if (OPSLAG) {
     try {
       await fetch(OPSLAG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
       pasToe([{ ...d, tijd: new Date().toISOString() }]);
-      melding = "Opgeslagen. Iedereen ziet je aanpassing nu op de site.";
+      melding = soort === "reactie" ? "Geplaatst. Iedereen ziet je reactie nu." : "Opgeslagen. Iedereen ziet je aanpassing nu op de site.";
     } catch (err) { melding = "Opslaan lukte niet. Probeer het later opnieuw."; }
   } else {
-    const regels = [`Pand: ${p.naam} (${p.id})`, d.categorie && `Soort: ${soortLabel(d.categorie)}`, d.score && `Staat: ${d.score} (${STAAT[d.score]})`, d.toelichting && `Toelichting: ${d.toelichting}`, d.opmerking && `Aanvulling: ${d.opmerking}`].filter(Boolean);
-    const url = `https://github.com/thomasdroog/leegstandsatlas/issues/new?title=${encodeURIComponent("Aanpassing: " + p.naam)}&body=${encodeURIComponent(regels.join("\n\n"))}`;
+    const regels = [`Pand: ${p.naam} (${p.id})`, `Naam: ${naam}`, d.tekst && `Reactie: ${d.tekst}`, d.categorie && `Soort: ${soortLabel(d.categorie)}`, d.score && `Staat: ${d.score} (${STAAT[d.score]})`, d.toelichting && `Toelichting: ${d.toelichting}`].filter(Boolean);
+    const url = `https://github.com/thomasdroog/leegstandsatlas/issues/new?title=${encodeURIComponent((soort === "reactie" ? "Reactie: " : "Aanpassing: ") + p.naam)}&body=${encodeURIComponent(regels.join("\n\n"))}`;
     window.open(url, "_blank", "noopener");
-    melding = "Je voorstel staat klaar op GitHub. Klik daar op “Submit new issue”; het verschijnt op de site zodra het verwerkt is.";
+    melding = "Je bericht staat klaar op GitHub. Klik daar op “Submit new issue”; het verschijnt op de site zodra het verwerkt is.";
   }
+  tab = terug;
   kleurMarkers(); renderLegend(); vulPaneel();
 });
-// Aanpassingen uit de gedeelde opslag over de gegevens uit panden.js leggen (laatste wint).
+// Rijen uit de gedeelde opslag over de gegevens uit panden.js leggen (laatste aanpassing wint).
 function pasToe(rijen) {
   [...rijen].sort((a, b) => String(a.tijd).localeCompare(String(b.tijd))).forEach(r => {
     const p = PANDEN.find(x => x.id === r.id);
-    if (!p) return;
-    if (r.categorie && SOORTEN.some(x => x[0] === r.categorie)) p.categorie = r.categorie;
-    const n = Number(r.score);
-    if ((n >= 1 && n <= 5) || r.toelichting) p.staat = { score: n >= 1 && n <= 5 ? n : score(p), toelichting: r.toelichting ? String(r.toelichting) : (p.staat && p.staat.toelichting) || "", bron: "aangepast door een bezoeker", tijd: r.tijd };
-    if (r.opmerking) (p.opmerkingen = p.opmerkingen || []).push({ tekst: String(r.opmerking), tijd: r.tijd });
+    if (!p || !r.naam) return;
+    const naam = String(r.naam);
+    if (r.type === "reactie") { if (r.tekst) p.reacties.push({ naam, tekst: String(r.tekst), tijd: r.tijd }); return; }
+    const n = Number(r.score), cat = SOORTEN.some(x => x[0] === r.categorie) ? r.categorie : "";
+    if (cat) p.categorie = cat;
+    if ((n >= 1 && n <= 5) || r.toelichting) p.staat = { score: n >= 1 && n <= 5 ? n : score(p), toelichting: r.toelichting ? String(r.toelichting) : (p.staat && p.staat.toelichting) || "", naam, tijd: r.tijd };
+    if (cat || n || r.toelichting) p.aanpassingen.push({ naam, categorie: cat, score: n >= 1 && n <= 5 ? n : "", toelichting: r.toelichting ? String(r.toelichting) : "", tijd: r.tijd });
   });
 }
 if (OPSLAG) fetch(OPSLAG).then(r => r.json()).then(rijen => {

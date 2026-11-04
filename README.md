@@ -28,12 +28,13 @@ Elk pand in `data/panden.js` heeft een `categorie` (de kleur op de kaart) en een
 
 `staat` is `{ "score": 1-5, "toelichting", "bron" }`: 1 ruïne (ingestort), 2 slecht (dak of structuur zwaar beschadigd), 3 matig (verwaarloosd, structuur intact), 4 redelijk (kleine gebreken), 5 goed (onderhouden of in gebruik). De eerste scores zijn een inschatting op basis van de foto's.
 
-## Aanpassen op de site
+## Aanpassen en discussie op de site
 
-In het tabblad Staat van een pand staat de knop “Aanpassen of aanvullen”. Bezoekers kiezen daar de soort, de staat (1 tot 5), een toelichting en een aanvulling.
+- Tabblad **Staat**: met de knop “Staat aanpassen” kiest een bezoeker de soort, de staat (1 tot 5) en een toelichting. Onder de beoordeling staat wie ze het laatst aanpaste, met alle eerdere aanpassingen.
+- Tabblad **Discussie**: bezoekers delen hun mening of ideeën over het gebouw. Elke reactie toont de naam en de datum.
+- Een naam is altijd verplicht en voor iedereen zichtbaar. E-mailadressen en telefoonnummers worden automatisch uit de tekst gehaald.
 
-- Zolang `OPSLAG` in `index.html` leeg is, opent “Opslaan” een vooraf ingevuld voorstel (issue) op GitHub. Daarvoor is een GitHub-account nodig.
-- Met een gedeelde opslag wordt een aanpassing meteen bewaard en ziet iedereen ze. Gebruik daarvoor `tools/opslag-apps-script.gs` (een Google Sheet met een klein script; de stappen staan bovenaan in het bestand) en zet de web-app-URL in `const OPSLAG`. Elke aanpassing wordt een rij in de Sheet; een rij wissen maakt ze ongedaan.
+Alles wordt bewaard in een Google Sheet met een klein script (`tools/opslag-apps-script.gs`, de stappen staan bovenaan in het bestand). De web-app-URL staat in `const OPSLAG` in `index.html`. Bezoekers zien de Sheet niet en hebben geen account nodig. Elke aanpassing of reactie wordt een rij in het blad “aanpassingen”; een rij wissen haalt ze van de site. Zolang `OPSLAG` leeg is, opent “Opslaan” een vooraf ingevuld voorstel (issue) op GitHub.
 
 ## Kaarten
 
