@@ -412,8 +412,8 @@ const kleur = p => kleurOp === "soort" ? soortKleur(p.categorie) : staatKleur(sc
 try { if (localStorage.getItem("kleurOp") === "staat") kleurOp = "staat"; } catch (e) {}
 
 // Aanpassingen en reacties van bezoekers. Uitleg in de README onder "Aanpassen op de site".
-// Leeg: er is nog geen gedeelde opslag, dan opent "Opslaan" een vooraf ingevuld voorstel op GitHub.
-const OPSLAG = "";
+// Web-app van de Google Sheet "Leegstandatlas aanpassingen". Leeg: "Opslaan" opent dan een voorstel op GitHub.
+const OPSLAG = "https://script.google.com/a/macros/student.uhasselt.be/s/AKfycbzMuOaxYkdyBi5yKxS8PTsJoyKoFwsKZtyyeQwoNTxPbDY0_q2ANbQ_qw1hrIvX1XP7zQ/exec";
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const small = matchMedia("(max-width: 760px)").matches;
 
