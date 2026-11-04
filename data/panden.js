@@ -138,7 +138,7 @@ const PANDEN = [
    "bron": "inschatting op basis van de foto's, november 2026"
   },
   "onderdelen": [
-   { "naam": "Kasteel", "categorie": "kasteel", "staat": { "score": 3, "toelichting": "Muren en daken grotendeels intact." } },
+   { "naam": "Kasteel", "hoofd": true, "categorie": "kasteel", "staat": { "score": 3, "toelichting": "Muren en daken grotendeels intact." } },
    { "naam": "Ruïne 1", "categorie": "ruine", "staat": { "score": 1, "toelichting": "Kleine ruïne naast het kasteel." } },
    { "naam": "Ruïne 2", "categorie": "ruine", "staat": { "score": 1, "toelichting": "Kleine ruïne naast het kasteel." } }
   ],
