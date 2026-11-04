@@ -15,6 +15,8 @@
  * Elke aanpassing komt als een nieuwe rij in het blad "aanpassingen". De site toont per pand de
  * laatste soort en staat, wie die aanpaste, en alle reacties met naam en datum. Een rij wissen in de Sheet maakt die aanpassing ongedaan.
  */
+// De Sheet "Leegstandatlas aanpassingen". Nodig als het script niet vanuit de Sheet zelf (Extensies > Apps Script) gemaakt is.
+const SHEET_ID = "1AolzfgM0V_v-3PxeigbfEeERXdPP-TkBZISIatQSnxc";
 const BLAD = "aanpassingen";
 const VERSIE = 2;
 const KOP = ["tijd", "type", "id", "naam", "categorie", "score", "toelichting", "tekst", "titel", "adres", "lng", "lat"];
@@ -22,7 +24,7 @@ const TYPES = ["aanpassing", "reactie", "nieuw", "onderdeel", "plaats"];
 const SOORTEN = ["ruine", "kasteel", "religieus", "hoeve", "woning", "industrie", "spoorweg"];
 
 function blad_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(SHEET_ID);
   const sh = ss.getSheetByName(BLAD) || ss.insertSheet(BLAD);
   if (sh.getLastRow() === 0 || sh.getLastColumn() < KOP.length) { sh.getRange(1, 1, 1, KOP.length).setValues([KOP]); sh.setFrozenRows(1); }
   return sh;
