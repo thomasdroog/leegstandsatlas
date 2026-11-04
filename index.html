@@ -138,6 +138,15 @@ button, input { font: inherit; color: inherit; }
 .mk:hover .pill, .mk.on .pill { background: var(--c); color: #fff; }
 .mk.on .d { box-shadow: 0 0 0 4px var(--surface), 0 0 0 7px var(--c); }
 .mk.uit { display: none !important; }
+.mk .ex { display: flex; gap: 2px; margin-left: -4px; }
+.mk .ex:empty { display: none; }
+.mk .ex i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--surface); }
+.delen { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.delen li { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 4px 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font: 400 13px/1.4 var(--font-ui); }
+.delen li > i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.delen li b { font-weight: 600; }
+.delen li small { grid-column: 2 / -1; color: var(--muted); font: 400 12px/1.4 var(--font-ui); }
+.delen .sc { display: flex; align-items: center; gap: 6px; font: 500 11px var(--font-mono); color: var(--muted); }
 
 /* Legende: kleur per soort of per staat, klik om te filteren */
 .legend { position: absolute; z-index: 3; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: 230px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); border-radius: 14px; box-shadow: var(--shadow); padding: 8px; display: grid; gap: 6px; }
@@ -408,6 +417,9 @@ const staatKleur = n => `var(--s${n})`;
 let kleurOp = "soort";
 const verborgen = new Set();
 const groep = p => kleurOp === "soort" ? p.categorie : "s" + score(p);
+// Onderdelen: een pand kan uit meerdere delen bestaan (bv. een kasteel met ruïnes ernaast), elk met eigen soort en staat.
+const delen = p => p.onderdelen || [];
+const groepen = p => [...new Set([groep(p), ...delen(p).map(groep)])];
 const kleur = p => kleurOp === "soort" ? soortKleur(p.categorie) : staatKleur(score(p));
 try { if (localStorage.getItem("kleurOp") === "staat") kleurOp = "staat"; } catch (e) {}
 
@@ -590,23 +602,25 @@ OPKAART.forEach(p => {
   el.type = "button";
   el.className = "mk";
   el.style.setProperty("--c", kleur(p));
-  el.innerHTML = `<span class="d"></span><span class="pill">${esc(p.naam)}</span>`;
+  el.innerHTML = `<span class="d"></span><span class="ex"></span><span class="pill">${esc(p.naam)}</span>`;
   el.addEventListener("click", e => { e.stopPropagation(); openPand(p.id); });
   markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
-  el.setAttribute("aria-label", `${p.naam}, ${soortLabel(p.categorie)}, staat: ${STAAT[score(p)]}`);
+  el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
 });
 function kleurMarkers() {
   OPKAART.forEach(p => {
     const el = markers[p.id].el;
     el.style.setProperty("--c", kleur(p));
-    el.classList.toggle("uit", verborgen.has(groep(p)));
-    el.setAttribute("aria-label", `${p.naam}, ${soortLabel(p.categorie)}, staat: ${STAAT[score(p)]}`);
+    el.classList.toggle("uit", groepen(p).every(g => verborgen.has(g)));
+    const extra = kleurOp === "soort" ? [...new Set(delen(p).map(o => o.categorie))].filter(c => c !== p.categorie) : [];
+    el.querySelector(".ex").innerHTML = extra.map(c => `<i style="background:${soortKleur(c)}"></i>`).join("");
+    el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
   });
 }
 
 // Legende
 function renderLegend() {
-  const tel = g => PANDEN.filter(p => groep(p) === g).length;
+  const tel = g => PANDEN.filter(p => groepen(p).includes(g)).length;
   const items = kleurOp === "soort"
     ? SOORTEN.map(([id, l]) => [id, l, soortKleur(id)])
     : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} · ${STAAT[n]}` : STAAT[0], staatKleur(n)]);
@@ -696,7 +710,7 @@ const q = $("q"), results = $("results");
 function renderResults() {
   const t = q.value.trim().toLowerCase();
   if (!t) { results.hidden = true; return; }
-  const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status, soortLabel(p.categorie), STAAT[score(p)]].join(" ").toLowerCase().includes(t));
+  const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status, soortLabel(p.categorie), STAAT[score(p)], ...delen(p).map(o => o.naam + " " + soortLabel(o.categorie))].join(" ").toLowerCase().includes(t));
   results.innerHTML = hits.length
     ? hits.map(rij).join("")
     : `<div class="none">Geen pand gevonden voor “${esc(q.value)}”.</div>`;
@@ -749,7 +763,7 @@ function openPand(id, fly = true) {
 }
 function vulPaneel() {
   const p = current;
-  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip cat" style="--c:${soortKleur(p.categorie)}">${esc(soortLabel(p.categorie))}</span>${p.lngLat ? "" : `<span class="chip">nog niet op de kaart</span>`}`;
+  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip cat" style="--c:${soortKleur(p.categorie)}">${esc(soortLabel(p.categorie))}</span>${[...new Set(delen(p).map(o => o.categorie))].filter(c => c !== p.categorie).map(c => `<span class="chip cat" style="--c:${soortKleur(c)}">ook ${esc(soortLabel(c).toLowerCase())}</span>`).join("")}${p.lngLat ? "" : `<span class="chip">nog niet op de kaart</span>`}`;
   $("pTitle").textContent = p.naam;
   const ll = p.lngLat;
   $("pAddr").textContent = [p.adres || p.gemeente, p.type, ll ? `${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O` : ""].filter(Boolean).join(" · ");
@@ -864,6 +878,10 @@ function staatTab(p) {
     `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${STAAT[i]}</span>`).join("")}</div>`];
   if (st.toelichting) parts.push(`<p class="txt">${esc(st.toelichting)}</p>`);
   parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? ` Laatst aangepast door ${esc(st.naam)}, ${wanneer(st.tijd)}.` : st.bron ? ` Beoordeling: ${esc(st.bron)}.` : ""}</p>`);
+  if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
+    const m = score(o);
+    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} · ${esc(STAAT[m])}` : "staat onbekend"}</span>${o.staat && o.staat.toelichting ? `<small>${esc(o.staat.toelichting)}</small>` : ""}</li>`;
+  }).join("")}</ul>`);
   parts.push(meldingHtml());
   parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button></div>`);
   parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
