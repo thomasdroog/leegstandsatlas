@@ -138,6 +138,21 @@ button, input { font: inherit; color: inherit; }
 .mk:hover .pill, .mk.on .pill { background: var(--c); color: #fff; }
 .mk.on .d { box-shadow: 0 0 0 4px var(--surface), 0 0 0 7px var(--c); }
 .mk.uit { display: none !important; }
+.mk.deel .d { width: 10px; height: 10px; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px color-mix(in srgb, var(--c) 30%, transparent); }
+.mk.deel .pill { height: 22px; font-size: 10px; }
+.mk.nieuwpunt .d { animation: puls 1.2s ease-in-out infinite; }
+@keyframes puls { 50% { transform: scale(1.35); } }
+body.kiezen #map, body.kiezen #map canvas { cursor: crosshair !important; }
+body.kiezen .panel, body.kiezen .legend { visibility: hidden; }
+.kies { position: absolute; z-index: 6; top: calc(16px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--fg); color: var(--bg); font: 500 13px/1.3 var(--font-ui); box-shadow: var(--shadow); max-width: calc(100vw - 32px); }
+.kies[hidden] { display: none; }
+.kies .knop { background: var(--bg); color: var(--fg); border-color: transparent; flex: none; }
+dialog.nieuw { border: 0; padding: 0; border-radius: 18px; background: var(--surface); color: var(--fg); box-shadow: var(--shadow); width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); }
+dialog.nieuw::backdrop { background: rgb(0 0 0 / .35); }
+dialog.nieuw form { border: 0; padding: 18px; }
+dialog.nieuw p.note { margin: 0; font: 400 12px/1.45 var(--font-mono); color: var(--muted); }
+dialog.nieuw h2 { margin: 0; font: 600 18px/1.2 var(--font-ui); }
+.edit input[type=text] { font: 400 14px/1.4 var(--font-ui); }
 .mk .ex { display: flex; gap: 2px; margin-left: -4px; }
 .mk .ex:empty { display: none; }
 .mk .ex i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--surface); }
@@ -146,6 +161,7 @@ button, input { font: inherit; color: inherit; }
 .delen li > i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
 .delen li b { font-weight: 600; }
 .delen li small { grid-column: 2 / -1; color: var(--muted); font: 400 12px/1.4 var(--font-ui); }
+.linkknop { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; }
 .delen .sc { display: flex; align-items: center; gap: 6px; font: 500 11px var(--font-mono); color: var(--muted); }
 
 /* Legende: kleur per soort of per staat, klik om te filteren */
@@ -267,7 +283,12 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   .count .pill { height: 26px; font-size: 11px; }
   .count .results { left: 0; right: auto; top: 34px; max-height: 50vh; }
   .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
-  .search input { width: 110px; }
+  .search input { width: 64px; }
+  .search input:focus { width: 120px; }
+  .bar { gap: 6px; }
+  .bar .seg button { padding: 0 10px; }
+  .exp { flex: none; }
+  .kies { left: 12px; right: 12px; transform: none; border-radius: 16px; font-size: 12px; }
   .oud > .pill { width: 36px; padding: 0; justify-content: center; }
   .oud > .pill span { display: none; }
   .exp { width: 36px; padding: 0; justify-content: center; }
@@ -367,8 +388,12 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
     <input id="q" type="search" placeholder="Zoeken" autocomplete="off" aria-label="Zoek een gebouw of gemeente">
     <div class="results" id="results" hidden></div>
   </div>
+  <button type="button" class="pill exp" id="addBtn" aria-label="Gebouw toevoegen" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg><span>Toevoegen</span></button>
   <a class="pill exp" href="export.html" aria-label="Exporteren naar A3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span>Exporteren</span></a>
 </div>
+
+<div class="kies" id="kies" role="status" hidden><span id="kiesTxt"></span><button type="button" class="knop" id="kiesWeg">Annuleren</button></div>
+<dialog class="nieuw" id="nieuw" aria-labelledby="nieuwKop"></dialog>
 
 <aside class="panel" id="panel" hidden aria-labelledby="pTitle">
   <div class="ph">
@@ -597,7 +622,8 @@ map.on("load", async () => {
 // Markers. Panden zonder coördinaten staan alleen in de lijst en de zoekfunctie.
 const markers = {};
 const OPKAART = PANDEN.filter(p => p.lngLat);
-OPKAART.forEach(p => {
+const deelMarkers = [];
+function maakMarker(p) {
   const el = document.createElement("button");
   el.type = "button";
   el.className = "mk";
@@ -606,8 +632,21 @@ OPKAART.forEach(p => {
   el.addEventListener("click", e => { e.stopPropagation(); openPand(p.id); });
   markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
   el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
-});
+  delen(p).forEach(o => o.lngLat && maakDeelMarker(p, o));
+}
+// Een onderdeel met een eigen plek krijgt een klein punt; klikken opent het pand waar het bij hoort.
+function maakDeelMarker(p, o) {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.className = "mk deel";
+  el.innerHTML = `<span class="d"></span><span class="pill">${esc(o.naam)}</span>`;
+  el.setAttribute("aria-label", `${o.naam}, ${soortLabel(o.categorie)}, onderdeel van ${p.naam}`);
+  el.addEventListener("click", e => { e.stopPropagation(); tab = "staat"; openPand(p.id); });
+  deelMarkers.push({ el, p, o, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-5, 0] }).setLngLat(o.lngLat).addTo(map) });
+}
+OPKAART.forEach(maakMarker);
 function kleurMarkers() {
+  deelMarkers.forEach(({ el, o }) => { el.style.setProperty("--c", kleur(o)); el.classList.toggle("uit", verborgen.has(groep(o))); });
   OPKAART.forEach(p => {
     const el = markers[p.id].el;
     el.style.setProperty("--c", kleur(p));
@@ -654,7 +693,8 @@ agg.innerHTML = `<span class="d"></span><span class="pill">Plombières · ${OPKA
 agg.onclick = e => { e.stopPropagation(); flyCluster(); };
 new maplibregl.Marker({ element: agg, anchor: "left", offset: [-11, 0] }).setLngLat(bounds.getCenter()).addTo(map);
 agg.setAttribute("aria-label", `Zoom in op Plombières, ${OPKAART.length} panden`);
-$("countText").textContent = `${PANDEN.length} panden · Plombières`;
+const zetTeller = () => { $("countText").textContent = `${PANDEN.length} panden · Plombières`; };
+zetTeller();
 if (zonderBol) {
   const n = $("notice");
   n.innerHTML = "<b>De wereldbol kan hier niet laden.</b> Je browser laat de 3D-weergave (WebGL) niet toe, wat soms gebeurt in een privévenster. Alle panden staan in de lijst rechtsboven; klik er een aan voor de foto's, de staat en de discussie.";
@@ -827,6 +867,7 @@ function showTab(k) {
   const p = current, body = $("pBody");
   if (k === "fotos") {
     const parts = [];
+    if (p.door) parts.push(`<p class="ok">Toegevoegd door ${esc(p.door)} op ${wanneer(p.tijd)}. Foto's komen er nog bij; zet ze in een nieuwe map in “leegstand” en vermeld de naam van dit gebouw.</p>`);
     if (p.fotos.length) parts.push(`<h3>Eigen foto's <small>${p.fotosGenomen ? datum(p.fotosGenomen) + " · " : ""}${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
     if (p.streetview.length) parts.push(`<h3>Street View <small>${p.streetview.length}</small></h3>${gallery(p.streetview, "Street View-beeld", true)}`);
     if (p.luchtbeeld.length) parts.push(`<h3>Luchtbeeld <small>${p.luchtbeeld.length}</small></h3>${gallery(p.luchtbeeld, "Luchtbeeld", true)}`);
@@ -880,10 +921,12 @@ function staatTab(p) {
   parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? ` Laatst aangepast door ${esc(st.naam)}, ${wanneer(st.tijd)}.` : st.bron ? ` Beoordeling: ${esc(st.bron)}.` : ""}</p>`);
   if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
-    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} · ${esc(STAAT[m])}` : "staat onbekend"}</span>${o.staat && o.staat.toelichting ? `<small>${esc(o.staat.toelichting)}</small>` : ""}</li>`;
+    const onder = [o.staat && o.staat.toelichting, o.door && `Toegevoegd door ${o.door}, ${wanneer(o.tijd)}`].filter(Boolean).map(esc).join(" · ");
+    const plaats = kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
+    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} · ${esc(STAAT[m])}` : "staat onbekend"}</span><small>${onder}${plaats}</small></li>`;
   }).join("")}</ul>`);
   parts.push(meldingHtml());
-  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button></div>`);
+  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button>${kanToevoegen() && p.lngLat ? `<button type="button" class="knop" id="deelNieuw">Onderdeel toevoegen</button>` : ""}</div>`);
   parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
     ${naamVeld()}
     <label>Soort pand<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
@@ -917,6 +960,8 @@ function discussieTab(p) {
 $("pBody").addEventListener("click", e => {
   if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("input").focus(); }
   if (e.target.id === "bewerkWeg") showTab("staat");
+  if (e.target.id === "deelNieuw") startKiezen({ soort: "onderdeel", p: current });
+  if (e.target.dataset.plaats) startKiezen({ soort: "plaats", p: current, titel: e.target.dataset.plaats });
 });
 $("pBody").addEventListener("submit", async e => {
   e.preventDefault();
@@ -955,21 +1000,137 @@ $("pBody").addEventListener("submit", async e => {
 // Rijen uit de gedeelde opslag over de gegevens uit panden.js leggen (laatste aanpassing wint).
 function pasToe(rijen) {
   [...rijen].sort((a, b) => String(a.tijd).localeCompare(String(b.tijd))).forEach(r => {
+    if (!r.naam) return;
+    const naam = String(r.naam), ll = plek(r), cat = SOORTEN.some(x => x[0] === r.categorie) ? r.categorie : "", n = Number(r.score);
+    const st = n >= 1 && n <= 5 ? { score: n, toelichting: r.toelichting ? String(r.toelichting) : "", naam, tijd: r.tijd } : { score: 0, toelichting: r.toelichting ? String(r.toelichting) : "" };
+    if (r.type === "nieuw") {
+      if (!r.titel || !ll || PANDEN.some(x => x.id === r.id)) return;
+      const p = { id: String(r.id), naam: String(r.titel), type: soortLabel(cat || "woning").toLowerCase(), status: "toegevoegd", categorie: cat || "woning", staat: st,
+        adres: r.adres ? String(r.adres) : "", gemeente: "", lngLat: ll, door: naam, tijd: r.tijd,
+        fotos: [], streetview: [], luchtbeeld: [], grondplannen: [], model3d: [], historisch: [], materialen: [], reacties: [], aanpassingen: [] };
+      PANDEN.push(p); OPKAART.push(p); maakMarker(p);
+      return;
+    }
     const p = PANDEN.find(x => x.id === r.id);
-    if (!p || !r.naam) return;
-    const naam = String(r.naam);
+    if (!p) return;
+    if (r.type === "onderdeel") {
+      if (!r.titel) return;
+      const o = { naam: String(r.titel), categorie: cat || "ruine", staat: st, lngLat: ll, door: naam, tijd: r.tijd };
+      (p.onderdelen = p.onderdelen || []).push(o);
+      if (ll && markers[p.id]) maakDeelMarker(p, o);
+      return;
+    }
+    if (r.type === "plaats") {
+      const o = delen(p).find(x => x.naam === String(r.titel));
+      if (!o || !ll) return;
+      const oud = deelMarkers.find(x => x.o === o);
+      if (oud) oud.m.setLngLat(ll); else if (markers[p.id]) { o.lngLat = ll; maakDeelMarker(p, o); }
+      o.lngLat = ll;
+      return;
+    }
     if (r.type === "reactie") { if (r.tekst) p.reacties.push({ naam, tekst: String(r.tekst), tijd: r.tijd }); return; }
-    const n = Number(r.score), cat = SOORTEN.some(x => x[0] === r.categorie) ? r.categorie : "";
     if (cat) p.categorie = cat;
     if ((n >= 1 && n <= 5) || r.toelichting) p.staat = { score: n >= 1 && n <= 5 ? n : score(p), toelichting: r.toelichting ? String(r.toelichting) : (p.staat && p.staat.toelichting) || "", naam, tijd: r.tijd };
     if (cat || n || r.toelichting) p.aanpassingen.push({ naam, categorie: cat, score: n >= 1 && n <= 5 ? n : "", toelichting: r.toelichting ? String(r.toelichting) : "", tijd: r.tijd });
   });
 }
-if (OPSLAG) fetch(OPSLAG).then(r => r.json()).then(rijen => {
-  if (!Array.isArray(rijen)) return;
-  pasToe(rijen); kleurMarkers(); renderLegend();
-  if (current) vulPaneel();
+// Oudere versies van het opslagscript geven een lijst terug; versie 2 en later ook {versie, rijen}.
+// Toevoegen op de kaart verschijnt pas als het script versie 2 of later is (anders zou het oude script het verkeerd bewaren).
+let opslagVersie = 0;
+const kanToevoegen = () => opslagVersie >= 2 && !zonderBol;
+if (OPSLAG) fetch(OPSLAG).then(r => r.json()).then(data => {
+  const rijen = Array.isArray(data) ? data : data && Array.isArray(data.rijen) ? data.rijen : null;
+  if (!rijen) return;
+  opslagVersie = Array.isArray(data) ? 1 : Number(data.versie) || 1;
+  $("addBtn").hidden = !kanToevoegen();
+  pasToe(rijen); kleurMarkers(); renderLegend(); zetTeller();
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (!current && h && PANDEN.some(p => p.id === h)) openPand(h);
+  else if (current) vulPaneel();
 }).catch(() => {});
+const plek = r => { const lng = Number(r.lng), lat = Number(r.lat); return r.lng !== "" && r.lat !== "" && isFinite(lng) && isFinite(lat) && Math.abs(lng) <= 180 && Math.abs(lat) <= 90 && (lng || lat) ? [lng, lat] : null; };
+
+// Zelf toevoegen: een nieuw gebouw, een onderdeel van een pand, of de plek van een bestaand onderdeel.
+let kiesVoor = null, nieuwPunt = null;
+function startKiezen(k) {
+  kiesVoor = k;
+  $("kiesTxt").textContent = k.soort === "nieuw" ? "Klik op de kaart waar het gebouw staat." : `Klik op de kaart waar ${k.titel ? "“" + k.titel + "”" : "het onderdeel"} van ${k.p.naam} ligt.`;
+  $("kies").hidden = false;
+  document.body.classList.add("kiezen");
+  toggleAll(false);
+  stopSpin();
+  if (k.p) map.easeTo({ center: k.p.lngLat, zoom: Math.max(map.getZoom(), live ? 18 : 14), padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: reduce ? 0 : 600 });
+  else if (map.getZoom() < 11) map.flyTo({ center: bounds.getCenter(), zoom: 12.5, padding: { top: 0, bottom: 0, left: 0, right: 0 }, essential: true });
+}
+function stopKiezen(terug) {
+  const k = kiesVoor;
+  kiesVoor = null;
+  $("kies").hidden = true;
+  document.body.classList.remove("kiezen");
+  if (nieuwPunt) { nieuwPunt.remove(); nieuwPunt = null; }
+  if (terug && k && k.p) openPand(k.p.id, false);
+}
+$("kiesWeg").onclick = () => stopKiezen(true);
+$("addBtn").onclick = () => { if (current) closePand(); startKiezen({ soort: "nieuw" }); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && kiesVoor && !$("nieuw").open) stopKiezen(true); });
+map.on("click", e => {
+  if (!kiesVoor || $("nieuw").open) return;
+  const ll = [Number(e.lngLat.lng.toFixed(6)), Number(e.lngLat.lat.toFixed(6))];
+  const el = document.createElement("div");
+  el.className = "mk nieuwpunt";
+  el.style.setProperty("--c", "var(--accent)");
+  el.innerHTML = `<span class="d"></span>`;
+  if (nieuwPunt) nieuwPunt.remove();
+  nieuwPunt = new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(ll).addTo(map);
+  toonFormulier(kiesVoor, ll);
+});
+function toonFormulier(k, ll) {
+  const dlg = $("nieuw"), metGegevens = k.soort !== "plaats";
+  const kop = k.soort === "nieuw" ? "Nieuw gebouw" : k.soort === "onderdeel" ? `Onderdeel van ${k.p.naam}` : `Plek van “${k.titel}”`;
+  dlg.innerHTML = `<form class="edit" id="nieuwForm">
+    <h2 id="nieuwKop">${esc(kop)}</h2>
+    <p class="note">Gekozen plek: ${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O. Klopt het niet? Kies Annuleren en klik opnieuw.</p>
+    ${metGegevens ? `<label>${k.soort === "nieuw" ? "Naam van het gebouw" : "Naam van het onderdeel"}<input type="text" name="titel" required maxlength="100" placeholder="${k.soort === "nieuw" ? "Bv. Oude hoeve Kloosterstraat" : "Bv. Ruïne 3, schuur, kapel"}"></label>
+    <label>Soort<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === (k.soort === "onderdeel" ? "ruine" : "woning") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+    <fieldset><legend>Staat (optioneel)</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"><b>${i}</b>${STAAT[i]}</label>`).join("")}</div></fieldset>
+    <label>Beschrijving (optioneel)<textarea name="toel" maxlength="1000" placeholder="Wat is het, en in welke staat is het?"></textarea></label>
+    ${k.soort === "nieuw" ? `<label>Adres (optioneel)<input type="text" name="adres" maxlength="200" placeholder="Straat, gemeente"></label>` : ""}` : ""}
+    ${naamVeld()}
+    ${privacy}
+    <div class="knoppen"><button type="submit" class="knop hoofd">Opslaan</button><button type="button" class="knop" id="nieuwWeg">Annuleren</button></div>
+  </form>`;
+  dlg.showModal();
+  const eerste = dlg.querySelector(metGegevens ? "input[name=titel]" : "input[name=naam]");
+  if (eerste) eerste.focus();
+  dlg.querySelector("#nieuwWeg").onclick = () => { dlg.close(); if (nieuwPunt) { nieuwPunt.remove(); nieuwPunt = null; } };
+  dlg.querySelector("form").onsubmit = async e => {
+    e.preventDefault();
+    const f = e.target, naam = wis(f.naam.value).slice(0, 60);
+    if (!naam) return f.naam.focus();
+    const titel = metGegevens ? wis(f.titel.value).slice(0, 100) : k.titel;
+    if (!titel) return f.titel.focus();
+    mijnNaam = naam;
+    try { localStorage.setItem("naam", naam); } catch (err) {}
+    const id = k.soort === "nieuw" ? "u-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) : k.p.id;
+    const d = { type: k.soort, id, naam, titel, lng: ll[0], lat: ll[1] };
+    if (metGegevens) Object.assign(d, { categorie: f.soort.value, score: Number(f.score.value) || "", toelichting: wis(f.toel.value).slice(0, 1000), adres: f.adres ? wis(f.adres.value).slice(0, 200) : "" });
+    f.querySelector("button[type=submit]").disabled = true;
+    try {
+      await fetch(OPSLAG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
+    } catch (err) {
+      f.querySelector("button[type=submit]").disabled = false;
+      return alert("Opslaan lukte niet. Probeer het later opnieuw.");
+    }
+    dlg.close();
+    stopKiezen(false);
+    pasToe([{ ...d, tijd: new Date().toISOString() }]);
+    kleurMarkers(); renderLegend(); zetTeller();
+    melding = k.soort === "nieuw" ? "Toegevoegd. Iedereen ziet dit gebouw nu op de kaart." : "Opgeslagen. Iedereen ziet het nu op de kaart.";
+    tab = k.soort === "nieuw" ? "fotos" : "staat";
+    openPand(id, false);
+  };
+}
+$("nieuw").addEventListener("close", () => { if (kiesVoor && nieuwPunt) { nieuwPunt.remove(); nieuwPunt = null; } });
 
 // Foto's vergroten
 let lbList = [], lbIdx = 0;
