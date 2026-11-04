@@ -4,6 +4,7 @@
 // uitgelicht: de vijf beste foto's voor de eerste pagina van de A3-export (zonder dit veld: de scherpste eigen foto's).
 // categorie: soort pand, bepaalt de kleur op de kaart (zie CATEGORIEEN in index.html).
 // staat: beoordeling van de toestand, score 1 (ruïne) tot 5 (goed), met toelichting en bron. Bezoekers kunnen dit aanpassen op de site.
+// onderdelen (optioneel): delen van een pand met een eigen soort en staat, bv. een kasteel met twee ruïnes ernaast. Het pand telt dan mee bij elke soort in de legende.
 const PANDEN = [
  {
   "id": "brico-jardin",
@@ -136,6 +137,11 @@ const PANDEN = [
    "toelichting": "Muren en daken grotendeels intact, maar het domein is verwilderd en de bijgebouwen zijn verwaarloosd.",
    "bron": "inschatting op basis van de foto's, november 2026"
   },
+  "onderdelen": [
+   { "naam": "Kasteel", "categorie": "kasteel", "staat": { "score": 3, "toelichting": "Muren en daken grotendeels intact." } },
+   { "naam": "Ruïne 1", "categorie": "ruine", "staat": { "score": 1, "toelichting": "Kleine ruïne naast het kasteel." } },
+   { "naam": "Ruïne 2", "categorie": "ruine", "staat": { "score": 1, "toelichting": "Kleine ruïne naast het kasteel." } }
+  ],
   "adres": "Rue du Château de Graaf, 4850 Plombières",
   "gemeente": "Plombières (Blieberg)",
   "fotosGenomen": "2026-10-22",
