@@ -36,7 +36,7 @@ Elk pand in `data/panden.js` heeft een `categorie` (de kleur op de kaart) en een
 
 - **Zelf toevoegen**: met “Toevoegen” onderaan zet een bezoeker een nieuw gebouw op de kaart (klik op de plek, geef naam, soort en eventueel staat). In het tabblad Staat kan je met “Plek aanpassen” het punt van een pand verplaatsen, een onderdeel van een pand toevoegen (bv. een ruïne naast een kasteel) of een bestaand onderdeel op de kaart zetten. Zo'n onderdeel krijgt een klein punt dat naar het pand leidt.
 
-Alles wordt bewaard in een Google Sheet met een klein script (`tools/opslag-apps-script.gs`, de stappen staan bovenaan in het bestand). De web-app-URL staat in `const OPSLAG` in `index.html`. Bezoekers zien de Sheet niet en hebben geen account nodig. Elke aanpassing of reactie wordt een rij in het blad “aanpassingen”; een rij wissen haalt ze van de site. Zolang `OPSLAG` leeg is, opent “Opslaan” een vooraf ingevuld voorstel (issue) op GitHub.
+Alles wordt bewaard in een Google Sheet met een klein script (`tools/opslag-apps-script.gs`, de stappen staan bovenaan in het bestand). De web-app-URL staat in `const OPSLAG` in `index.html`. Bezoekers zien de Sheet niet en hebben geen account nodig. Elke aanpassing of reactie wordt een rij in het blad “aanpassingen”; een rij wissen haalt ze van de site. Bij de dagelijkse update wordt alles uit de Sheet in `data/aanpassingen.js` gezet. Dat staat meteen op de site, zonder te wachten op de Sheet; wat er sindsdien bij kwam, laadt de site een paar seconden later uit de Sheet. Zolang `OPSLAG` leeg is, opent “Opslaan” een vooraf ingevuld voorstel (issue) op GitHub.
 
 ## Kaarten
 

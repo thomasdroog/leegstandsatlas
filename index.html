@@ -153,9 +153,6 @@ dialog.nieuw form { border: 0; padding: 18px; }
 dialog.nieuw p.note { margin: 0; font: 400 12px/1.45 var(--font-mono); color: var(--muted); }
 dialog.nieuw h2 { margin: 0; font: 600 18px/1.2 var(--font-ui); }
 .edit input[type=text] { font: 400 14px/1.4 var(--font-ui); }
-.mk .ex { display: flex; gap: 2px; margin-left: -4px; }
-.mk .ex:empty { display: none; }
-.mk .ex i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--surface); }
 .delen { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .delen li { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 4px 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font: 400 13px/1.4 var(--font-ui); }
 .delen li > i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
@@ -413,6 +410,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
 <script src="data/panden.js"></script>
+<script src="data/aanpassingen.js"></script>
 <script>
 // De panden staan in data/panden.js.
 
@@ -628,7 +626,7 @@ function maakMarker(p) {
   el.type = "button";
   el.className = "mk";
   el.style.setProperty("--c", kleur(p));
-  el.innerHTML = `<span class="d"></span><span class="ex"></span><span class="pill">${esc(p.naam)}</span>`;
+  el.innerHTML = `<span class="d"></span><span class="pill">${esc(p.naam)}</span>`;
   el.addEventListener("click", e => { e.stopPropagation(); openPand(p.id); });
   markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
   el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
@@ -650,16 +648,15 @@ function kleurMarkers() {
   OPKAART.forEach(p => {
     const el = markers[p.id].el;
     el.style.setProperty("--c", kleur(p));
-    el.classList.toggle("uit", groepen(p).every(g => verborgen.has(g)));
-    const extra = kleurOp === "soort" ? [...new Set(delen(p).map(o => o.categorie))].filter(c => c !== p.categorie) : [];
-    el.querySelector(".ex").innerHTML = extra.map(c => `<i style="background:${soortKleur(c)}"></i>`).join("");
+    el.classList.toggle("uit", verborgen.has(groep(p)));
     el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
   });
 }
 
 // Legende
 function renderLegend() {
-  const tel = g => PANDEN.filter(p => groepen(p).includes(g)).length;
+  // Telt elk gebouw apart: het pand zelf plus zijn onderdelen (het hoofdgebouw niet dubbel).
+  const tel = g => PANDEN.reduce((n, p) => n + (groep(p) === g) + delen(p).filter(o => !o.hoofd && groep(o) === g).length, 0);
   const items = kleurOp === "soort"
     ? SOORTEN.map(([id, l]) => [id, l, soortKleur(id)])
     : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} / 5` : "Nog niet beoordeeld", staatKleur(n)]);
@@ -922,7 +919,7 @@ function staatTab(p) {
   if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
     const onder = [o.staat && o.staat.toelichting, o.door && `Toegevoegd door ${o.door}, ${wanneer(o.tijd)}`].filter(Boolean).map(esc).join(" · ");
-    const plaats = kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Verplaatsen</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
+    const plaats = kanToevoegen() && o.hoofd ? ` <button type="button" class="linkknop" data-plekpand="1">Verplaatsen</button>` : kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Verplaatsen</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
     return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} / 5` : "?"}</span><small>${onder}${plaats}</small></li>`;
   }).join("")}</ul>`);
   parts.push(meldingHtml());
@@ -961,7 +958,7 @@ $("pBody").addEventListener("click", e => {
   if (e.target.id === "bewerkOpen") { $("bewerk").hidden = false; e.target.hidden = true; $("bewerk").querySelector("input").focus(); }
   if (e.target.id === "bewerkWeg") showTab("staat");
   if (e.target.id === "deelNieuw") startKiezen({ soort: "onderdeel", p: current });
-  if (e.target.id === "plekPand") startKiezen({ soort: "plaats", p: current, titel: current.naam });
+  if (e.target.id === "plekPand" || e.target.dataset.plekpand) startKiezen({ soort: "plaats", p: current, titel: current.naam });
   if (e.target.dataset.plaats) startKiezen({ soort: "plaats", p: current, titel: e.target.dataset.plaats });
 });
 $("pBody").addEventListener("submit", async e => {
@@ -1050,7 +1047,7 @@ const plek = r => { const lng = Number(r.lng), lat = Number(r.lat); return r.lng
 // De aanpassingen uit de Sheet laden duurt soms enkele seconden. Daarom tonen we eerst de laatst bekende
 // aanpassingen (bewaard in deze browser) en vullen we daarna aan met wat er nieuw is.
 const gezien = new Set();
-const rijSleutel = r => [r.tijd, r.type, r.id, r.naam, r.titel || "", r.tekst || "", r.lng || ""].join("|");
+const rijSleutel = r => [String(r.tijd).slice(0, 19), r.type, r.id, r.naam, r.titel || "", r.tekst || "", r.lng || ""].join("|");
 function verwerk(data) {
   const rijen = Array.isArray(data) ? data : data && Array.isArray(data.rijen) ? data.rijen : null;
   if (!rijen) return false;
@@ -1063,6 +1060,9 @@ function verwerk(data) {
   else if (current && nieuw.length) vulPaneel();
   return true;
 }
+// 1. data/aanpassingen.js: kopie van de Sheet die bij elke update in de site gezet wordt, dus meteen beschikbaar.
+// 2. wat deze browser bij het vorige bezoek zag. 3. de Sheet zelf, voor de allerlaatste aanpassingen.
+if (typeof AANPASSINGEN !== "undefined") verwerk(AANPASSINGEN);
 if (OPSLAG) {
   try { const c = localStorage.getItem("opslag"); if (c) verwerk(JSON.parse(c)); } catch (e) {}
   fetch(OPSLAG).then(r => r.json()).then(data => {
