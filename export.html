@@ -51,6 +51,9 @@ button, input { font: inherit; color: inherit; }
 .actie { flex: none; padding: 16px 20px 20px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
 .back { font: 500 12px/1 var(--font-mono); color: var(--muted); text-decoration: none; }
 .back:hover { color: var(--fg); }
+.seg.taal { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-2); justify-self: start; width: max-content; }
+.seg.taal button { border: 0; background: transparent; border-radius: 999px; padding: 6px 10px; font: 500 11px/1 var(--font-mono); color: var(--muted); cursor: pointer; }
+.seg.taal button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .ui h1 { margin: 0; font: 700 30px/1 var(--font-ui); letter-spacing: -.03em; }
 .ui p { margin: 0; font: 400 13px/1.45 var(--font-ui); color: var(--muted); }
 .sel-head { display: flex; justify-content: space-between; align-items: center; }
@@ -152,32 +155,37 @@ button, input { font: inherit; color: inherit; }
 <body>
 <aside class="ui">
  <div class="kies">
-  <a class="back" href="./">← Terug naar de kaart</a>
-  <h1>Exporteren</h1>
-  <p>Kies de panden voor de export. Je krijgt A3-liggende pagina's: eerst de kaart met de gekozen panden, dan per pand een pagina met het satellietbeeld en de vijf beste foto's, en een pagina met geschiedenis, materialen en extra foto's. Plannen en historische foto's volgen apart.</p>
+  <a class="back" href="./" data-t>← Terug naar de kaart</a>
+  <h1 data-t>Exporteren</h1>
+  <p data-t>Kies de panden voor de export. Je krijgt A3-liggende pagina's: eerst de kaart met de gekozen panden, dan per pand een pagina met het satellietbeeld en de vijf beste foto's, en een pagina met geschiedenis, materialen en extra foto's. Plannen en historische foto's volgen apart.</p>
   <div class="sel-head">
     <b id="selCount">Panden</b>
-    <span><button type="button" id="selAll">Alles</button><button type="button" id="selNone">Geen</button></span>
+    <span><button type="button" id="selAll" data-t>Alles</button><button type="button" id="selNone" data-t>Geen</button></span>
   </div>
   <div class="list" id="list"></div>
  </div>
  <div class="actie">
-  <div class="sum" id="sum" aria-live="polite">Voorbeeld wordt gemaakt…</div>
-  <button type="button" class="go" id="print" disabled><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg>Afdrukken of opslaan als pdf</button>
-  <p class="hint">In het afdrukvenster: kies A3 liggend als dat niet vanzelf staat, en "Opslaan als pdf" voor een bestand. Zet "Achtergrondafbeeldingen" aan als je die optie ziet.</p>
+  <div class="sum" id="sum" aria-live="polite" data-t>Voorbeeld wordt gemaakt…</div>
+  <button type="button" class="go" id="print" disabled><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span data-t>Afdrukken of opslaan als pdf</span></button>
+  <p class="hint" data-t>In het afdrukvenster: kies A3 liggend als dat niet vanzelf staat, en "Opslaan als pdf" voor een bestand. Zet "Achtergrondafbeeldingen" aan als je die optie ziet.</p>
  </div>
 </aside>
 <main class="pages" id="pages"></main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
 <script src="data/panden.js"></script>
+<script src="data/vertalingen.js"></script>
+<script src="data/taal.js"></script>
 <script>
+vertaalPagina();
+vertaalPanden(PANDEN);
+document.querySelector(".kies .back").after(taalKnop());
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const MM = 96 / 25.4;
-const datum = s => new Date(s + "T12:00:00").toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" });
-const vandaag = new Date().toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" });
-const ALLE = [...PANDEN].sort((a, b) => a.naam.localeCompare(b.naam, "nl"));
+const datum = s => new Date(s + "T12:00:00").toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" });
+const vandaag = new Date().toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" });
+const ALLE = [...PANDEN].sort((a, b) => nm(a).localeCompare(nm(b), TAAL));
 const GAP = 3;
 
 // Keuze, bewaard in de link (#panden=a,b) zodat je een selectie kunt delen.
@@ -188,19 +196,19 @@ function uitLink() {
 const gekozen = new Set(uitLink() || ALLE.map(p => p.id));
 function inhoud(p) {
   const d = [];
-  if (p.geschiedenis) d.push("geschiedenis");
-  if (p.fotos.length) d.push(`${p.fotos.length} foto's`);
+  if (p.geschiedenis) d.push(t("geschiedenis"));
+  if (p.fotos.length) d.push(t("{n} foto's", { n: p.fotos.length }));
   const scherm = p.luchtbeeld.length + p.streetview.length;
-  if (scherm) d.push(`${scherm} schermbeeld${scherm > 1 ? "en" : ""}`);
-  if (p.grondplannen.length) d.push(`${p.grondplannen.length} plannen`);
-  if (p.historisch.length) d.push(`${p.historisch.length} historische foto's`);
-  if (p.materialen.length) d.push("materialen");
-  if (!p.lngLat) d.push("niet op de kaart");
+  if (scherm) d.push(t(scherm > 1 ? "{n} schermbeelden" : "{n} schermbeeld", { n: scherm }));
+  if (p.grondplannen.length) d.push(t("{n} plannen", { n: p.grondplannen.length }));
+  if (p.historisch.length) d.push(t("{n} historische foto's", { n: p.historisch.length }));
+  if (p.materialen.length) d.push(t("materialen"));
+  if (!p.lngLat) d.push(t("niet op de kaart"));
   return d.join(" · ");
 }
-$("list").innerHTML = ALLE.map(p => `<label><input type="checkbox" value="${p.id}"${gekozen.has(p.id) ? " checked" : ""}><b>${esc(p.naam)}</b><small>${esc(inhoud(p))}</small></label>`).join("");
+$("list").innerHTML = ALLE.map(p => `<label><input type="checkbox" value="${p.id}"${gekozen.has(p.id) ? " checked" : ""}><b>${esc(nm(p))}</b><small>${esc(inhoud(p))}</small></label>`).join("");
 function keuzeGewijzigd() {
-  $("selCount").textContent = `Panden · ${gekozen.size} van ${ALLE.length}`;
+  $("selCount").textContent = t("Panden · {n} van {totaal}", { n: gekozen.size, totaal: ALLE.length });
   try { history.replaceState(null, "", "#panden=" + ALLE.filter(p => gekozen.has(p.id)).map(p => p.id).join(",")); } catch (e) {}
   clearTimeout(keuzeGewijzigd.t);
   keuzeGewijzigd.t = setTimeout(bouw, 150);
@@ -249,7 +257,7 @@ function schik(items, W, H, rijen, slim = false) {
   return paginas;
 }
 const rijenHTML = rows => rows.map(r => `<div class="rij" style="height:${r.h.toFixed(2)}mm">${r.items.map(it =>
-  `<figure style="width:${(it.a * r.h).toFixed(2)}mm"><img src="${esc(it.src)}" alt="${esc(it.cap || "Foto")}">${it.cap ? `<figcaption>${esc(it.cap)}</figcaption>` : ""}</figure>`).join("")}</div>`).join("");
+  `<figure style="width:${(it.a * r.h).toFixed(2)}mm"><img src="${esc(it.src)}" alt="${esc(it.cap || t("Foto"))}">${it.cap ? `<figcaption>${esc(it.cap)}</figcaption>` : ""}</figure>`).join("")}</div>`).join("");
 // Afmeting van een element in mm, los van de zoom van het voorbeeld.
 function mm(el) {
   const s = el.closest(".sheet").getBoundingClientRect(), r = el.getBoundingClientRect();
@@ -281,7 +289,7 @@ function maakKaart() {
 }
 const pilFont = `500 ${(3.4 * MM).toFixed(2)}px "JetBrains Mono"`;
 const meet = document.createElement("canvas").getContext("2d");
-const SOORT_LBL = { ruine: "ruïne", kasteel: "kasteel of burcht", religieus: "klooster, kerk of kapel", hoeve: "hoeve of landbouw", woning: "woning of villa", industrie: "industrie of bedrijf", spoorweg: "spoorweg" };
+const SOORT_LBL = Object.fromEntries([["ruine", "Ruïne"], ["kasteel", "Kasteel of burcht"], ["religieus", "Klooster, kerk of kapel"], ["hoeve", "Hoeve of landbouw"], ["woning", "Woning of villa"], ["industrie", "Industrie of bedrijf"], ["spoorweg", "Spoorweg"]].map(([id, l]) => [id, t(l).toLowerCase()]));
 const pilBreedte = naam => { meet.font = pilFont; return meet.measureText(naam).width + 6 * MM; };
 
 async function kaartbeeld(lijst) {
@@ -291,7 +299,7 @@ async function kaartbeeld(lijst) {
   if (ll.length === 1) kaart.jumpTo({ center: ll[0], zoom: 14.5 });
   else if (ll.length) {
     const b = ll.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(ll[0], ll[0]));
-    const rechts = Math.max(...lijst.map(p => pilBreedte(p.naam))) + 40;
+    const rechts = Math.max(...lijst.map(p => pilBreedte(nm(p)))) + 40;
     kaart.fitBounds(b, { padding: { top: 80, bottom: 80, left: 80, right: rechts }, maxZoom: 15, animate: false });
   }
   await new Promise(res => { const t = setTimeout(res, 15000); kaart.once("idle", () => { clearTimeout(t); res(); }); kaart.triggerRepaint(); });
@@ -306,7 +314,7 @@ function plaatsNamen(punten) {
   const bezet = punten.map(({ x, y }) => ({ x0: x - R, y0: y - R, x1: x + R, y1: y + R }));
   const raakt = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
   return [...punten].sort((a, b) => a.y - b.y || a.x - b.x).map(pt => {
-    const w = pilBreedte(pt.p.naam), op = H + MM;
+    const w = pilBreedte(nm(pt.p)), op = H + MM;
     const opties = [[d, 0], [-d - w, 0], [d, -op], [d, op], [-d - w, -op], [-d - w, op], [d, -2 * op], [d, 2 * op]];
     let r = null;
     for (const [dx, dy] of opties) {
@@ -326,35 +334,35 @@ function voorblad(beeld, namen, lijst, zonder) {
   const n = lijst.length + zonder.length;
   return `<section class="sheet cover">
   <h1>leegstandatlas</h1>
-  <div class="mapbox">${beeld.src ? `<img class="base" src="${beeld.src}" alt="Kaart van de gekozen panden">` : ""}
+  <div class="mapbox">${beeld.src ? `<img class="base" src="${beeld.src}" alt="${t("Kaart van de gekozen panden")}">` : ""}
     ${namen.map(l => `<span class="dot" style="left:${pct(l.x, MAPW)};top:${pct(l.y, MAPH)}"></span>`).join("")}
-    ${namen.map(l => `<span class="lab" style="left:${pct(l.r.x0, MAPW)};top:${pct(l.r.y0, MAPH)}">${esc(l.p.naam)}</span>`).join("")}
-    <span class="attr">Kaart © OpenStreetMap-bijdragers</span>
+    ${namen.map(l => `<span class="lab" style="left:${pct(l.r.x0, MAPW)};top:${pct(l.r.y0, MAPH)}">${esc(nm(l.p))}</span>`).join("")}
+    <span class="attr">${t("Kaart © OpenStreetMap-bijdragers")}</span>
   </div>
-  <div class="foot"><span>${n} ${n === 1 ? "pand" : "panden"} · Plombières${zonder.length ? ` · nog niet op de kaart: ${zonder.map(p => esc(p.naam)).join(", ")}` : ""}</span><span>Geëxporteerd op ${vandaag}</span></div>
+  <div class="foot"><span>${t(n === 1 ? "{n} pand" : "{n} panden", { n })} · Plombières${zonder.length ? ` · ${t("nog niet op de kaart")}: ${zonder.map(p => esc(nm(p))).join(", ")}` : ""}</span><span>${t("Geëxporteerd op {datum}", { datum: vandaag })}</span></div>
 </section>`;
 }
 
-const kop = (p, wat) => `<header class="ph kort"><div><div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div><h2>${esc(p.naam)}</h2></div><div class="wat">${esc(wat)}</div></header>`;
-const voet = p => `<div class="foot"><span>leegstandatlas · ${esc(p.naam)}</span><span class="pn"></span></div>`;
+const kop = (p, wat) => `<header class="ph kort"><div><div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div><h2>${esc(nm(p))}</h2></div><div class="wat">${esc(wat)}</div></header>`;
+const voet = p => `<div class="foot"><span>leegstandatlas · ${esc(nm(p))}</span><span class="pn"></span></div>`;
 function bronnen(g) {
   const b = [g.bronTekst && esc(g.bronTekst), ...g.bronnen.map(x => `${esc(x.titel)} (${esc(x.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))})`)].filter(Boolean);
-  return `<p class="src">Samenvatting. ${b.length ? "Bron: " + b.join(" · ") : "Bron niet vermeld."}</p>`;
+  return `<p class="src">${t("Samenvatting.")} ${b.length ? t("Bron:") + " " + b.join(" · ") : t("Bron niet vermeld.")}</p>`;
 }
 const geschHTML = g => g.tekst.map(t => `<p>${esc(t)}</p>`).join("") + bronnen(g);
 
 function hoofd(p) {
   const ll = p.lngLat;
-  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
-  const feiten = [["Breedte", ll ? `${ll[1].toFixed(5)}° N` : "Onbekend"], ["Lengte", ll ? `${ll[0].toFixed(5)}° O` : "Onbekend"], ["Bezocht", bezocht], ["Eigen foto's", p.fotos.length], ["Staat", p.staat && p.staat.score ? `${p.staat.score}/5 · ${["", "ruïne", "slecht", "matig", "redelijk", "goed"][p.staat.score]}` : "Onbekend"]];
+  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? t("Onbekend") : t("Nog niet");
+  const feiten = [["Breedte", ll ? `${ll[1].toFixed(5)}° N` : t("Onbekend")], ["Lengte", ll ? t("{lng}° O", { lng: ll[0].toFixed(5) }) : t("Onbekend")], ["Bezocht", bezocht], ["Eigen foto's", p.fotos.length], ["Staat", p.staat && p.staat.score ? `${p.staat.score}/5` : t("Onbekend")]];
   return `<header class="ph">
     <div>
       <div class="k">leegstandatlas · ${esc(p.gemeente || "")}</div>
-      <h2>${esc(p.naam)}</h2>
+      <h2>${esc(nm(p))}</h2>
       <p class="addr">${esc(p.adres || p.gemeente || "")}</p>
-      <div class="chips"><span class="chip st">${esc(p.status)}</span><span class="chip">${esc(SOORT_LBL[p.categorie] || p.type)}</span>${SOORT_LBL[p.categorie] ? `<span class="chip">${esc(p.type)}</span>` : ""}</div>
+      <div class="chips"><span class="chip st">${esc(t(p.status))}</span><span class="chip">${esc(SOORT_LBL[p.categorie] || p.type)}</span>${SOORT_LBL[p.categorie] ? `<span class="chip">${esc(p.type)}</span>` : ""}</div>
     </div>
-    <dl class="facts">${feiten.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+    <dl class="facts">${feiten.map(([k, v]) => `<div><dt>${t(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
   </header>`;
 }
 // Pagina 1: satellietbeeld uit de kaart en de vijf beste foto's.
@@ -362,10 +370,10 @@ function hoofd(p) {
 const blad1 = (p, fotos) => `<section class="sheet">${hoofd(p)}<div class="body b1${fotos ? "" : " zonder"}"><div class="satvak"></div><div class="vak"></div></div>${voet(p)}</section>`;
 // Pagina 2: geschiedenis en materialen, met de extra foto's ernaast (of de tekst over de hele breedte).
 function blad2(p, metFotos) {
-  const secties = [`<div class="sec"><h3>Geschiedenis</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">Nog geen geschiedenis aangeleverd.</p>`}</div>`,
-    `<div class="sec"><h3>Materialen</h3>${p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="niets">Nog geen materialen aangeleverd.</p>`}</div>`];
-  if (p.model3d.length) secties.push(`<div class="sec"><h3>3D-model</h3><p class="niets">Te bekijken op de website.</p></div>`);
-  return leegBlad(p, "Geschiedenis en materialen", metFotos
+  const secties = [`<div class="sec"><h3>${t("Geschiedenis")}</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">${t("Nog geen geschiedenis aangeleverd.")}</p>`}</div>`,
+    `<div class="sec"><h3>${t("Materialen")}</h3>${p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="niets">${t("Nog geen materialen aangeleverd.")}</p>`}</div>`];
+  if (p.model3d.length) secties.push(`<div class="sec"><h3>${t("3D-model")}</h3><p class="niets">${t("Te bekijken op de website.")}</p></div>`);
+  return leegBlad(p, t("Geschiedenis en materialen"), metFotos
     ? `<div class="body b2"><div class="tekst">${secties.join("")}</div><div class="vak"></div></div>`
     : `<div class="tekst3">${secties.join("")}</div>`);
 }
@@ -378,10 +386,10 @@ function beste(p) {
   return [...eigen, ...p.streetview].slice(0, 5);
 }
 const bijschriftPlan = (p, src) => {
-  const t = [p.planinfo?.[src]?.titel, p.planMaker && `Plannen: ${p.planMaker}`].filter(Boolean).join(" · ");
-  return t ? `<figcaption>${esc(t)}</figcaption>` : "";
+  const tekst = [p.planinfo?.[src]?.titel, p.planMaker && t("Plannen: {maker}", { maker: p.planMaker })].filter(Boolean).join(" · ");
+  return tekst ? `<figcaption>${esc(tekst)}</figcaption>` : "";
 };
-const bijschrift = (p, src) => p.streetview.includes(src) ? "Street View" : p.luchtbeeld.includes(src) ? "Luchtbeeld" : "";
+const bijschrift = (p, src) => p.streetview.includes(src) ? "Street View" : p.luchtbeeld.includes(src) ? t("Luchtbeeld") : "";
 
 // Satellietbeeld per pand, uit dezelfde Esri-kaart als de satellietmodus van de website.
 const SATZOOM = 16.6;
@@ -463,7 +471,7 @@ let bouwNr = 0, klaar = Promise.resolve();
 async function bouw() {
   const nr = ++bouwNr, actueel = () => nr === bouwNr;
   $("print").disabled = true;
-  $("sum").textContent = "Voorbeeld wordt gemaakt…";
+  $("sum").textContent = t("Voorbeeld wordt gemaakt…");
   let gedaan;
   klaar = new Promise(r => gedaan = r);
   const keuze = ALLE.filter(p => gekozen.has(p.id));
@@ -477,7 +485,7 @@ async function bouw() {
   voegToe(voorblad(beeld, plaatsNamen(beeld.punten), opKaart, zonder));
 
   for (const [i, p] of keuze.entries()) {
-    $("sum").textContent = `Voorbeeld wordt gemaakt… ${i + 1} van ${keuze.length}`;
+    $("sum").textContent = t("Voorbeeld wordt gemaakt… {i} van {n}", { i: i + 1, n: keuze.length });
     const alles = [...p.fotos, ...p.streetview, ...p.luchtbeeld, ...p.historisch];
     await Promise.all(alles.map(verhouding));
     if (!actueel()) return;
@@ -493,14 +501,14 @@ async function bouw() {
       try { src = await satBeeld(p, wpx, hpx); } catch (e) {}
       if (!actueel()) return;
       const sb = schaalbalk(p.lngLat[1], wpx);
-      satvak.innerHTML = `${src ? `<img src="${src}" alt="Satellietbeeld van ${esc(p.naam)}">` : `<p class="geen">Het satellietbeeld kon niet geladen worden.</p>`}
+      satvak.innerHTML = `${src ? `<img src="${src}" alt="${esc(t("Satellietbeeld van {naam}", { naam: nm(p) }))}">` : `<p class="geen">${t("Het satellietbeeld kon niet geladen worden.")}</p>`}
         <span class="dot" style="left:50%;top:50%"></span><span class="noord">N</span>
         <span class="schaal" style="width:${sb.pct.toFixed(2)}%"><b>${sb.len} m</b><i></i></span>
-        <span class="attr">Satelliet © Esri, Maxar, Earthstar Geographics</span>`;
+        <span class="attr">${t("Satelliet")} © Esri, Maxar, Earthstar Geographics</span>`;
     } else if (p.luchtbeeld.length) {
-      satvak.innerHTML = `<img src="${esc(p.luchtbeeld[0])}" alt="Luchtbeeld van ${esc(p.naam)}"><span class="attr">Luchtbeeld (schermafbeelding) · locatie nog onbekend</span>`;
+      satvak.innerHTML = `<img src="${esc(p.luchtbeeld[0])}" alt="${esc(t("Luchtbeeld van {naam}", { naam: nm(p) }))}"><span class="attr">${t("Luchtbeeld (schermafbeelding) · locatie nog onbekend")}</span>`;
     } else {
-      satvak.innerHTML = `<p class="geen">Nog geen satellietbeeld: de locatie van dit pand is nog niet bekend.</p>`;
+      satvak.innerHTML = `<p class="geen">${t("Nog geen satellietbeeld: de locatie van dit pand is nog niet bekend.")}</p>`;
     }
     const vak = blad.querySelector(".vak");
     const m1 = mm(vak);
@@ -524,26 +532,26 @@ async function bouw() {
       }
     } else voegToe(blad2(p, false));
 
-    await fotoPaginas(p, rest, "Extra foto's", actueel);
+    await fotoPaginas(p, rest, t("Extra foto's"), actueel);
     p.grondplannen.forEach((src, i) => {
       const n = p.grondplannen.length > 1 ? ` · ${i + 1}/${p.grondplannen.length}` : "";
       const naam = decodeURIComponent(src.split("/").pop());
-      voegToe(leegBlad(p, "Grondplannen en snedes" + n, /\.pdf$/i.test(src)
-        ? `<figure class="plan"><p class="pdf">${esc(naam)}<br>Dit plan is een pdf. Druk het apart af vanaf de website.</p></figure>`
+      voegToe(leegBlad(p, t("Grondplannen en snedes") + n, /\.pdf$/i.test(src)
+        ? `<figure class="plan"><p class="pdf">${esc(naam)}<br>${t("Dit plan is een pdf. Druk het apart af vanaf de website.")}</p></figure>`
         : `<figure class="plan"><img src="${esc(src)}" alt="${esc(naam)}">${bijschriftPlan(p, src)}</figure>`));
     });
-    await fotoPaginas(p, p.historisch.map(item), "Historische foto's", actueel);
+    await fotoPaginas(p, p.historisch.map(item), t("Historische foto's"), actueel);
     if (!actueel()) return;
   }
 
   const bladen = [...pagesEl.querySelectorAll(".sheet")];
   bladen.forEach((s, i) => { const pn = s.querySelector(".pn"); if (pn) pn.textContent = `${i + 1} / ${bladen.length}`; });
-  if (!keuze.length) pagesEl.insertAdjacentHTML("beforeend", `<p class="leeg">Kies links minstens één pand.</p>`);
+  if (!keuze.length) pagesEl.insertAdjacentHTML("beforeend", `<p class="leeg">${t("Kies links minstens één pand.")}</p>`);
   schaal();
   // Wachten tot alle beelden geladen zijn, anders ontbreken ze in de afdruk.
   await Promise.all([...pagesEl.querySelectorAll("img")].map(i => i.decode().catch(() => {})));
   if (!actueel()) return;
-  $("sum").textContent = `${keuze.length} ${keuze.length === 1 ? "pand" : "panden"} · ${bladen.length} ${bladen.length === 1 ? "pagina" : "pagina's"} A3`;
+  $("sum").textContent = `${t(keuze.length === 1 ? "{n} pand" : "{n} panden", { n: keuze.length })} · ${t(bladen.length === 1 ? "{n} pagina A3" : "{n} pagina's A3", { n: bladen.length })}`;
   $("print").disabled = false;
   gedaan();
 }

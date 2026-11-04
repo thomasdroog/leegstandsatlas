@@ -83,6 +83,9 @@ button, input { font: inherit; color: inherit; }
 .brand h1 { margin: 0; font: 700 clamp(34px, 4.4vw, 56px)/1 var(--font-ui); letter-spacing: -.035em; }
 .brand p { margin: 0; font: 400 15px/1.4 var(--font-ui); color: var(--muted); max-width: 34ch; text-wrap: balance; }
 .count { position: absolute; z-index: 4; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
+.count { display: flex; gap: 8px; align-items: flex-start; }
+.count .seg.taal { height: 30px; }
+.count .seg.taal button { padding: 0 9px; font-size: 11px; }
 .count .pill { cursor: pointer; }
 .count .pill:hover { background: var(--surface-2); }
 .count .pill svg { width: 10px; height: 10px; color: var(--muted); transition: transform .15s; }
@@ -278,6 +281,8 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   .brand p { font-size: 13px; max-width: 30ch; }
   .count { top: calc(124px + env(safe-area-inset-top, 0px)); right: auto; left: max(16px, env(safe-area-inset-left, 0px)); }
   .count .pill { height: 26px; font-size: 11px; }
+  .count .seg.taal { height: 26px; padding: 2px; }
+  .count .seg.taal button { padding: 0 7px; font-size: 10px; }
   .count .results { left: 0; right: auto; top: 34px; max-height: 50vh; }
   .bar { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
   .search input { width: 64px; }
@@ -340,7 +345,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 <header class="brand">
   <h1>Leegstandatlas</h1>
-  <p>Leegstaande gebouwen in kaart gebracht, met alle beelden en gegevens per pand op één plek.</p>
+  <p data-t>Leegstaande gebouwen in kaart gebracht, met alle beelden en gegevens per pand op één plek.</p>
 </header>
 <div class="count" id="count">
   <button type="button" class="pill" id="countBtn" aria-expanded="false" aria-controls="allList"><span class="dot"></span><span id="countText">0 panden</span><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m2 3.5 3 3 3-3"/></svg></button>
@@ -348,20 +353,20 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 </div>
 
 <div class="legend" id="legend">
-  <button type="button" class="pill lg-kop" id="lgKop" aria-expanded="false" aria-controls="lgIn"><span class="sw" id="lgSw"></span>Legende</button>
+  <button type="button" class="pill lg-kop" id="lgKop" aria-expanded="false" aria-controls="lgIn"><span class="sw" id="lgSw"></span><span data-t>Legende</span></button>
   <div class="lg-in" id="lgIn">
     <div class="seg" role="group" aria-label="Kleur de panden volgens">
-      <button type="button" id="lgSoort" aria-pressed="true">Soort</button>
-      <button type="button" id="lgStaat" aria-pressed="false">Staat</button>
+      <button type="button" id="lgSoort" aria-pressed="true" data-t>Soort</button>
+      <button type="button" id="lgStaat" aria-pressed="false" data-t>Staat</button>
     </div>
     <ul id="lgList"></ul>
-    <p class="hint">Klik om een groep te verbergen of te tonen.</p>
+    <p class="hint" data-t>Klik om een groep te verbergen of te tonen.</p>
   </div>
 </div>
 
 <p class="notice" id="notice" hidden></p>
 
-<p class="sathint" id="satHint" hidden>In deze preview is het satellietbeeld grof. Op de echte website is het scherp tot op straatniveau. Het luchtbeeld van elk pand staat in het detailpaneel.</p>
+<p class="sathint" id="satHint" hidden data-t>In deze preview is het satellietbeeld grof. Op de echte website is het scherp tot op straatniveau. Het luchtbeeld van elk pand staat in het detailpaneel.</p>
 
 <div class="lb" id="lb" hidden role="dialog" aria-label="Foto vergroot">
   <img id="lbImg" alt="Vergrote foto">
@@ -373,11 +378,11 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 <div class="bar">
   <div class="seg" role="group" aria-label="Kaartweergave">
-    <button type="button" id="btnKaart" aria-pressed="true">Kaart</button>
-    <button type="button" id="btnSat" aria-pressed="false">Satelliet</button>
+    <button type="button" id="btnKaart" aria-pressed="true" data-t>Kaart</button>
+    <button type="button" id="btnSat" aria-pressed="false" data-t>Satelliet</button>
   </div>
   <div class="oud">
-    <button type="button" class="pill" id="oudBtn" aria-expanded="false" aria-controls="oudMenu" aria-label="Oude kaarten"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z"/><path d="M5.5 2v10.5M10.5 3.5V14"/></svg><span id="oudTxt">Oude kaarten</span></button>
+    <button type="button" class="pill" id="oudBtn" aria-expanded="false" aria-controls="oudMenu" aria-label="Oude kaarten"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z"/><path d="M5.5 2v10.5M10.5 3.5V14"/></svg><span id="oudTxt" data-t>Oude kaarten</span></button>
     <div class="oudmenu" id="oudMenu" role="radiogroup" aria-label="Kies een oude kaart" hidden></div>
   </div>
   <div class="search">
@@ -385,11 +390,11 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
     <input id="q" type="search" placeholder="Zoeken" autocomplete="off" aria-label="Zoek een gebouw of gemeente">
     <div class="results" id="results" hidden></div>
   </div>
-  <button type="button" class="pill exp" id="addBtn" aria-label="Gebouw toevoegen" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg><span>Toevoegen</span></button>
-  <a class="pill exp" href="export.html" aria-label="Exporteren naar A3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span>Exporteren</span></a>
+  <button type="button" class="pill exp" id="addBtn" aria-label="Gebouw toevoegen" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11"/></svg><span data-t>Toevoegen</span></button>
+  <a class="pill exp" href="export.html" aria-label="Exporteren naar A3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span data-t>Exporteren</span></a>
 </div>
 
-<div class="kies" id="kies" role="status" hidden><span id="kiesTxt"></span><button type="button" class="knop" id="kiesWeg">Annuleren</button></div>
+<div class="kies" id="kies" role="status" hidden><span id="kiesTxt"></span><button type="button" class="knop" id="kiesWeg" data-t>Annuleren</button></div>
 <dialog class="nieuw" id="nieuw" aria-labelledby="nieuwKop"></dialog>
 
 <aside class="panel" id="panel" hidden aria-labelledby="pTitle">
@@ -411,13 +416,18 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
 <script src="data/panden.js"></script>
 <script src="data/aanpassingen.js"></script>
+<script src="data/vertalingen.js"></script>
+<script src="data/taal.js"></script>
 <script>
-// De panden staan in data/panden.js.
+// De panden staan in data/panden.js, de vertalingen in data/vertalingen.js (uitleg in data/taal.js).
+vertaalPagina();
+vertaalPanden(PANDEN);
+document.getElementById("count").prepend(taalKnop());
 
 const TABS = [["fotos", "Foto's"], ["staat", "Staat"], ["discussie", "Discussie"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
 const LIVE = {
-  osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>-bijdragers' },
-  sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: 'Satelliet © Esri, Maxar, Earthstar Geographics' }
+  osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: t("© {osm}-bijdragers", { osm: '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }) },
+  sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: t("Satelliet") + ' © Esri, Maxar, Earthstar Geographics' }
 };
 const abs = p => location.href.split("#")[0].split("?")[0].replace(/[^/]*$/, "") + p;
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -430,10 +440,10 @@ let mode = "kaart", live = false, current = null;
 const SOORTEN = [
   ["ruine", "Ruïne"], ["kasteel", "Kasteel of burcht"], ["religieus", "Klooster, kerk of kapel"],
   ["hoeve", "Hoeve of landbouw"], ["woning", "Woning of villa"], ["industrie", "Industrie of bedrijf"], ["spoorweg", "Spoorweg"]
-];
-const STAAT = ["Onbekend", "Ingestort", "Slecht", "Matig", "Redelijk", "Goed"];
-const STAAT_UITLEG = ["Nog niet beoordeeld", "Ingestort, alleen nog muren of resten", "Dak of draagstructuur zwaar beschadigd", "Verwaarloosd, maar de structuur is nog intact", "Kleine gebreken, goed te herstellen", "Onderhouden of nog in gebruik"];
-const soortLabel = id => (SOORTEN.find(x => x[0] === id) || [id, "Andere"])[1];
+].map(([id, l]) => [id, t(l)]);
+const STAAT = ["Onbekend", "Ingestort", "Slecht", "Matig", "Redelijk", "Goed"].map(x => t(x));
+const STAAT_UITLEG = ["Nog niet beoordeeld", "Ingestort, alleen nog muren of resten", "Dak of draagstructuur zwaar beschadigd", "Verwaarloosd, maar de structuur is nog intact", "Kleine gebreken, goed te herstellen", "Onderhouden of nog in gebruik"].map(x => t(x));
+const soortLabel = id => (SOORTEN.find(x => x[0] === id) || [id, t("Andere")])[1];
 const soortKleur = id => SOORTEN.some(x => x[0] === id) ? `var(--c-${id})` : "var(--s0)";
 const score = p => (p.staat && Number(p.staat.score)) || 0;
 const staatKleur = n => `var(--s${n})`;
@@ -480,7 +490,7 @@ const map = new maplibregl.Map({
     sources: {
       land: { type: "geojson", data: abs("data/landen.geojson") },
       grens: { type: "geojson", data: abs("data/grenzen.geojson") },
-      ne: { type: "raster", tiles: [abs("tiles/sat/{z}/{x}/{y}.jpg")], tileSize: 256, maxzoom: 3, attribution: "Natural Earth II (ingebouwd)" }
+      ne: { type: "raster", tiles: [abs("tiles/sat/{z}/{x}/{y}.jpg")], tileSize: 256, maxzoom: 3, attribution: t("Natural Earth II (ingebouwd)") }
     },
     layers: [
       { id: "zee", type: "background", paint: { "background-color": css("--ocean") } },
@@ -529,9 +539,9 @@ $("btnSat").onclick = () => setMode("satelliet");
 // Oude kaarten van de Waalse overheid (WalOnMap / geoservices.wallonie.be). Ze dekken alleen Wallonië.
 const WAL = "https://geoservices.wallonie.be/arcgis/rest/services/";
 const OUD = [
-  { id: "ferraris", naam: "Ferraris-kaart", jaar: "1777", pad: "CARTES_ANCIENNES/FERRARIS" },
-  { id: "vdml", naam: "Vandermaelen-kaart", jaar: "1846–1854", pad: "CARTES_ANCIENNES/VDML" },
-  { id: "depot", naam: "Dépôt de la Guerre", jaar: "1865–1880", pad: "CARTES_ANCIENNES/DEPOT_GUERRE_1865_1880" },
+  { id: "ferraris", naam: "Ferraris-kaart", kort: "Ferraris", jaar: "1777", pad: "CARTES_ANCIENNES/FERRARIS" },
+  { id: "vdml", naam: "Vandermaelen-kaart", kort: "Vandermaelen", jaar: "1846–1854", pad: "CARTES_ANCIENNES/VDML" },
+  { id: "depot", naam: "Dépôt de la Guerre", kort: "Dépôt de la Guerre", jaar: "1865–1880", pad: "CARTES_ANCIENNES/DEPOT_GUERRE_1865_1880" },
   { id: "o1971", naam: "Luchtfoto", jaar: "1971", pad: "IMAGERIE/ORTHO_1971" },
   { id: "o1990", naam: "Luchtfoto", jaar: "1978–1990", pad: "IMAGERIE/ORTHO_1978_1990" },
   { id: "o2000", naam: "Luchtfoto", jaar: "1994–2000", pad: "IMAGERIE/ORTHO_1994_2000" }
@@ -540,14 +550,14 @@ const WALLONIE = [2.84, 49.48, 6.43, 50.82];
 let oud = null, oudOpacity = 1;
 const oudMenu = $("oudMenu"), oudBtn = $("oudBtn");
 function renderOud() {
-  const knop = (id, b, s) => `<button type="button" role="radio" data-oud="${id}" aria-checked="${(oud || "") === id}"><span class="r"></span><b>${b}</b><small>${s}</small></button>`;
-  oudMenu.innerHTML = `<div class="kop">Oude kaarten</div>` + knop("", "Geen", "vandaag") +
-    OUD.map(o => knop(o.id, o.naam, o.jaar)).join("") +
-    `<label>Zichtbaarheid<input type="range" id="oudOp" min="0" max="100" value="${Math.round(oudOpacity * 100)}" aria-label="Zichtbaarheid van de oude kaart"></label>` +
-    `<p>Alleen voor Wallonië. Bron: Service public de Wallonie, WalOnMap.</p>`;
+  const knop = (id, b, s) => `<button type="button" role="radio" data-oud="${id}" aria-checked="${(oud || "") === id}"><span class="r"></span><b>${esc(b)}</b><small>${esc(s)}</small></button>`;
+  oudMenu.innerHTML = `<div class="kop">${t("Oude kaarten")}</div>` + knop("", t("Geen"), t("vandaag")) +
+    OUD.map(o => knop(o.id, t(o.naam), o.jaar)).join("") +
+    `<label>${t("Zichtbaarheid")}<input type="range" id="oudOp" min="0" max="100" value="${Math.round(oudOpacity * 100)}" aria-label="${t("Zichtbaarheid van de oude kaart")}"></label>` +
+    `<p>${t("Alleen voor Wallonië. Bron: Service public de Wallonie, WalOnMap.")}</p>`;
   $("oudOp").oninput = e => { oudOpacity = e.target.value / 100; if (map.getLayer("oud")) map.setPaintProperty("oud", "raster-opacity", oudOpacity); };
   const o = OUD.find(x => x.id === oud);
-  $("oudTxt").textContent = o ? `${o.naam === "Luchtfoto" ? "Luchtfoto" : o.naam.replace("-kaart", "")} ${o.jaar}` : "Oude kaarten";
+  $("oudTxt").textContent = o ? `${t(o.kort || o.naam)} ${o.jaar}` : t("Oude kaarten");
   oudBtn.classList.toggle("on", !!o);
 }
 function toggleOud(open) {
@@ -565,7 +575,7 @@ function setOud(id) {
       type: "raster",
       tiles: [`${WAL}${o.pad}/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=512,512&format=png32&transparent=true&f=image`],
       tileSize: 512, minzoom: 6, maxzoom: 19, bounds: WALLONIE,
-      attribution: `${o.naam} ${o.jaar} © <a href="https://geoportail.wallonie.be/walonmap" target="_blank" rel="noopener">SPW, WalOnMap</a>`
+      attribution: `${t(o.naam)} ${o.jaar} © <a href="https://geoportail.wallonie.be/walonmap" target="_blank" rel="noopener">SPW, WalOnMap</a>`
     });
     map.addLayer({ id: "oud", type: "raster", source: "oud", paint: { "raster-opacity": oudOpacity, "raster-fade-duration": 200 } }, "grens");
     // Ver uitgezoomd is er niets te zien: zoom dan in op de panden.
@@ -582,7 +592,7 @@ oudMenu.addEventListener("click", e => {
 map.on("error", e => {
   if (e.sourceId !== "oud" || !oud) return;
   const n = $("notice");
-  n.innerHTML = "<b>Oude kaart.</b> De server van WalOnMap antwoordt nu niet. Probeer het later opnieuw.";
+  n.innerHTML = t("<b>Oude kaart.</b> De server van WalOnMap antwoordt nu niet. Probeer het later opnieuw.");
   n.hidden = false;
   clearTimeout(n._t); n._t = setTimeout(() => { n.hidden = true; }, 5000);
 });
@@ -612,7 +622,7 @@ map.on("load", async () => {
     setMode(mode);
   } else {
     const n = $("notice");
-    n.innerHTML = "<b>Preview.</b> Hier staan een ingebouwde wereldkaart en satellietbeeld. Op de gepubliceerde website laden OpenStreetMap en satellietbeelden live, tot op straatniveau.";
+    n.innerHTML = t("<b>Preview.</b> Hier staan een ingebouwde wereldkaart en satellietbeeld. Op de gepubliceerde website laden OpenStreetMap en satellietbeelden live, tot op straatniveau.");
     n.hidden = false;
   }
 });
@@ -626,19 +636,23 @@ function maakMarker(p) {
   el.type = "button";
   el.className = "mk";
   el.style.setProperty("--c", kleur(p));
-  el.innerHTML = `<span class="d"></span><span class="pill">${esc(p.naam)}</span>`;
+  el.innerHTML = `<span class="d"></span><span class="pill">${esc(nm(p))}</span>`;
   el.addEventListener("click", e => { e.stopPropagation(); openPand(p.id); });
   markers[p.id] = { el, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-7, 0] }).setLngLat(p.lngLat).addTo(map) };
-  el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
+  el.setAttribute("aria-label", ariaPand(p));
   delen(p).forEach(o => o.lngLat && maakDeelMarker(p, o));
+}
+function ariaPand(p) {
+  const soorten = [p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" " + t("en") + " ");
+  return t("{naam}, {soort}, staat: {staat}", { naam: nm(p), soort: soorten, staat: STAAT[score(p)] });
 }
 // Een onderdeel met een eigen plek krijgt een klein punt; klikken opent het pand waar het bij hoort.
 function maakDeelMarker(p, o) {
   const el = document.createElement("button");
   el.type = "button";
   el.className = "mk deel";
-  el.innerHTML = `<span class="d"></span><span class="pill">${esc(o.naam)}</span>`;
-  el.setAttribute("aria-label", `${o.naam}, ${soortLabel(o.categorie)}, onderdeel van ${p.naam}`);
+  el.innerHTML = `<span class="d"></span><span class="pill">${esc(nm(o))}</span>`;
+  el.setAttribute("aria-label", t("{naam}, {soort}, onderdeel van {pand}", { naam: nm(o), soort: soortLabel(o.categorie), pand: nm(p) }));
   el.addEventListener("click", e => { e.stopPropagation(); tab = "staat"; openPand(p.id); });
   deelMarkers.push({ el, p, o, m: new maplibregl.Marker({ element: el, anchor: "left", offset: [-5, 0] }).setLngLat(o.lngLat).addTo(map) });
 }
@@ -649,7 +663,7 @@ function kleurMarkers() {
     const el = markers[p.id].el;
     el.style.setProperty("--c", kleur(p));
     el.classList.toggle("uit", verborgen.has(groep(p)));
-    el.setAttribute("aria-label", `${p.naam}, ${[p.categorie, ...delen(p).map(o => o.categorie)].filter((c, i, a) => a.indexOf(c) === i).map(soortLabel).join(" en ")}, staat: ${STAAT[score(p)]}`);
+    el.setAttribute("aria-label", ariaPand(p));
   });
 }
 
@@ -659,7 +673,7 @@ function renderLegend() {
   const tel = g => PANDEN.reduce((n, p) => n + (groep(p) === g) + delen(p).filter(o => !o.hoofd && groep(o) === g).length, 0);
   const items = kleurOp === "soort"
     ? SOORTEN.map(([id, l]) => [id, l, soortKleur(id)])
-    : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} / 5` : "Nog niet beoordeeld", staatKleur(n)]);
+    : [5, 4, 3, 2, 1, 0].filter(n => n || tel("s0")).map(n => ["s" + n, n ? `${n} / 5` : t("Nog niet beoordeeld"), staatKleur(n)]);
   $("lgList").innerHTML = items.map(([g, l, c]) =>
     `<li><button type="button" data-g="${g}" aria-pressed="${!verborgen.has(g)}" style="--c:${c}"><span class="sw"></span>${esc(l)}<small>${tel(g)}</small></button></li>`).join("");
   $("lgSw").innerHTML = items.slice(0, 5).map(([, , c]) => `<i style="background:${c}"></i>`).join("");
@@ -686,24 +700,24 @@ const bounds = OPKAART.reduce((b, p) => b.extend(p.lngLat), new maplibregl.LngLa
 const agg = document.createElement("button");
 agg.type = "button";
 agg.className = "agg";
-agg.innerHTML = `<span class="d"></span><span class="pill">Plombières · ${OPKAART.length} panden</span>`;
+agg.innerHTML = `<span class="d"></span><span class="pill">${t("Plombières · {n} panden", { n: OPKAART.length })}</span>`;
 agg.onclick = e => { e.stopPropagation(); flyCluster(); };
 new maplibregl.Marker({ element: agg, anchor: "left", offset: [-11, 0] }).setLngLat(bounds.getCenter()).addTo(map);
-agg.setAttribute("aria-label", `Zoom in op Plombières, ${OPKAART.length} panden`);
-const zetTeller = () => { $("countText").textContent = `${PANDEN.length} panden · Plombières`; };
+agg.setAttribute("aria-label", t("Zoom in op Plombières, {n} panden", { n: OPKAART.length }));
+const zetTeller = () => { $("countText").textContent = t("{n} panden · Plombières", { n: PANDEN.length }); };
 zetTeller();
 if (zonderBol) {
   const n = $("notice");
-  n.innerHTML = "<b>De wereldbol kan hier niet laden.</b> Je browser laat de 3D-weergave (WebGL) niet toe, wat soms gebeurt in een privévenster. Alle panden staan in de lijst rechtsboven; klik er een aan voor de foto's, de staat en de discussie.";
+  n.innerHTML = t("<b>De wereldbol kan hier niet laden.</b> Je browser laat de 3D-weergave (WebGL) niet toe, wat soms gebeurt in een privévenster. Alle panden staan in de lijst rechtsboven; klik er een aan voor de foto's, de staat en de discussie.");
   n.hidden = false;
   setTimeout(() => toggleAll(true), 0);
 }
 
 // Lijst van alle panden onder de teller
 const allList = $("allList"), countBtn = $("countBtn");
-const rij = p => `<button type="button" data-id="${p.id}"><span class="d${p.lngLat ? "" : " off"}" style="--c:${kleur(p)}"></span><b>${esc(p.naam)}</b><small>${esc(p.lngLat ? (p.adres || p.gemeente) : "Locatie nog onbekend")}</small></button>`;
+const rij = p => `<button type="button" data-id="${p.id}"><span class="d${p.lngLat ? "" : " off"}" style="--c:${kleur(p)}"></span><b>${esc(nm(p))}</b><small>${esc(p.lngLat ? (p.adres || p.gemeente) : t("Locatie nog onbekend"))}</small></button>`;
 function toggleAll(open) {
-  if (open) allList.innerHTML = [...PANDEN].sort((a, b) => a.naam.localeCompare(b.naam, "nl")).map(rij).join("");
+  if (open) allList.innerHTML = [...PANDEN].sort((a, b) => nm(a).localeCompare(nm(b), TAAL)).map(rij).join("");
   allList.hidden = !open;
   countBtn.setAttribute("aria-expanded", open);
 }
@@ -745,12 +759,12 @@ map.on("load", () => setTimeout(spin, 600));
 // Zoeken
 const q = $("q"), results = $("results");
 function renderResults() {
-  const t = q.value.trim().toLowerCase();
-  if (!t) { results.hidden = true; return; }
-  const hits = PANDEN.filter(p => [p.naam, p.adres, p.gemeente, p.type, p.status, soortLabel(p.categorie), STAAT[score(p)], ...delen(p).map(o => o.naam + " " + soortLabel(o.categorie))].join(" ").toLowerCase().includes(t));
+  const zoek = q.value.trim().toLowerCase();
+  if (!zoek) { results.hidden = true; return; }
+  const hits = PANDEN.filter(p => [p.naam, nm(p), p.adres, p.gemeente, p.type, t(p.status), soortLabel(p.categorie), STAAT[score(p)], ...delen(p).map(o => nm(o) + " " + soortLabel(o.categorie))].join(" ").toLowerCase().includes(zoek));
   results.innerHTML = hits.length
     ? hits.map(rij).join("")
-    : `<div class="none">Geen pand gevonden voor “${esc(q.value)}”.</div>`;
+    : `<div class="none">${t("Geen pand gevonden voor “{q}”.", { q: esc(q.value) })}</div>`;
   results.hidden = false;
 }
 q.addEventListener("input", renderResults);
@@ -774,7 +788,7 @@ document.addEventListener("click", e => {
 
 // Detailpaneel
 let tab = "fotos";
-const datum = s => s ? new Date(s + "T12:00:00").toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" }) : "Nog niet";
+const datum = s => s ? new Date(s + "T12:00:00").toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" }) : t("Nog niet");
 // Houdt de bol en het gekozen pand in het midden van het deel van de kaart dat niet achter het paneel zit.
 function panelPadding() {
   if ($("panel").hidden) return { top: 0, bottom: 0, left: 0, right: 0 };
@@ -800,15 +814,15 @@ function openPand(id, fly = true) {
 }
 function vulPaneel() {
   const p = current;
-  $("pChips").innerHTML = `<span class="chip st">${esc(p.status)}</span><span class="chip cat" style="--c:${soortKleur(p.categorie)}">${esc(soortLabel(p.categorie))}</span>${[...new Set(delen(p).map(o => o.categorie))].filter(c => c !== p.categorie).map(c => `<span class="chip cat" style="--c:${soortKleur(c)}">ook ${esc(soortLabel(c).toLowerCase())}</span>`).join("")}${p.lngLat ? "" : `<span class="chip">nog niet op de kaart</span>`}`;
-  $("pTitle").textContent = p.naam;
+  $("pChips").innerHTML = `<span class="chip st">${esc(t(p.status))}</span><span class="chip cat" style="--c:${soortKleur(p.categorie)}">${esc(soortLabel(p.categorie))}</span>${[...new Set(delen(p).map(o => o.categorie))].filter(c => c !== p.categorie).map(c => `<span class="chip cat" style="--c:${soortKleur(c)}">${t("ook {soort}", { soort: esc(soortLabel(c).toLowerCase()) })}</span>`).join("")}${p.lngLat ? "" : `<span class="chip">${t("nog niet op de kaart")}</span>`}`;
+  $("pTitle").textContent = nm(p);
   const ll = p.lngLat;
-  $("pAddr").textContent = [p.adres || p.gemeente, p.type, ll ? `${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O` : ""].filter(Boolean).join(" · ");
-  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? "Onbekend" : "Nog niet";
+  $("pAddr").textContent = [p.adres || p.gemeente, p.type, ll ? t("{lat}° N, {lng}° O", { lat: ll[1].toFixed(5), lng: ll[0].toFixed(5) }) : ""].filter(Boolean).join(" · ");
+  const bezocht = p.fotosGenomen ? datum(p.fotosGenomen) : p.fotos.length ? t("Onbekend") : t("Nog niet");
   const n = score(p);
   const staatHtml = `<span class="sc" style="--c:${staatKleur(n)}">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>${n ? `${n}/5` : "?"}`;
   $("pFacts").innerHTML = [["Eigen foto's", esc(p.fotos.length)], ["Bezocht", esc(bezocht)], ["Staat", staatHtml], ["Soort", esc(soortLabel(p.categorie))]]
-    .map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("");
+    .map(([k, v]) => `<div><dt>${t(k)}</dt><dd>${v}</dd></div>`).join("");
   showTab(tab);
 }
 function closePand() {
@@ -832,14 +846,14 @@ function renderTabs() {
   tabsEl.innerHTML = TABS.map(([k, l]) => {
     const n = current && TABKEY[k] ? current[TABKEY[k]].length : 0;
     const tel = k === "fotos" ? "" : n ? ` <span class="n">${n}</span>` : k === "historisch" && current && current.geschiedenis ? ` <span class="n">•</span>` : "";
-    return `<button type="button" role="tab" data-tab="${k}" id="tab-${k}">${l}${tel}</button>`;
+    return `<button type="button" role="tab" data-tab="${k}" id="tab-${k}">${t(l)}${tel}</button>`;
   }).join("");
 }
 tabsEl.addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) showTab(b.dataset.tab); });
 const TABKEY = { fotos: "fotos", discussie: "reacties", grondplan: "grondplannen", model: "model3d", historisch: "historisch", materialen: "materialen" };
 
 const gallery = (list, label, wide) => `<div class="grid2${wide ? " wide" : ""}">${list.map((src, i) =>
-  `<figure class="ph-tile"><button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(label)} ${i + 1} vergroten"><img src="${esc(src)}" alt="${esc(label)} ${i + 1}" loading="lazy"></button></figure>`).join("")}</div>`;
+  `<figure class="ph-tile"><button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(t("{label} {i} vergroten", { label: t(label), i: i + 1 }))}"><img src="${esc(src)}" alt="${esc(t(label))} ${i + 1}" loading="lazy"></button></figure>`).join("")}</div>`;
 // Plannen met titel en een pdf om te openen of te downloaden (planinfo in panden.js).
 function planGalerij(p) {
   const info = p.planinfo || {};
@@ -848,13 +862,13 @@ function planGalerij(p) {
     const pdf = pi.pdf || (/\.pdf$/i.test(src) ? src : "");
     const beeld = /\.pdf$/i.test(src)
       ? `<a class="img pdf" href="${esc(src)}" target="_blank" rel="noopener">PDF</a>`
-      : `<button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(titel)} vergroten"><img src="${esc(pi.klein || src)}" alt="${esc(titel)}" loading="lazy"></button>`;
-    const links = pdf ? `<span class="dl"><a href="${esc(pdf)}" target="_blank" rel="noopener">Pdf openen</a><a href="${esc(pdf)}" download>Downloaden${pi.grootte ? ` · ${esc(pi.grootte)}` : ""}</a></span>` : "";
+      : `<button type="button" class="img" data-src="${esc(src)}" aria-label="${esc(t("{label} vergroten", { label: titel }))}"><img src="${esc(pi.klein || src)}" alt="${esc(titel)}" loading="lazy"></button>`;
+    const links = pdf ? `<span class="dl"><a href="${esc(pdf)}" target="_blank" rel="noopener">${t("Pdf openen")}</a><a href="${esc(pdf)}" download>${t("Downloaden")}${pi.grootte ? ` · ${esc(pi.grootte)}` : ""}</a></span>` : "";
     return `<figure class="ph-tile plan"><figcaption><b>${esc(titel)}</b></figcaption>${beeld}${links ? `<figcaption>${links}</figcaption>` : ""}</figure>`;
   }).join("");
   return `<div class="grid2 wide">${tegels}</div>${p.planBron ? `<p class="note">${esc(p.planBron)}</p>` : ""}`;
 }
-const empty = (wat, map) => `<div class="empty"><b>Nog geen ${wat} voor dit pand.</b><span>Zet ze in de submap “${map}” van dit pand in de map “leegstand”, dan verschijnen ze hier.</span></div>`;
+const empty = (wat, map) => `<div class="empty"><b>${t("Nog geen {wat} voor dit pand.", { wat: t(wat) })}</b><span>${t("Zet ze in de submap “{map}” van dit pand in de map “leegstand”, dan verschijnen ze hier.", { map })}</span></div>`;
 
 function showTab(k) {
   tab = k;
@@ -864,13 +878,13 @@ function showTab(k) {
   const p = current, body = $("pBody");
   if (k === "fotos") {
     const parts = [];
-    if (p.door) parts.push(`<p class="ok">Toegevoegd door ${esc(p.door)} op ${wanneer(p.tijd)}. Foto's komen er nog bij; zet ze in een nieuwe map in “leegstand” en vermeld de naam van dit gebouw.</p>`);
-    if (p.fotos.length) parts.push(`<h3>Eigen foto's <small>${p.fotosGenomen ? datum(p.fotosGenomen) + " · " : ""}${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
+    if (p.door) parts.push(`<p class="ok">${t("Toegevoegd door {naam} op {tijd}. Foto's komen er nog bij; zet ze in een nieuwe map in “leegstand” en vermeld de naam van dit gebouw.", { naam: esc(p.door), tijd: wanneer(p.tijd) })}</p>`);
+    if (p.fotos.length) parts.push(`<h3>${t("Eigen foto's")} <small>${p.fotosGenomen ? datum(p.fotosGenomen) + " · " : ""}${p.fotos.length}</small></h3>${gallery(p.fotos, "Foto")}`);
     if (p.streetview.length) parts.push(`<h3>Street View <small>${p.streetview.length}</small></h3>${gallery(p.streetview, "Street View-beeld", true)}`);
-    if (p.luchtbeeld.length) parts.push(`<h3>Luchtbeeld <small>${p.luchtbeeld.length}</small></h3>${gallery(p.luchtbeeld, "Luchtbeeld", true)}`);
-    if (!p.fotos.length && !p.streetview.length && !p.luchtbeeld.length) parts.push(`<div class="empty"><b>Nog geen foto's van dit pand.</b><span>Zet eigen foto's of schermafbeeldingen in de map van dit pand in de map “leegstand”, dan verschijnen ze hier.</span></div>`);
-    else if (!p.fotos.length) parts.push(`<p class="note">Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.</p>`);
-    if (!p.lngLat) parts.push(`<div class="empty"><b>Dit pand staat nog niet op de kaart.</b><span>Zet een document “Coördinaten” met de breedte en lengte (bv. 50.72319, 5.91306) in de map van dit pand, dan verschijnt het op de bol.</span></div>`);
+    if (p.luchtbeeld.length) parts.push(`<h3>${t("Luchtbeeld")} <small>${p.luchtbeeld.length}</small></h3>${gallery(p.luchtbeeld, "Luchtbeeld", true)}`);
+    if (!p.fotos.length && !p.streetview.length && !p.luchtbeeld.length) parts.push(`<div class="empty"><b>${t("Nog geen foto's van dit pand.")}</b><span>${t("Zet eigen foto's of schermafbeeldingen in de map van dit pand in de map “leegstand”, dan verschijnen ze hier.")}</span></div>`);
+    else if (!p.fotos.length) parts.push(`<p class="note">${t("Van dit pand zijn nog geen eigen foto's, alleen schermafbeeldingen.")}</p>`);
+    if (!p.lngLat) parts.push(`<div class="empty"><b>${t("Dit pand staat nog niet op de kaart.")}</b><span>${t("Zet een document “Coördinaten” met de breedte en lengte (bv. 50.72319, 5.91306) in de map van dit pand, dan verschijnt het op de bol.")}</span></div>`);
     body.innerHTML = parts.join("");
   } else if (k === "staat") {
     body.innerHTML = staatTab(p);
@@ -880,11 +894,11 @@ function showTab(k) {
     const g = p.geschiedenis, parts = [];
     if (g) {
       const bron = [g.bronTekst && esc(g.bronTekst), ...g.bronnen.map(b => `<a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.titel)}</a>`)].filter(Boolean);
-      parts.push(`<div class="hist">${g.tekst.map(t => `<p>${esc(t)}</p>`).join("")}</div><p class="note">Samenvatting. ${bron.length ? "Bron: " + bron.join(" · ") : "Bron niet vermeld."}</p>`);
+      parts.push(`<div class="hist">${g.tekst.map(t => `<p>${esc(t)}</p>`).join("")}</div><p class="note">${t("Samenvatting.")} ${bron.length ? t("Bron:") + " " + bron.join(" · ") : t("Bron niet vermeld.")}</p>`);
     }
-    if (p.historisch.length) parts.push(`<h3>Historische foto's <small>${p.historisch.length}</small></h3>${gallery(p.historisch, "Historische foto")}`);
-    else if (g) parts.push(`<p class="note">Nog geen historische foto's. Zet ze in de submap “historisch” van dit pand.</p>`);
-    else parts.push(`<div class="empty"><b>Nog geen geschiedenis voor dit pand.</b><span>Zet een document “geschiedenis” in de map van dit pand, en oude foto's in de submap “historisch”. Dan verschijnen ze hier.</span></div>`);
+    if (p.historisch.length) parts.push(`<h3>${t("Historische foto's")} <small>${p.historisch.length}</small></h3>${gallery(p.historisch, "Historische foto")}`);
+    else if (g) parts.push(`<p class="note">${t("Nog geen historische foto's. Zet ze in de submap “historisch” van dit pand.")}</p>`);
+    else parts.push(`<div class="empty"><b>${t("Nog geen geschiedenis voor dit pand.")}</b><span>${t("Zet een document “geschiedenis” in de map van dit pand, en oude foto's in de submap “historisch”. Dan verschijnen ze hier.")}</span></div>`);
     body.innerHTML = parts.join("");
   } else if (k === "grondplan") {
     body.innerHTML = p.grondplannen.length ? planGalerij(p) : empty("grondplannen", "grondplannen");
@@ -901,12 +915,12 @@ let melding = "";
 let mijnNaam = "";
 try { mijnNaam = localStorage.getItem("naam") || ""; } catch (e) {}
 // E-mailadressen en telefoonnummers uit vrije tekst halen (de site is openbaar).
-const wis = t => String(t || "").replace(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/gi, "[e-mail verwijderd]")
+const wis = w => String(w || "").replace(/[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/gi, "[e-mail verwijderd]")
   .replace(/\+?\d[\d ./-]{7,}\d/g, m => (m.match(/\d/g) || []).length >= 9 ? "[nummer verwijderd]" : m)
   .replace(/\s+/g, " ").trim();
-const naamVeld = () => `<label>Je naam (verplicht, zichtbaar voor iedereen)<input type="text" name="naam" required maxlength="60" autocomplete="name" value="${esc(mijnNaam)}" placeholder="Bv. Thomas D."></label>`;
-const privacy = `<p class="note">Je naam en je tekst zijn voor iedereen zichtbaar. Zet er geen e-mailadressen of telefoonnummers in.</p>`;
-const wanneer = t => t ? esc(datum(String(t).slice(0, 10))) : "";
+const naamVeld = () => `<label>${t("Je naam (verplicht, zichtbaar voor iedereen)")}<input type="text" name="naam" required maxlength="60" autocomplete="name" value="${esc(mijnNaam)}" placeholder="${t("Bv. Thomas D.")}"></label>`;
+const privacy = `<p class="note">${t("Je naam en je tekst zijn voor iedereen zichtbaar. Zet er geen e-mailadressen of telefoonnummers in.")}</p>`;
+const wanneer = w => w ? esc(datum(String(w).slice(0, 10))) : "";
 const meldingHtml = () => { if (!melding) return ""; const h = `<p class="ok">${melding}</p>`; melding = ""; return h; };
 
 function staatTab(p) {
@@ -915,42 +929,42 @@ function staatTab(p) {
     `<div class="schaal" style="--c:${c}">${[1, 2, 3, 4, 5].map(i => `<div class="${i <= n ? "on" : ""}"></div>`).join("")}</div>`,
     `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${i}</span>`).join("")}</div>`];
   if (st.toelichting) parts.push(`<p class="txt">${esc(st.toelichting)}</p>`);
-  parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? ` Laatst aangepast door ${esc(st.naam)}, ${wanneer(st.tijd)}.` : st.bron ? ` Beoordeling: ${esc(st.bron)}.` : ""}</p>`);
-  if (delen(p).length) parts.push(`<h3>Onderdelen <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
+  parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? " " + t("Laatst aangepast door {naam}, {tijd}.", { naam: esc(st.naam), tijd: wanneer(st.tijd) }) : st.bron ? " " + t("Beoordeling: {bron}.", { bron: esc(t(st.bron)) }) : ""}</p>`);
+  if (delen(p).length) parts.push(`<h3>${t("Onderdelen")} <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
-    const onder = [o.staat && o.staat.toelichting, o.door && `Toegevoegd door ${o.door}, ${wanneer(o.tijd)}`].filter(Boolean).map(esc).join(" · ");
-    const plaats = kanToevoegen() && o.hoofd ? ` <button type="button" class="linkknop" data-plekpand="1">Verplaatsen</button>` : kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Op de kaart zetten</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">Verplaatsen</button>` : o.lngLat && !o.hoofd ? " · op de kaart" : "";
-    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(o.naam)}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} / 5` : "?"}</span><small>${onder}${plaats}</small></li>`;
+    const onder = [o.staat && o.staat.toelichting, o.door && t("Toegevoegd door {naam}, {tijd}", { naam: o.door, tijd: wanneer(o.tijd) })].filter(Boolean).map(esc).join(" · ");
+    const plaats = kanToevoegen() && o.hoofd ? ` <button type="button" class="linkknop" data-plekpand="1">${t("Verplaatsen")}</button>` : kanToevoegen() && p.lngLat && !o.lngLat && !o.hoofd ? ` <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">${t("Op de kaart zetten")}</button>` : kanToevoegen() && o.lngLat && !o.hoofd ? ` · <button type="button" class="linkknop" data-plaats="${esc(o.naam)}">${t("Verplaatsen")}</button>` : o.lngLat && !o.hoofd ? " · " + t("op de kaart") : "";
+    return `<li style="--c:${soortKleur(o.categorie)}"><i></i><span><b>${esc(nm(o))}</b> · ${esc(soortLabel(o.categorie))}</span><span class="sc">${m ? `${m} / 5` : "?"}</span><small>${onder}${plaats}</small></li>`;
   }).join("")}</ul>`);
   parts.push(meldingHtml());
-  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">Staat aanpassen</button>${kanToevoegen() ? `<button type="button" class="knop" id="plekPand">${p.lngLat ? "Plek aanpassen" : "Op de kaart zetten"}</button>` : ""}${kanToevoegen() && p.lngLat ? `<button type="button" class="knop" id="deelNieuw">Onderdeel toevoegen</button>` : ""}</div>`);
+  parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" id="bewerkOpen">${t("Staat aanpassen")}</button>${kanToevoegen() ? `<button type="button" class="knop" id="plekPand">${p.lngLat ? t("Plek aanpassen") : t("Op de kaart zetten")}</button>` : ""}${kanToevoegen() && p.lngLat ? `<button type="button" class="knop" id="deelNieuw">${t("Onderdeel toevoegen")}</button>` : ""}</div>`);
   parts.push(`<form class="edit" id="bewerk" data-soort="aanpassing" hidden>
     ${naamVeld()}
-    <label>Soort pand<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
-    <fieldset><legend>Staat (1 = ingestort, 5 = goed)</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"${i === n ? " checked" : ""}><b>${i}</b></label>`).join("")}</div></fieldset>
-    <label>Toelichting bij de staat<textarea name="toel" maxlength="1000" placeholder="Bv. wat je ter plaatse zag: dak ingestort, ramen dichtgetimmerd, ...">${esc(st.toelichting || "")}</textarea></label>
+    <label>${t("Soort pand")}<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === p.categorie ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+    <fieldset><legend>${t("Staat (1 = ingestort, 5 = goed)")}</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"${i === n ? " checked" : ""}><b>${i}</b></label>`).join("")}</div></fieldset>
+    <label>${t("Toelichting bij de staat")}<textarea name="toel" maxlength="1000" placeholder="${t("Bv. wat je ter plaatse zag: dak ingestort, ramen dichtgetimmerd, ...")}">${esc(st.toelichting || "")}</textarea></label>
     ${privacy}
-    <div class="knoppen"><button type="submit" class="knop hoofd">Opslaan</button><button type="button" class="knop" id="bewerkWeg">Annuleren</button></div>
+    <div class="knoppen"><button type="submit" class="knop hoofd">${t("Opslaan")}</button><button type="button" class="knop" id="bewerkWeg">${t("Annuleren")}</button></div>
   </form>`);
-  if (p.aanpassingen.length) parts.push(`<h3>Eerdere aanpassingen <small>${p.aanpassingen.length}</small></h3><ul class="opm">${[...p.aanpassingen].reverse().map(a => {
-    const wat = [a.categorie && `soort: ${soortLabel(a.categorie)}`, a.score && `staat ${a.score}/5`, a.toelichting && `“${a.toelichting}”`].filter(Boolean).join(", ");
+  if (p.aanpassingen.length) parts.push(`<h3>${t("Eerdere aanpassingen")} <small>${p.aanpassingen.length}</small></h3><ul class="opm">${[...p.aanpassingen].reverse().map(a => {
+    const wat = [a.categorie && t("soort: {soort}", { soort: soortLabel(a.categorie) }), a.score && t("staat {n}/5", { n: a.score }), a.toelichting && `“${a.toelichting}”`].filter(Boolean).join(", ");
     return `<li><b>${esc(a.naam)}</b> ${esc(wat)}<small>${wanneer(a.tijd)}</small></li>`;
   }).join("")}</ul>`);
   return parts.join("");
 }
 
 function discussieTab(p) {
-  const parts = [`<h3>Discussie <small>${p.reacties.length}</small></h3>`,
-    `<p class="note">Deel je mening of ideeën over dit gebouw: wat er mee zou kunnen gebeuren, wat je weet over de geschiedenis, of wat je ter plaatse zag.</p>`];
+  const parts = [`<h3>${t("Discussie")} <small>${p.reacties.length}</small></h3>`,
+    `<p class="note">${t("Deel je mening of ideeën over dit gebouw: wat er mee zou kunnen gebeuren, wat je weet over de geschiedenis, of wat je ter plaatse zag.")}</p>`];
   parts.push(meldingHtml());
   parts.push(`<form class="edit" id="reageer" data-soort="reactie">
     ${naamVeld()}
-    <label>Je reactie<textarea name="tekst" required maxlength="1000" placeholder="Schrijf hier je mening of idee"></textarea></label>
+    <label>${t("Je reactie")}<textarea name="tekst" required maxlength="1000" placeholder="${t("Schrijf hier je mening of idee")}"></textarea></label>
     ${privacy}
-    <div class="knoppen"><button type="submit" class="knop hoofd">Plaatsen</button></div>
+    <div class="knoppen"><button type="submit" class="knop hoofd">${t("Plaatsen")}</button></div>
   </form>`);
   if (p.reacties.length) parts.push(`<ul class="opm reacties">${[...p.reacties].reverse().map(r => `<li><b>${esc(r.naam)}</b><span>${esc(r.tekst)}</span><small>${wanneer(r.tijd)}</small></li>`).join("")}</ul>`);
-  else parts.push(`<div class="empty"><b>Nog geen reacties.</b><span>Schrijf als eerste wat je van dit gebouw vindt.</span></div>`);
+  else parts.push(`<div class="empty"><b>${t("Nog geen reacties.")}</b><span>${t("Schrijf als eerste wat je van dit gebouw vindt.")}</span></div>`);
   return parts.join("");
 }
 
@@ -974,9 +988,11 @@ $("pBody").addEventListener("submit", async e => {
     if (!d.tekst) { f.tekst.focus(); return; }
   } else {
     d = { type: "aanpassing", id: p.id, naam, categorie: f.soort.value, score: Number(f.score.value) || "", toelichting: wis(f.toel.value).slice(0, 1000) };
+    // Alleen wat veranderd is wordt bewaard (de toelichting kan hier vertaald getoond zijn).
     if (d.categorie === p.categorie) d.categorie = "";
-    if (d.score === score(p) && d.toelichting === ((p.staat && p.staat.toelichting) || "")) { d.score = ""; d.toelichting = ""; }
-    if (!d.categorie && !d.score && !d.toelichting) { melding = "Er is niets veranderd."; return showTab("staat"); }
+    if (d.toelichting === ((p.staat && p.staat.toelichting) || "")) d.toelichting = "";
+    if (d.score === score(p) && !d.toelichting) d.score = "";
+    if (!d.categorie && !d.score && !d.toelichting) { melding = t("Er is niets veranderd."); return showTab("staat"); }
   }
   f.querySelector("button[type=submit]").disabled = true;
   const terug = soort === "reactie" ? "discussie" : "staat";
@@ -984,13 +1000,13 @@ $("pBody").addEventListener("submit", async e => {
     try {
       await fetch(OPSLAG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
       pasToe([{ ...d, tijd: new Date().toISOString() }]);
-      melding = soort === "reactie" ? "Geplaatst. Iedereen ziet je reactie nu." : "Opgeslagen. Iedereen ziet je aanpassing nu op de site.";
-    } catch (err) { melding = "Opslaan lukte niet. Probeer het later opnieuw."; }
+      melding = soort === "reactie" ? t("Geplaatst. Iedereen ziet je reactie nu.") : t("Opgeslagen. Iedereen ziet je aanpassing nu op de site.");
+    } catch (err) { melding = t("Opslaan lukte niet. Probeer het later opnieuw."); }
   } else {
     const regels = [`Pand: ${p.naam} (${p.id})`, `Naam: ${naam}`, d.tekst && `Reactie: ${d.tekst}`, d.categorie && `Soort: ${soortLabel(d.categorie)}`, d.score && `Staat: ${d.score} (${STAAT[d.score]})`, d.toelichting && `Toelichting: ${d.toelichting}`].filter(Boolean);
     const url = `https://github.com/thomasdroog/leegstandsatlas/issues/new?title=${encodeURIComponent((soort === "reactie" ? "Reactie: " : "Aanpassing: ") + p.naam)}&body=${encodeURIComponent(regels.join("\n\n"))}`;
     window.open(url, "_blank", "noopener");
-    melding = "Je bericht staat klaar op GitHub. Klik daar op “Submit new issue”; het verschijnt op de site zodra het verwerkt is.";
+    melding = t("Je bericht staat klaar op GitHub. Klik daar op “Submit new issue”; het verschijnt op de site zodra het verwerkt is.");
   }
   tab = terug;
   kleurMarkers(); renderLegend(); vulPaneel();
@@ -1074,7 +1090,8 @@ if (OPSLAG) {
 let kiesVoor = null, nieuwPunt = null;
 function startKiezen(k) {
   kiesVoor = k;
-  $("kiesTxt").textContent = k.soort === "nieuw" ? "Klik op de kaart waar het gebouw staat." : k.titel === k.p.naam ? `Klik op de kaart waar ${k.p.naam} precies ligt. Zoom in of kies Satelliet om het gebouw te zien.` : `Klik op de kaart waar ${k.titel ? "“" + k.titel + "”" : "het onderdeel"} van ${k.p.naam} ligt.`;
+  const deel = k.p && delen(k.p).find(o => o.naam === k.titel);
+  $("kiesTxt").textContent = k.soort === "nieuw" ? t("Klik op de kaart waar het gebouw staat.") : k.titel === k.p.naam ? t("Klik op de kaart waar {pand} precies ligt. Zoom in of kies Satelliet om het gebouw te zien.", { pand: nm(k.p) }) : k.titel ? t("Klik op de kaart waar “{deel}” van {pand} ligt.", { deel: deel ? nm(deel) : k.titel, pand: nm(k.p) }) : t("Klik op de kaart waar het onderdeel van {pand} ligt.", { pand: nm(k.p) });
   $("kies").hidden = false;
   document.body.classList.add("kiezen");
   toggleAll(false);
@@ -1106,18 +1123,19 @@ map.on("click", e => {
 });
 function toonFormulier(k, ll) {
   const dlg = $("nieuw"), metGegevens = k.soort !== "plaats";
-  const kop = k.soort === "nieuw" ? "Nieuw gebouw" : k.soort === "onderdeel" ? `Onderdeel van ${k.p.naam}` : `Plek van “${k.titel}”`;
+  const deel = k.p && delen(k.p).find(o => o.naam === k.titel);
+  const kop = k.soort === "nieuw" ? t("Nieuw gebouw") : k.soort === "onderdeel" ? t("Onderdeel van {pand}", { pand: nm(k.p) }) : t("Plek van “{naam}”", { naam: deel ? nm(deel) : k.titel === k.p.naam ? nm(k.p) : k.titel });
   dlg.innerHTML = `<form class="edit" id="nieuwForm">
     <h2 id="nieuwKop">${esc(kop)}</h2>
-    <p class="note">Gekozen plek: ${ll[1].toFixed(5)}° N, ${ll[0].toFixed(5)}° O. Klopt het niet? Kies Annuleren en klik opnieuw.</p>
-    ${metGegevens ? `<label>${k.soort === "nieuw" ? "Naam van het gebouw" : "Naam van het onderdeel"}<input type="text" name="titel" required maxlength="100" placeholder="${k.soort === "nieuw" ? "Bv. Oude hoeve Kloosterstraat" : "Bv. Ruïne 3, schuur, kapel"}"></label>
-    <label>Soort<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === (k.soort === "onderdeel" ? "ruine" : "woning") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
-    <fieldset><legend>Staat (optioneel, 1 = ingestort, 5 = goed)</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"><b>${i}</b></label>`).join("")}</div></fieldset>
-    <label>Beschrijving (optioneel)<textarea name="toel" maxlength="1000" placeholder="Wat is het, en in welke staat is het?"></textarea></label>
-    ${k.soort === "nieuw" ? `<label>Adres (optioneel)<input type="text" name="adres" maxlength="200" placeholder="Straat, gemeente"></label>` : ""}` : ""}
+    <p class="note">${t("Gekozen plek: {lat}° N, {lng}° O. Klopt het niet? Kies Annuleren en klik opnieuw.", { lat: ll[1].toFixed(5), lng: ll[0].toFixed(5) })}</p>
+    ${metGegevens ? `<label>${k.soort === "nieuw" ? t("Naam van het gebouw") : t("Naam van het onderdeel")}<input type="text" name="titel" required maxlength="100" placeholder="${k.soort === "nieuw" ? t("Bv. Oude hoeve Kloosterstraat") : t("Bv. Ruïne 3, schuur, kapel")}"></label>
+    <label>${t("Soort")}<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === (k.soort === "onderdeel" ? "ruine" : "woning") ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+    <fieldset><legend>${t("Staat (optioneel, 1 = ingestort, 5 = goed)")}</legend><div class="rad">${[1, 2, 3, 4, 5].map(i => `<label style="--c:${staatKleur(i)}"><input type="radio" name="score" value="${i}"><b>${i}</b></label>`).join("")}</div></fieldset>
+    <label>${t("Beschrijving (optioneel)")}<textarea name="toel" maxlength="1000" placeholder="${t("Wat is het, en in welke staat is het?")}"></textarea></label>
+    ${k.soort === "nieuw" ? `<label>${t("Adres (optioneel)")}<input type="text" name="adres" maxlength="200" placeholder="${t("Straat, gemeente")}"></label>` : ""}` : ""}
     ${naamVeld()}
     ${privacy}
-    <div class="knoppen"><button type="submit" class="knop hoofd">Opslaan</button><button type="button" class="knop" id="nieuwWeg">Annuleren</button></div>
+    <div class="knoppen"><button type="submit" class="knop hoofd">${t("Opslaan")}</button><button type="button" class="knop" id="nieuwWeg">${t("Annuleren")}</button></div>
   </form>`;
   dlg.showModal();
   const eerste = dlg.querySelector(metGegevens ? "input[name=titel]" : "input[name=naam]");
@@ -1139,13 +1157,13 @@ function toonFormulier(k, ll) {
       await fetch(OPSLAG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
     } catch (err) {
       f.querySelector("button[type=submit]").disabled = false;
-      return alert("Opslaan lukte niet. Probeer het later opnieuw.");
+      return alert(t("Opslaan lukte niet. Probeer het later opnieuw."));
     }
     dlg.close();
     stopKiezen(false);
     pasToe([{ ...d, tijd: new Date().toISOString() }]);
     kleurMarkers(); renderLegend(); zetTeller();
-    melding = k.soort === "nieuw" ? "Toegevoegd. Iedereen ziet dit gebouw nu op de kaart." : "Opgeslagen. Iedereen ziet het nu op de kaart.";
+    melding = k.soort === "nieuw" ? t("Toegevoegd. Iedereen ziet dit gebouw nu op de kaart.") : t("Opgeslagen. Iedereen ziet het nu op de kaart.");
     tab = k.soort === "nieuw" ? "fotos" : "staat";
     openPand(id, false);
   };
