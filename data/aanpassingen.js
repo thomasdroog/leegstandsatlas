@@ -84,6 +84,20 @@ const AANPASSINGEN = {
    "titel": "",
    "toelichting": "",
    "type": "aanpassing"
+  },
+  {
+   "adres": "",
+   "categorie": "",
+   "id": "braesberg",
+   "lat": 50.742698,
+   "lng": 5.961092,
+   "naam": "Thomas Droog",
+   "score": "",
+   "tekst": "",
+   "tijd": "2026-11-05T08:37:21.000Z",
+   "titel": "Hoeve Braesberg",
+   "toelichting": "",
+   "type": "plaats"
   }
  ],
  "versie": 2
