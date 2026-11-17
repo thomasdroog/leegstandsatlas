@@ -121,6 +121,31 @@ button, input { font: inherit; color: inherit; }
 .oudmenu label { display: grid; gap: 6px; padding: 8px 10px 6px; border-top: 1px solid var(--line); margin-top: 4px; font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
 .oudmenu input[type=range] { width: 100%; accent-color: var(--red); }
 .oudmenu p { margin: 0; padding: 0 10px 8px; font: 400 11px/1.4 var(--font-mono); color: var(--muted); }
+#lagenMenu button { grid-template-columns: 14px 1fr; row-gap: 2px; }
+#lagenMenu small { grid-column: 2; }
+.oudmenu button .r.vk { border-radius: 3px; }
+.oudmenu button[aria-checked="true"] .r.vk { box-shadow: inset 0 0 0 7px var(--red); }
+/* Tabblad Oppervlakte & invulling */
+.rm-kop { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; align-items: center; }
+.iso { aspect-ratio: 4 / 3; background: var(--surface-2); border-radius: 12px; cursor: grab; touch-action: none; display: grid; place-items: center; padding: 8px; }
+.iso:active { cursor: grabbing; }
+.iso svg { width: 100%; height: 100%; display: block; }
+.rm-cijfers { display: grid; gap: 10px; margin: 0; }
+.rm-cijfers dt { font: 500 10px/1 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.rm-cijfers dd { margin: 3px 0 0; font: 600 18px/1.1 var(--font-ui); font-variant-numeric: tabular-nums; }
+.rm-geb, .rm-inv { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.rm-geb li { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.rm-gk { display: flex; justify-content: space-between; gap: 10px; font: 600 13px/1.2 var(--font-ui); }
+.rm-gk span { font-variant-numeric: tabular-nums; }
+.rm-geb small { font: 400 11px/1.4 var(--font-mono); color: var(--muted); }
+.rm-lagen { display: grid; gap: 3px; }
+.rm-lagen div { display: grid; grid-template-columns: 9.5em 1fr 5.5em; gap: 8px; align-items: center; font: 400 11px/1.2 var(--font-mono); color: var(--muted); }
+.rm-lagen div span:last-child { text-align: right; color: var(--fg); font-variant-numeric: tabular-nums; }
+.rm-lagen i { height: 10px; width: var(--w); border-radius: 3px; background: var(--accent); opacity: .75; }
+.rm-inv li { display: grid; gap: 3px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); }
+.rm-inv b { font: 600 13px/1.25 var(--font-ui); }
+.rm-inv span { font: 400 13px/1.45 var(--font-ui); color: var(--fg); }
+@media (max-width: 760px) { .rm-kop { grid-template-columns: 1fr; } .iso { aspect-ratio: auto; height: 210px; } .rm-cijfers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .oud > .pill #lagenTxt { display: none; } }
 .exp svg { width: 14px; height: 14px; flex: none; }
 .exp:hover { background: var(--accent); color: var(--accent-fg); }
 .results { position: absolute; bottom: 44px; right: 0; width: 280px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
@@ -385,6 +410,10 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
     <button type="button" class="pill" id="oudBtn" aria-expanded="false" aria-controls="oudMenu" aria-label="Oude kaarten"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 3.5 5.5 2l5 1.5 4-1.5v10.5l-4 1.5-5-1.5-4 1.5z"/><path d="M5.5 2v10.5M10.5 3.5V14"/></svg><span id="oudTxt" data-t>Oude kaarten</span></button>
     <div class="oudmenu" id="oudMenu" role="radiogroup" aria-label="Kies een oude kaart" hidden></div>
   </div>
+  <div class="oud">
+    <button type="button" class="pill" id="lagenBtn" aria-expanded="false" aria-controls="lagenMenu" aria-label="Kaartlagen"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 1.8 14.5 5 8 8.2 1.5 5z"/><path d="m1.5 8 6.5 3.2L14.5 8M1.5 11l6.5 3.2 6.5-3.2"/></svg><span id="lagenTxt" data-t>Lagen</span></button>
+    <div class="oudmenu" id="lagenMenu" aria-label="Kaartlagen" hidden></div>
+  </div>
   <div class="search">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
     <input id="q" type="search" placeholder="Zoeken" autocomplete="off" aria-label="Zoek een gebouw of gemeente">
@@ -415,6 +444,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.6.0/maplibre-gl.js"></script>
 <script src="data/panden.js"></script>
+<script src="data/gebouwen.js"></script>
 <script src="data/aanpassingen.js"></script>
 <script src="data/vertalingen.js"></script>
 <script src="data/taal.js"></script>
@@ -424,7 +454,7 @@ vertaalPagina();
 vertaalPanden(PANDEN);
 document.getElementById("count").prepend(taalKnop());
 
-const TABS = [["fotos", "Foto's"], ["staat", "Staat"], ["discussie", "Discussie"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
+const TABS = [["fotos", "Foto's"], ["staat", "Staat"], ["ruimte", "Oppervlakte & invulling"], ["discussie", "Discussie"], ["grondplan", "Grondplannen"], ["model", "3D-model"], ["historisch", "Geschiedenis"], ["materialen", "Materialen"]];
 const LIVE = {
   osm: { tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], max: 19, attr: t("© {osm}-bijdragers", { osm: '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }) },
   sat: { tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], max: 19, attr: t("Satelliet") + ' © Esri, Maxar, Earthstar Geographics' }
@@ -827,7 +857,7 @@ function vulPaneel() {
 }
 function closePand() {
   $("panel").hidden = true;
-  map.easeTo({ padding: panelPadding(), duration: reduce ? 0 : 500 });
+  map.easeTo({ padding: panelPadding(), pitch: 0, bearing: 0, duration: reduce ? 0 : 500 });
   Object.values(markers).forEach(o => o.el.classList.remove("on"));
   current = null;
   try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
@@ -890,6 +920,9 @@ function showTab(k) {
     body.innerHTML = staatTab(p);
   } else if (k === "discussie") {
     body.innerHTML = discussieTab(p);
+  } else if (k === "ruimte") {
+    body.innerHTML = ruimteTab(p);
+    tekenIso(p);
   } else if (k === "historisch") {
     const g = p.geschiedenis, parts = [];
     if (g) {
@@ -903,7 +936,8 @@ function showTab(k) {
   } else if (k === "grondplan") {
     body.innerHTML = p.grondplannen.length ? planGalerij(p) : empty("grondplannen", "grondplannen");
   } else if (k === "model") {
-    body.innerHTML = p.model3d.length ? `<p class="note">${p.model3d.map(esc).join("<br>")}</p>` : empty("3D-model", "3d-model");
+    body.innerHTML = p.model3d.length ? `<p class="note">${p.model3d.map(esc).join("<br>")}</p>` : empty("3D-model", "3d-model") +
+      (geb(p) && geb(p).gebouwen && geb(p).gebouwen.length ? `<div class="knoppen"><button type="button" class="knop" id="bekijk3d">${t("Bekijk het volume in 3D op de kaart")}</button></div>` : "");
   } else if (k === "materialen") {
     body.innerHTML = p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : empty("materialenlijst", "materialen");
   }
@@ -1192,5 +1226,6 @@ function fromHash() { const id = location.hash.slice(1); if (id && PANDEN.some(p
 window.addEventListener("hashchange", () => { const id = location.hash.slice(1); if (PANDEN.some(p => p.id === id) && (!current || current.id !== id)) openPand(id); });
 fromHash();
 </script>
+<script src="ruimte.js"></script>
 </body>
 </html>
