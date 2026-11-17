@@ -8,6 +8,8 @@ De site is een statische pagina en draait op GitHub Pages. Er is geen build-stap
 
 - `index.html`: de pagina (MapLibre GL met globe-weergave).
 - `export.html`: A3-export. Kies panden, bekijk het voorbeeld en druk af of bewaar als pdf. De voorpagina is de grijze kaart met de gekozen panden. Per pand volgt een pagina met een satellietbeeld uit de kaart en de vijf beste foto's (veld `uitgelicht` in `data/panden.js`), een pagina met geschiedenis, materialen en extra foto's, en daarna eventueel plannen en historische foto's. De keuze staat in de link (`export.html#panden=id1,id2`).
+- `data/gebouwen.js`: per pand de gebouwcontouren, oppervlakte, hoogte (goot en nok) en de mogelijke invullingen. Wordt gemaakt bij de update, niet met de hand.
+- `ruimte.js`: tabblad “Oppervlakte & invulling”, de 3D-volumes op de kaart en het menu “Lagen”.
 - `data/panden.js`: alle panden met naam, type, status, adres, coördinaten, geschiedenis en paden naar de beelden. Een pand met `lngLat: null` staat niet op de bol, wel in de lijst en de zoekfunctie.
 - `data/vertalingen.js` en `data/taal.js`: de site in het Frans en Engels (knop NL · FR · EN rechtsboven, of `?lang=fr` / `?lang=en` in de link). Nederlands is de standaard. In `vertalingen.js` staan de vaste teksten (`ui`, sleutel = de Nederlandse tekst) en per pand de vertaalde naam, type, toelichting, geschiedenis, materialen en bronvermelding (`panden`, sleutel = id). Ontbreekt een vertaling, dan staat de Nederlandse tekst er. Wat bezoekers zelf schrijven (staat, reacties) wordt niet vertaald.
 - `media/<pand-id>/fotos|streetview|luchtbeeld/`: de beelden per pand.
@@ -39,11 +41,22 @@ Elk pand in `data/panden.js` heeft een `categorie` (de kleur op de kaart) en een
 
 Alles wordt bewaard in een Google Sheet met een klein script (`tools/opslag-apps-script.gs`, de stappen staan bovenaan in het bestand). De web-app-URL staat in `const OPSLAG` in `index.html`. Bezoekers zien de Sheet niet en hebben geen account nodig. Elke aanpassing of reactie wordt een rij in het blad “aanpassingen”; een rij wissen haalt ze van de site. Bij de dagelijkse update wordt alles uit de Sheet in `data/aanpassingen.js` gezet. Dat staat meteen op de site, zonder te wachten op de Sheet; wat er sindsdien bij kwam, laadt de site een paar seconden later uit de Sheet. Zolang `OPSLAG` leeg is, opent “Opslaan” een vooraf ingevuld voorstel (issue) op GitHub.
 
+## Oppervlakte en invulling
+
+Tabblad **Oppervlakte & invulling** per pand: een kleine 3D-weergave (sleep om te draaien), de grondoppervlakte, de hoogte tot de nok, het geschatte aantal verdiepingen en de vloeroppervlakte, per gebouw en per verdieping, en een paar mogelijke nieuwe invullingen. Met “Bekijk in 3D op de kaart” kantelt de kaart naar het pand; de volumes staan daar in de kleur van de soort (muren tot de goot, het dak lichter erboven).
+
+- Contour: PICC (Wallonië, Service public de Wallonie) of GRB Gbg (Vlaanderen, Digitaal Vlaanderen).
+- Hoogte: LiDAR-hoogtemodel (Wallonië 2021-2022, DHM Vlaanderen II), hoogte van het oppervlak min het maaiveld binnen de contour. Goot ≈ 25e percentiel, nok ≈ 90e percentiel. Bomen boven een dak kunnen de nok te hoog maken.
+- Verdiepingen: hoogte tot de goot gedeeld door een verdiepingshoogte per soort (woning 3 m, hoeve 3,2 m, kasteel 3,5 m, klooster 3,6 m, spoorweg 4 m, industrie 4,5 m). Is het dak hoger dan 2,8 m, dan telt een dakverdieping voor de helft. Ruïnes hebben geen bruikbare verdiepingen. Alles is bruto en een schatting.
+- Zelf tekenen: zonder contour (of met een foute) kan een bezoeker met “Gebouw tekenen” de hoeken van een gebouw op de kaart aanklikken en het aantal bouwlagen (en eventueel de nokhoogte) opgeven. Dat wordt een rij van het type `contour` in de Sheet; de oppervlakte rekent de site zelf uit. Een getekend gebouw met dezelfde naam als een bestaand gebouw vervangt dat. Een rij wissen in de Sheet haalt de tekening weg. Vraagt opslagscript versie 3.
+- De berekening gebeurt buiten de site; de site krijgt alleen de cijfers en de contouren. Welke gebouwen bij een pand horen, wordt per pand gekozen (bv. een kasteel met zijn vleugel, niet de moderne loodsen ernaast).
+
 ## Kaarten
 
 - Kaart: OpenStreetMap, in grijstinten weergegeven. © OpenStreetMap-bijdragers.
 - Satelliet: Esri World Imagery. © Esri, Maxar, Earthstar Geographics.
 - Oude kaarten (knop “Oude kaarten” onderaan): Ferraris-kaart (1777), Vandermaelen-kaart (1846–1854), Dépôt de la Guerre (1865–1880) en luchtfoto's van 1971, 1978–1990 en 1994–2000. Ze komen live van de Waalse overheid (geoservices.wallonie.be, WalOnMap) en dekken alleen Wallonië. Een schuifbalk regelt hoe sterk de oude kaart over de huidige ligt. © Service public de Wallonie.
+- Lagen (knop “Lagen” onderaan): de panden in 3D, gebouwcontouren (PICC in Wallonië, GRB in Vlaanderen) en perceelsgrenzen (kadaster in Wallonië, GRB-percelen in Vlaanderen). Ze komen live van geoservices.wallonie.be en geo.api.vlaanderen.be en verschijnen vanaf straatniveau. © Service public de Wallonie, © Digitaal Vlaanderen.
 - Reservekaart: Natural Earth (publiek domein).
 
 ## Aanleveren via Google Drive

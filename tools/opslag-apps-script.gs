@@ -1,6 +1,6 @@
 /**
  * Gedeelde opslag voor de Leegstandatlas: aanpassingen aan soort en staat, reacties in de discussie,
- * en gebouwen of onderdelen die bezoekers zelf op de kaart zetten.
+ * gebouwen of onderdelen die bezoekers zelf op de kaart zetten, en zelf getekende gebouwcontouren.
  *
  * Zo zet je het op (eenmalig, ongeveer 5 minuten):
  * 1. Maak in Google Drive een nieuwe Google Sheet, bv. "Leegstandatlas aanpassingen".
@@ -18,9 +18,9 @@
 // De Sheet "Leegstandatlas aanpassingen". Nodig als het script niet vanuit de Sheet zelf (Extensies > Apps Script) gemaakt is.
 const SHEET_ID = "1AolzfgM0V_v-3PxeigbfEeERXdPP-TkBZISIatQSnxc";
 const BLAD = "aanpassingen";
-const VERSIE = 2;
+const VERSIE = 3;
 const KOP = ["tijd", "type", "id", "naam", "categorie", "score", "toelichting", "tekst", "titel", "adres", "lng", "lat"];
-const TYPES = ["aanpassing", "reactie", "nieuw", "onderdeel", "plaats"];
+const TYPES = ["aanpassing", "reactie", "nieuw", "onderdeel", "plaats", "contour"];
 const SOORTEN = ["ruine", "kasteel", "religieus", "hoeve", "woning", "industrie", "spoorweg"];
 
 function blad_() {
@@ -47,6 +47,15 @@ function getal_(v, grens) {
   return v !== "" && v !== null && isFinite(n) && Math.abs(n) <= grens ? Math.round(n * 1e6) / 1e6 : "";
 }
 
+// Zelf getekende contour: alleen getallen bewaren (punten, aantal bouwlagen, nokhoogte), als JSON in de kolom "tekst".
+function contour_(d) {
+  const c = Array.isArray(d.contour) ? d.contour : [];
+  const punten = c.slice(0, 80).map(p => [getal_(p && p[0], 180), getal_(p && p[1], 90)]).filter(p => p[0] !== "" && p[1] !== "");
+  if (punten.length < 3) return "";
+  const n = Number(d.verdiepingen), nok = Number(d.nok);
+  return JSON.stringify({ c: punten, n: isFinite(n) && n >= 0 && n <= 30 ? Math.round(n) : "", nok: isFinite(nok) && nok > 0 && nok <= 120 ? Math.round(nok * 10) / 10 : "" });
+}
+
 function doGet() {
   const rijen = blad_().getDataRange().getValues().slice(1)
     .filter(r => r[2] && r[3])
@@ -60,23 +69,24 @@ function doPost(e) {
   const id = String(d.id || "");
   const type = TYPES.indexOf(d.type) >= 0 ? d.type : "aanpassing";
   const metStaat = type === "aanpassing" || type === "nieuw" || type === "onderdeel";
+  const metSoort = metStaat || type === "contour";
   const score = Number(d.score);
   const rij = [
     new Date(),
     type,
     /^[a-z0-9-]{1,80}$/.test(id) ? id : "",
     tekst_(d.naam, 60),
-    metStaat && SOORTEN.indexOf(d.categorie) >= 0 ? d.categorie : "",
+    metSoort && SOORTEN.indexOf(d.categorie) >= 0 ? d.categorie : "",
     metStaat && score >= 1 && score <= 5 ? score : "",
     metStaat ? tekst_(d.toelichting, 1000) : "",
-    type === "reactie" ? tekst_(d.tekst, 1000) : "",
-    type === "nieuw" || type === "onderdeel" || type === "plaats" ? tekst_(d.titel, 100) : "",
+    type === "reactie" ? tekst_(d.tekst, 1000) : type === "contour" ? contour_(d) : "",
+    type === "nieuw" || type === "onderdeel" || type === "plaats" || type === "contour" ? tekst_(d.titel, 100) : "",
     type === "nieuw" ? tekst_(d.adres, 200) : "",
     type === "aanpassing" || type === "reactie" ? "" : getal_(d.lng, 180),
     type === "aanpassing" || type === "reactie" ? "" : getal_(d.lat, 90)
   ];
   if (!rij[2] || !rij[3]) return json_({ ok: false });
-  if (type === "reactie" && !rij[7]) return json_({ ok: false });
+  if ((type === "reactie" || type === "contour") && !rij[7]) return json_({ ok: false });
   if (type === "aanpassing" && !rij[4] && !rij[5] && !rij[6]) return json_({ ok: false });
   if (type !== "aanpassing" && type !== "reactie" && (!rij[8] || rij[10] === "" || rij[11] === "")) return json_({ ok: false });
   const lock = LockService.getScriptLock();
