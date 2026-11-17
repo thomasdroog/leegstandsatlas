@@ -48,6 +48,7 @@ Tabblad **Oppervlakte & invulling** per pand: een kleine 3D-weergave (sleep om t
 - Contour: PICC (Wallonië, Service public de Wallonie) of GRB Gbg (Vlaanderen, Digitaal Vlaanderen).
 - Hoogte: LiDAR-hoogtemodel (Wallonië 2021-2022, DHM Vlaanderen II), hoogte van het oppervlak min het maaiveld binnen de contour. Goot ≈ 25e percentiel, nok ≈ 90e percentiel. Bomen boven een dak kunnen de nok te hoog maken.
 - Verdiepingen: hoogte tot de goot gedeeld door een verdiepingshoogte per soort (woning 3 m, hoeve 3,2 m, kasteel 3,5 m, klooster 3,6 m, spoorweg 4 m, industrie 4,5 m). Is het dak hoger dan 2,8 m, dan telt een dakverdieping voor de helft. Ruïnes hebben geen bruikbare verdiepingen. Alles is bruto en een schatting.
+- Zelf tekenen: zonder contour (of met een foute) kan een bezoeker met “Gebouw tekenen” de hoeken van een gebouw op de kaart aanklikken en het aantal bouwlagen (en eventueel de nokhoogte) opgeven. Dat wordt een rij van het type `contour` in de Sheet; de oppervlakte rekent de site zelf uit. Een getekend gebouw met dezelfde naam als een bestaand gebouw vervangt dat. Een rij wissen in de Sheet haalt de tekening weg. Vraagt opslagscript versie 3.
 - De berekening gebeurt buiten de site; de site krijgt alleen de cijfers en de contouren. Welke gebouwen bij een pand horen, wordt per pand gekozen (bv. een kasteel met zijn vleugel, niet de moderne loodsen ernaast).
 
 ## Kaarten

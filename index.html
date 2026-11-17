@@ -423,6 +423,7 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   <a class="pill exp" href="export.html" aria-label="Exporteren naar A3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span data-t>Exporteren</span></a>
 </div>
 
+<div class="kies" id="teken" role="status" hidden><span id="tekenTxt"></span><button type="button" class="knop" id="tekenTerug" data-t>Punt terug</button><button type="button" class="knop" id="tekenKlaar" data-t>Klaar</button><button type="button" class="knop" id="tekenWeg" data-t>Annuleren</button></div>
 <div class="kies" id="kies" role="status" hidden><span id="kiesTxt"></span><button type="button" class="knop" id="kiesWeg" data-t>Annuleren</button></div>
 <dialog class="nieuw" id="nieuw" aria-labelledby="nieuwKop"></dialog>
 
@@ -1082,6 +1083,7 @@ function pasToe(rijen) {
       o.lngLat = ll;
       return;
     }
+    if (r.type === "contour") { (window.wachtendeContouren = window.wachtendeContouren || []).push({ p, r, naam }); if (window.verwerkContouren) window.verwerkContouren(); return; }
     if (r.type === "reactie") { if (r.tekst) p.reacties.push({ naam, tekst: String(r.tekst), tijd: r.tijd }); return; }
     if (cat) p.categorie = cat;
     if ((n >= 1 && n <= 5) || r.toelichting) p.staat = { score: n >= 1 && n <= 5 ? n : score(p), toelichting: r.toelichting ? String(r.toelichting) : (p.staat && p.staat.toelichting) || "", naam, tijd: r.tijd };

@@ -38,7 +38,9 @@ function ruimteTotaal(p) {
 function ruimteTab(p) {
   const info = geb(p), parts = [];
   if (!info || !info.gebouwen || !info.gebouwen.length) {
-    parts.push(`<div class="empty"><b>${t(info && info.opmerking ? "Geen gebouw om te meten." : "Nog geen oppervlakte berekend voor dit pand.")}</b><span>${esc(LT(info && info.opmerking) || t("De contour en hoogte worden berekend uit de GRB (Vlaanderen) of PICC (Wallonië) en de LiDAR-hoogtekaart. Dat gebeurt bij de volgende update."))}</span></div>`);
+    parts.push(meldingHtml());
+    parts.push(`<div class="empty"><b>${t(info && info.opmerking ? "Geen gebouw om te meten." : "Nog geen oppervlakte berekend voor dit pand.")}</b><span>${esc(LT(info && info.opmerking) || t("De contour en hoogte worden berekend uit de GRB (Vlaanderen) of PICC (Wallonië) en de LiDAR-hoogtekaart. Dat gebeurt bij de volgende update."))}${kanTekenen() && p.lngLat ? " " + t("Je kan het gebouw ook zelf tekenen.") : ""}</span></div>`);
+    if (kanTekenen() && p.lngLat) parts.push(`<div class="knoppen"><button type="button" class="knop hoofd" data-teken="">${t("Gebouw tekenen")}</button></div>`);
   } else {
     const tot = ruimteTotaal(p);
     parts.push(`<div class="rm-kop"><div class="iso" id="iso" role="img" aria-label="${esc(t("3D-weergave van het gebouw. Sleep om te draaien."))}"></div>
@@ -49,7 +51,8 @@ function ruimteTab(p) {
         <div><dt>${t("Vloeroppervlakte")}</dt><dd>${tot.vloer ? "± " + m2(tot.vloer) : "–"}</dd></div>
       </dl></div>`);
     if (info.opmerking) parts.push(`<p class="note">${esc(LT(info.opmerking))}</p>`);
-    parts.push(`<div class="knoppen"><button type="button" class="knop" id="bekijk3d">${t("Bekijk in 3D op de kaart")}</button></div>`);
+    parts.push(meldingHtml());
+    parts.push(`<div class="knoppen"><button type="button" class="knop" id="bekijk3d">${t("Bekijk in 3D op de kaart")}</button>${kanTekenen() ? `<button type="button" class="knop" data-teken="">${t("Gebouw tekenen")}</button>` : ""}</div>`);
     parts.push(`<h3>${t("Per gebouw")} <small>${info.gebouwen.length}</small></h3><ul class="rm-geb">${info.gebouwen.map((g, i) => {
       const s = schatting(p, g, info);
       const lagen = [];
@@ -57,7 +60,9 @@ function ruimteTab(p) {
       if (s.dak) lagen.push([t("Dakverdieping"), s.dak]);
       const max = g.oppervlakte;
       return `<li data-geb="${i}"><div class="rm-gk"><b>${esc(LT(g.naam) || t("Gebouw {n}", { n: i + 1 }))}</b><span>${m2(g.oppervlakte)}</span></div>
+        ${g.getekend ? `<small>${t("Zelf getekend door {naam}, {tijd}. Hoogte uit het aantal bouwlagen.", { naam: esc(g.getekend.naam), tijd: wanneer(g.getekend.tijd) })}</small>` : ""}
         <small>${[s.goot != null && t("goot ± {h}", { h: meter(s.goot) }), s.nok != null && t("nok ± {h}", { h: meter(s.nok) }), s.n && t("{n} × {h} per verdieping", { n: s.n, h: meter(s.h) })].filter(Boolean).join(" · ")}</small>
+        ${kanTekenen() ? `<small><button type="button" class="linkknop" data-teken="${esc(LT(g.naam) || t("Gebouw {n}", { n: i + 1 }))}">${t("Opnieuw tekenen")}</button></small>` : ""}
         ${lagen.length ? `<div class="rm-lagen">${lagen.reverse().map(([l, a]) => `<div><span>${esc(l)}</span><i style="--w:${Math.max(4, a / max * 100)}%"></i><span>${m2(a)}</span></div>`).join("")}</div>` : `<p class="note">${t("Geen bruikbare verdiepingen meer (ruïne). Alleen de grondoppervlakte telt.")}</p>`}
       </li>`;
     }).join("")}</ul>`);
@@ -148,7 +153,7 @@ function voegGebouwenToe() {
     paint: { "fill-extrusion-color": ["get", "kleur"], "fill-extrusion-height": ["get", "goot"], "fill-extrusion-base": 0, "fill-extrusion-opacity": 0.85 } });
   map.addLayer({ id: "geb-dak", type: "fill-extrusion", source: "gebouwen", minzoom: 14, layout: { visibility: zicht },
     paint: { "fill-extrusion-color": ["get", "kleur"], "fill-extrusion-height": ["get", "nok"], "fill-extrusion-base": ["get", "goot"], "fill-extrusion-opacity": 0.45 } });
-  map.on("click", "geb-muur", e => { const f = e.features && e.features[0]; if (f) { tab = "ruimte"; openPand(f.properties.id, false); } });
+  map.on("click", "geb-muur", e => { if (tekenen) return; const f = e.features && e.features[0]; if (f) { tab = "ruimte"; openPand(f.properties.id, false); } });
   map.on("mouseenter", "geb-muur", () => { map.getCanvas().style.cursor = "pointer"; });
   map.on("mouseleave", "geb-muur", () => { map.getCanvas().style.cursor = ""; });
 }
@@ -228,3 +233,142 @@ lagenMenu.addEventListener("click", e => {
 });
 document.addEventListener("click", e => { if (!e.target.closest(".oud")) toggleLagen(false); });
 oudBtn.addEventListener("click", () => toggleLagen(false));
+
+// Zelf een gebouw tekenen: voor gebouwen zonder contour (of om een contour te verbeteren). Klik de hoeken aan op de
+// kaart, geef het aantal bouwlagen en eventueel de nokhoogte. Bewaard in de gedeelde opslag (type "contour", script v3).
+const kanTekenen = () => opslagVersie >= 3 && !zonderBol && !!OPSLAG;
+function oppervlakteVan(c) {
+  const lat0 = c.reduce((s, x) => s + x[1], 0) / c.length * Math.PI / 180;
+  const kx = 111320 * Math.cos(lat0), ky = 110540;
+  let a = 0;
+  c.forEach((x, i) => { const y = c[(i + 1) % c.length]; a += x[0] * kx * y[1] * ky - y[0] * kx * x[1] * ky; });
+  return Math.abs(a / 2);
+}
+window.verwerkContouren = () => {
+  const rijen = window.wachtendeContouren || [];
+  window.wachtendeContouren = [];
+  rijen.forEach(({ p, r, naam }) => {
+    let d;
+    try { d = typeof r.tekst === "string" ? JSON.parse(r.tekst) : r.tekst; } catch (e) { return; }
+    if (!d || !Array.isArray(d.c) || d.c.length < 3 || !r.titel) return;
+    const c = d.c.map(x => [Number(x[0]), Number(x[1])]).filter(x => isFinite(x[0]) && isFinite(x[1]));
+    if (c.length < 3) return;
+    const cat = SOORTEN.some(x => x[0] === r.categorie) ? r.categorie : "";
+    const n = d.n === "" || d.n == null ? null : Number(d.n);
+    const h = VERDIEPING[cat || p.categorie] || 3;
+    const goot = n ? n * h : Number(d.nok) || 2;
+    const g = { naam: String(r.titel), categorie: cat || undefined, oppervlakte: oppervlakteVan(c), contour: c,
+      goot, nok: Math.max(Number(d.nok) || goot, goot), verdiepingen: n, ruine: n === 0, dakverdieping: false, getekend: { naam, tijd: r.tijd } };
+    if (!GEBOUWEN[p.id]) GEBOUWEN[p.id] = { gebouwen: [], invullingen: [], bronContour: { nl: "eigen tekening", fr: "dessin d'un visiteur", en: "drawn by a visitor" }, bronHoogte: { nl: "aantal bouwlagen", fr: "nombre de niveaux", en: "number of floors" } };
+    const lijst = GEBOUWEN[p.id].gebouwen, i = lijst.findIndex(x => LT(x.naam) === g.naam);
+    if (i >= 0) lijst[i] = g; else lijst.push(g);
+  });
+  if (rijen.length) {
+    herkleur();
+    if (current && tab === "ruimte" && document.getElementById("pBody")) showTab("ruimte");
+  }
+};
+if (typeof GEBOUWEN === "undefined") window.GEBOUWEN = {};
+window.verwerkContouren();
+
+let tekenen = null;
+const tekenGeojson = () => {
+  const c = tekenen ? tekenen.punten : [];
+  const f = c.map(x => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: x } }));
+  if (c.length >= 2) f.push({ type: "Feature", properties: {}, geometry: c.length >= 3 ? { type: "Polygon", coordinates: [[...c, c[0]]] } : { type: "LineString", coordinates: c } });
+  return { type: "FeatureCollection", features: f };
+};
+function tekenKaart() {
+  if (!map.getSource("teken")) {
+    map.addSource("teken", { type: "geojson", data: tekenGeojson() });
+    map.addLayer({ id: "teken-vlak", type: "fill", source: "teken", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": css("--accent"), "fill-opacity": 0.25 } });
+    map.addLayer({ id: "teken-lijn", type: "line", source: "teken", filter: ["!=", ["geometry-type"], "Point"], paint: { "line-color": css("--accent"), "line-width": 2.5 } });
+    map.addLayer({ id: "teken-punt", type: "circle", source: "teken", filter: ["==", ["geometry-type"], "Point"], paint: { "circle-radius": 5, "circle-color": "#fff", "circle-stroke-color": css("--accent"), "circle-stroke-width": 2.5 } });
+  } else map.getSource("teken").setData(tekenGeojson());
+  const n = tekenen ? tekenen.punten.length : 0;
+  $("tekenTxt").textContent = n < 3 ? t("Klik de hoeken van het gebouw aan op de kaart ({n} van minstens 3).", { n }) : t("{n} hoeken, ± {m}. Klik verder of kies Klaar.", { n, m: m2(oppervlakteVan(tekenen.punten)) });
+  $("tekenKlaar").disabled = n < 3;
+  $("tekenTerug").disabled = n < 1;
+}
+function startTekenen(p, titel) {
+  tekenen = { p, titel: titel || "", punten: [] };
+  $("teken").hidden = false;
+  document.body.classList.add("kiezen");
+  $("panel").hidden = true;
+  zetGebouwen(true);
+  if (mode !== "satelliet") setMode("satelliet");
+  if (!lagenAan.has("contouren")) zetLaag("contouren", true);
+  const info = geb(p), alle = info && info.gebouwen.length ? info.gebouwen.flatMap(g => g.contour) : null;
+  const midden = alle ? alle.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(alle[0], alle[0])).getCenter() : p.lngLat;
+  map.easeTo({ center: midden, zoom: Math.max(map.getZoom(), 18), pitch: 0, bearing: 0, padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: reduce ? 0 : 600 });
+  tekenKaart();
+}
+function stopTekenen(terug) {
+  const k = tekenen;
+  tekenen = null;
+  $("teken").hidden = true;
+  document.body.classList.remove("kiezen");
+  if (map.getSource("teken")) map.getSource("teken").setData(tekenGeojson());
+  if (terug && k) { tab = "ruimte"; openPand(k.p.id, false); }
+}
+map.on("click", e => {
+  if (!tekenen || $("nieuw").open) return;
+  tekenen.punten.push([Number(e.lngLat.lng.toFixed(7)), Number(e.lngLat.lat.toFixed(7))]);
+  tekenKaart();
+});
+$("tekenTerug").onclick = () => { if (tekenen) { tekenen.punten.pop(); tekenKaart(); } };
+$("tekenWeg").onclick = () => stopTekenen(true);
+$("tekenKlaar").onclick = () => { if (tekenen && tekenen.punten.length >= 3) tekenFormulier(); };
+document.addEventListener("keydown", e => {
+  if (!tekenen || $("nieuw").open) return;
+  if (e.key === "Escape") stopTekenen(true);
+  if (e.key === "Enter" && tekenen.punten.length >= 3) tekenFormulier();
+  if (e.key === "Backspace") { tekenen.punten.pop(); tekenKaart(); }
+});
+function tekenFormulier() {
+  const k = tekenen, dlg = $("nieuw"), opp = oppervlakteVan(k.punten);
+  const bestaand = k.titel && geb(k.p) && geb(k.p).gebouwen.find(g => LT(g.naam) === k.titel);
+  dlg.innerHTML = `<form class="edit" id="tekenForm">
+    <h2 id="nieuwKop">${esc(t("Gebouw bij {pand}", { pand: nm(k.p) }))}</h2>
+    <p class="note">${t("Getekende oppervlakte: ± {m}. Klopt de vorm niet? Kies Annuleren en teken verder.", { m: m2(opp) })}</p>
+    <label>${t("Naam van het gebouw")}<input type="text" name="titel" required maxlength="100" value="${esc(k.titel)}" placeholder="${t("Bv. Schuur, Ruïne 2, Kapel")}"></label>
+    <label>${t("Soort")}<select name="soort">${SOORTEN.map(([id, l]) => `<option value="${id}"${id === ((bestaand && bestaand.categorie) || k.p.categorie) ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>
+    <label>${t("Aantal bouwlagen (zonder dak; 0 = ruïne)")}<input type="number" name="n" required min="0" max="30" step="1" inputmode="numeric" value="${bestaand && bestaand.verdiepingen != null ? bestaand.verdiepingen : ""}"></label>
+    <label>${t("Hoogte tot de nok in meter (optioneel)")}<input type="number" name="nok" min="0" max="120" step="0.1" inputmode="decimal"></label>
+    ${naamVeld()}
+    ${privacy}
+    <div class="knoppen"><button type="submit" class="knop hoofd">${t("Opslaan")}</button><button type="button" class="knop" id="nieuwWeg">${t("Annuleren")}</button></div>
+  </form>`;
+  dlg.showModal();
+  dlg.querySelector(k.titel ? "input[name=n]" : "input[name=titel]").focus();
+  dlg.querySelector("#nieuwWeg").onclick = () => dlg.close();
+  dlg.querySelector("form").onsubmit = async e => {
+    e.preventDefault();
+    const f = e.target, naam = wis(f.naam.value).slice(0, 60), titel = wis(f.titel.value).slice(0, 100);
+    if (!titel) return f.titel.focus();
+    if (!naam) return f.naam.focus();
+    if (f.n.value === "") return f.n.focus();
+    mijnNaam = naam;
+    try { localStorage.setItem("naam", naam); } catch (err) {}
+    const c = k.punten, mid = [c.reduce((s, x) => s + x[0], 0) / c.length, c.reduce((s, x) => s + x[1], 0) / c.length];
+    const d = { type: "contour", id: k.p.id, naam, titel, categorie: f.soort.value, lng: Number(mid[0].toFixed(6)), lat: Number(mid[1].toFixed(6)),
+      contour: c, verdiepingen: Number(f.n.value), nok: f.nok.value === "" ? "" : Number(f.nok.value) };
+    f.querySelector("button[type=submit]").disabled = true;
+    try {
+      await fetch(OPSLAG, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(d) });
+    } catch (err) {
+      f.querySelector("button[type=submit]").disabled = false;
+      return alert(t("Opslaan lukte niet. Probeer het later opnieuw."));
+    }
+    dlg.close();
+    stopTekenen(false);
+    pasToe([{ ...d, tekst: JSON.stringify({ c, n: d.verdiepingen, nok: d.nok }), tijd: new Date().toISOString() }]);
+    melding = t("Opgeslagen. Iedereen ziet het gebouw nu op de kaart.");
+    tab = "ruimte";
+    openPand(k.p.id, false);
+  };
+}
+$("pBody").addEventListener("click", e => {
+  const b = e.target.closest("[data-teken]");
+  if (b && current) startTekenen(current, b.dataset.teken);
+});
