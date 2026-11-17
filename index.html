@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Interactieve wereldbol met leegstaande gebouwen en ruïnes in Plombières.">
 <title>Leegstandatlas</title>
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
 <style>
@@ -146,6 +147,14 @@ button, input { font: inherit; color: inherit; }
 .rm-inv b { font: 600 13px/1.25 var(--font-ui); }
 .rm-inv span { font: 400 13px/1.45 var(--font-ui); color: var(--fg); }
 @media (max-width: 760px) { .rm-kop { grid-template-columns: 1fr; } .iso { aspect-ratio: auto; height: 210px; } .rm-cijfers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .oud > .pill #lagenTxt { display: none; } }
+.d3 { position: absolute; z-index: 5; left: 50%; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: calc(100vw - 32px); }
+.d3 .pill { height: 32px; padding: 0 12px; cursor: pointer; font: 500 12px/1 var(--font-mono); border: 0; }
+.d3 .pill[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.d3hint { flex-basis: 100%; margin: 0; text-align: center; font: 400 11px/1.3 var(--font-mono); color: var(--fg); text-shadow: 0 0 6px var(--bg), 0 0 2px var(--bg); }
+.iso.drie { padding: 0; cursor: grab; }
+.iso.drie canvas { width: 100%; height: 100%; display: block; border-radius: 12px; }
+@media (max-width: 760px) { .d3 { bottom: auto; top: calc(96px + env(safe-area-inset-top, 0px)); } }
+@media (min-width: 761px) { body:has(.panel:not([hidden])) .d3 { left: calc((100vw - 440px) / 2); } }
 .exp svg { width: 14px; height: 14px; flex: none; }
 .exp:hover { background: var(--accent); color: var(--accent-fg); }
 .results { position: absolute; bottom: 44px; right: 0; width: 280px; max-width: calc(100vw - 32px); background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; gap: 2px; }
@@ -423,6 +432,14 @@ table.mat { width: 100%; border-collapse: collapse; font-size: 13px; }
   <a class="pill exp" href="export.html" aria-label="Exporteren naar A3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6V1.5h8V6M4 12H2.5A1 1 0 0 1 1.5 11V7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H12"/><path d="M4 9.5h8v5H4z"/></svg><span data-t>Exporteren</span></a>
 </div>
 
+<div class="d3" id="d3" hidden role="group" aria-label="3D-bediening">
+  <button type="button" class="pill" id="d3Links" aria-label="45° naar links draaien">⟲</button>
+  <button type="button" class="pill" id="d3Rechts" aria-label="45° naar rechts draaien">⟳</button>
+  <button type="button" class="pill" id="d3Rond" aria-pressed="false" data-t>Ronddraaien</button>
+  <button type="button" class="pill" id="d3Kantel" data-t>Kantelen</button>
+  <button type="button" class="pill" id="d3Weg" data-t>2D</button>
+  <p class="d3hint" data-t>Draaien: rechtermuisknop of Ctrl + slepen, of twee vingers.</p>
+</div>
 <div class="kies" id="teken" role="status" hidden><span id="tekenTxt"></span><button type="button" class="knop" id="tekenTerug" data-t>Punt terug</button><button type="button" class="knop" id="tekenKlaar" data-t>Klaar</button><button type="button" class="knop" id="tekenWeg" data-t>Annuleren</button></div>
 <div class="kies" id="kies" role="status" hidden><span id="kiesTxt"></span><button type="button" class="knop" id="kiesWeg" data-t>Annuleren</button></div>
 <dialog class="nieuw" id="nieuw" aria-labelledby="nieuwKop"></dialog>
@@ -924,6 +941,7 @@ function showTab(k) {
   } else if (k === "ruimte") {
     body.innerHTML = ruimteTab(p);
     tekenIso(p);
+    if (typeof toonViewer === "function") toonViewer(p);
   } else if (k === "historisch") {
     const g = p.geschiedenis, parts = [];
     if (g) {
@@ -1229,5 +1247,6 @@ window.addEventListener("hashchange", () => { const id = location.hash.slice(1);
 fromHash();
 </script>
 <script src="ruimte.js"></script>
+<script src="drie.js"></script>
 </body>
 </html>
