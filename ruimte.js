@@ -13,16 +13,17 @@ const VERDIEPING = { kasteel: 3.5, religieus: 3.6, industrie: 4.5, spoorweg: 4, 
 // Daktype in woorden, bv. "zadeldak, 45°".
 function dakTekst(d) {
   if (!d) return "";
-  const naam = { plat: t("plat dak"), lessenaar: t("lessenaarsdak"), zadel: t("zadeldak"), schild: t("schilddak"), gemeten: t("samengesteld dak") }[d.soort] || d.soort;
-  return d.helling ? `${naam}, ${d.helling}°` : naam;
+  const naam = { plat: t("plat dak"), lessenaar: t("lessenaarsdak"), zadel: t("zadeldak"), schild: t("schilddak"), gemeten: t("samengesteld dak"), samengesteld: t("samengesteld dak") }[d.soort] || d.soort;
+  const vl = d.soort === "samengesteld" && d.vlakken ? " " + t("({n} vlakken)", { n: d.vlakken }) : "";
+  return d.helling ? `${naam}${vl}, ${d.helling}°` : naam + vl;
 }
 
 // Schatting per gebouw: verdiepingen onder de goot, plus een dakverdieping als het dak hoog genoeg is.
 function schatting(p, g, info) {
   const h = (info && info.verdiepingHoogte) || g.verdiepingHoogte || VERDIEPING[g.categorie || p.categorie] || 3;
   const model = g.dak && g.dak.soort !== "gemeten" ? g.dak : null;  // samengestelde daken: percentielen blijven beter
-  const goot = model ? model.goot : g.goot != null ? g.goot : g.mediaan;
-  const nok = model ? model.nok : g.nok != null ? g.nok : goot;
+  const goot = g.goot != null ? g.goot : model ? model.goot : g.mediaan;  // verdiepingen: LiDAR-percentiel blijft stabieler
+  const nok = Math.max(goot, model ? model.nok : g.nok != null ? g.nok : goot);
   if (g.ruine || !goot || goot < 2) return { h, goot, nok, n: 0, dak: 0 };
   const n = g.verdiepingen != null ? g.verdiepingen : Math.max(1, Math.floor((goot + 0.6) / h));
   if (g.dak && g.dak.soort === "plat" && g.dakverdieping == null) return { h, goot, nok, n, dak: 0 };
@@ -75,7 +76,7 @@ function ruimteTab(p) {
         ${lagen.length ? `<div class="rm-lagen">${lagen.reverse().map(([l, a]) => `<div><span>${esc(l)}</span><i style="--w:${Math.max(4, a / max * 100)}%"></i><span>${m2(a)}</span></div>`).join("")}</div>` : `<p class="note">${t("Geen bruikbare verdiepingen meer (ruïne). Alleen de grondoppervlakte telt.")}</p>`}
       </li>`;
     }).join("")}</ul>`);
-    parts.push(`<p class="note">${t("Schatting. De grondoppervlakte komt uit de gebouwcontour ({c}), de hoogte uit de LiDAR-hoogtekaart ({h}): goot ≈ 25e percentiel, nok ≈ 90e percentiel boven het maaiveld. Verdiepingen = hoogte tot de goot gedeeld door ± {v} per verdieping; een dakverdieping telt voor de helft. Muren en trappen zijn niet afgetrokken (bruto).", { c: esc(LT(info.bronContour) || "GRB / PICC"), h: esc(LT(info.bronHoogte) || "DHM / LiDAR"), v: meter(schatting(p, info.gebouwen[0], info).h) })}${info.gebouwen.some(g => g.dak) ? " " + t("Het dak is per gebouw gepast op de LiDAR-hoogtes (plat, lessenaar, zadel of schild; anders een vereenvoudigd samengesteld dak). Goot en nok komen dan uit dat dakmodel.") : ""}${info.berekend ? " " + t("Berekend op {d}.", { d: datum(info.berekend) }) : ""}</p>`);
+    parts.push(`<p class="note">${t("Schatting. De grondoppervlakte komt uit de gebouwcontour ({c}), de hoogte uit de LiDAR-hoogtekaart ({h}): goot ≈ 25e percentiel, nok ≈ 90e percentiel boven het maaiveld. Verdiepingen = hoogte tot de goot gedeeld door ± {v} per verdieping; een dakverdieping telt voor de helft. Muren en trappen zijn niet afgetrokken (bruto).", { c: esc(LT(info.bronContour) || "GRB / PICC"), h: esc(LT(info.bronHoogte) || "DHM / LiDAR"), v: meter(schatting(p, info.gebouwen[0], info).h) })}${info.gebouwen.some(g => g.dak) ? " " + t("Het dak is per gebouw opgebouwd uit dakvlakken die in de LiDAR-hoogtes gezocht zijn (vlakdetectie met RANSAC); nokken en kepers zijn de snijlijnen van die vlakken. Goot en nok komen uit dat dakmodel.") : ""}${info.berekend ? " " + t("Berekend op {d}.", { d: datum(info.berekend) }) : ""}</p>`);
   }
   const inv = (info && info.invullingen) || [];
   parts.push(`<h3>${t("Mogelijke invullingen")} <small>${inv.length}</small></h3>`);
