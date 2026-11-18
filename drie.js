@@ -18,8 +18,9 @@ function bouwGroep(THREE, p, info) {
   const groep = new THREE.Group();
   info.gebouwen.forEach(g => {
     const kleur = new THREE.Color(kleurCss(`--c-${g.categorie || p.categorie}`, "#d42b2b"));
-    const muurKleur = kleur.clone().lerp(new THREE.Color("#f4f1ea"), 0.55);
-    const dakKleur = kleur.clone().lerp(new THREE.Color("#3a3d40"), 0.45);
+    // Maquettestijl: lichte muren, leikleurig dak, met een vleugje van de soortkleur.
+    const muurKleur = new THREE.Color("#efeae0").lerp(kleur, 0.12);
+    const dakKleur = new THREE.Color("#7d7470").lerp(kleur, 0.18);
     const delen = [];
     if (g.mesh && g.mesh.v && g.mesh.v.length) {
       const v = g.mesh.v, mo = g.mesh.o || o, dx = (mo[0] - o[0]) * kx, dy = (mo[1] - o[1]) * ky;
@@ -47,18 +48,22 @@ function bouwGroep(THREE, p, info) {
       geo = geo.toNonIndexed();
       geo.computeVertexNormals();
       const mat = new THREE.MeshLambertMaterial({ color: kl, side: THREE.DoubleSide, transparent: !!g.ruine, opacity: g.ruine ? 0.6 : 1 });
-      groep.add(new THREE.Mesh(geo, mat));
-      const randen = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 28), new THREE.LineBasicMaterial({ color: 0x1e2220, transparent: true, opacity: 0.35 }));
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = true;
+      groep.add(mesh);
+      const randen = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 15), new THREE.LineBasicMaterial({ color: 0x24221f, transparent: true, opacity: 0.55 }));
       groep.add(randen);
     });
   });
   return groep;
 }
+// Zacht omgevingslicht en een lage zon uit het zuidwesten: de dakvlakken krijgen elk een eigen tint.
 function lichten(THREE, scene) {
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f86, 1.6));
-  const zon = new THREE.DirectionalLight(0xffffff, 1.6);
-  zon.position.set(-60, 120, 80);
+  scene.add(new THREE.HemisphereLight(0xfffaf0, 0x7d8078, 1.0));
+  const zon = new THREE.DirectionalLight(0xfff4e2, 2.6);
+  zon.position.set(-70, 90, 60);
   scene.add(zon);
+  return zon;
 }
 
 // 3D-weergave in het tabblad: slepen = draaien, scrollen of knijpen = zoomen.
@@ -79,11 +84,25 @@ async function toonViewer(p) {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); } catch (e) { return; }
   const scene = new THREE.Scene(), groep = bouwGroep(THREE, p, info);
-  scene.add(groep); lichten(THREE, scene);
+  scene.add(groep);
+  const zon = lichten(THREE, scene);
   const box = new THREE.Box3().setFromObject(groep), midden = box.getCenter(new THREE.Vector3()), grootte = box.getSize(new THREE.Vector3());
   const straal = Math.max(grootte.x, grootte.z, grootte.y * 1.5, 10);
-  const grond = new THREE.Mesh(new THREE.CircleGeometry(straal * 1.1, 48).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: new THREE.Color(kleurCss("--surface-2", "#f4f5f3")).lerp(new THREE.Color("#888"), 0.12) }));
+  // Schaduw op de grond, zoals bij een maquette.
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  zon.castShadow = true;
+  zon.position.copy(midden).add(new THREE.Vector3(-0.55, 0.75, 0.45).multiplyScalar(straal * 2));
+  zon.target.position.copy(midden);
+  scene.add(zon.target);
+  Object.assign(zon.shadow.camera, { left: -straal * 1.3, right: straal * 1.3, top: straal * 1.3, bottom: -straal * 1.3, near: 0.5, far: straal * 6 });
+  zon.shadow.camera.updateProjectionMatrix();
+  zon.shadow.mapSize.set(2048, 2048);
+  zon.shadow.bias = -0.0005;
+  zon.shadow.normalBias = 0.05;
+  const grond = new THREE.Mesh(new THREE.CircleGeometry(straal * 1.1, 48).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ color: new THREE.Color("#dfe1dc") }));
   grond.position.set(midden.x, -0.02, midden.z);
+  grond.receiveShadow = true;
   scene.add(grond);
   const camera = new THREE.PerspectiveCamera(35, 4 / 3, 0.5, straal * 20);
   const v = { renderer, el, az: -0.6, el_: 0.55, afstand: straal * 2.1, weg: false };
