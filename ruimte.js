@@ -10,13 +10,22 @@ const meter = n => `${(Math.round(n * 10) / 10).toLocaleString(LOCALE)} m`;
 // industriegebouwen hebben hogere verdiepingen dan een woning. Per pand te overschrijven met verdiepingHoogte.
 const VERDIEPING = { kasteel: 3.5, religieus: 3.6, industrie: 4.5, spoorweg: 4, ruine: 3.5, hoeve: 3.2, woning: 3 };
 
+// Daktype in woorden, bv. "zadeldak, 45°".
+function dakTekst(d) {
+  if (!d) return "";
+  const naam = { plat: t("plat dak"), lessenaar: t("lessenaarsdak"), zadel: t("zadeldak"), schild: t("schilddak"), gemeten: t("samengesteld dak") }[d.soort] || d.soort;
+  return d.helling ? `${naam}, ${d.helling}°` : naam;
+}
+
 // Schatting per gebouw: verdiepingen onder de goot, plus een dakverdieping als het dak hoog genoeg is.
 function schatting(p, g, info) {
   const h = (info && info.verdiepingHoogte) || g.verdiepingHoogte || VERDIEPING[g.categorie || p.categorie] || 3;
-  const goot = g.goot != null ? g.goot : g.mediaan;
-  const nok = g.nok != null ? g.nok : goot;
+  const model = g.dak && g.dak.soort !== "gemeten" ? g.dak : null;  // samengestelde daken: percentielen blijven beter
+  const goot = model ? model.goot : g.goot != null ? g.goot : g.mediaan;
+  const nok = model ? model.nok : g.nok != null ? g.nok : goot;
   if (g.ruine || !goot || goot < 2) return { h, goot, nok, n: 0, dak: 0 };
   const n = g.verdiepingen != null ? g.verdiepingen : Math.max(1, Math.floor((goot + 0.6) / h));
+  if (g.dak && g.dak.soort === "plat" && g.dakverdieping == null) return { h, goot, nok, n, dak: 0 };
   const dak = g.dakverdieping === false ? 0 : g.dakverdieping || nok - goot >= 2.8 ? g.oppervlakte * 0.5 : 0;
   return { h, goot, nok, n, dak };
 }
@@ -61,12 +70,12 @@ function ruimteTab(p) {
       const max = g.oppervlakte;
       return `<li data-geb="${i}"><div class="rm-gk"><b>${esc(LT(g.naam) || t("Gebouw {n}", { n: i + 1 }))}</b><span>${m2(g.oppervlakte)}</span></div>
         ${g.getekend ? `<small>${t("Zelf getekend door {naam}, {tijd}. Hoogte uit het aantal bouwlagen.", { naam: esc(g.getekend.naam), tijd: wanneer(g.getekend.tijd) })}</small>` : ""}
-        <small>${[s.goot != null && t("goot ± {h}", { h: meter(s.goot) }), s.nok != null && t("nok ± {h}", { h: meter(s.nok) }), s.n && t("{n} × {h} per verdieping", { n: s.n, h: meter(s.h) })].filter(Boolean).join(" · ")}</small>
+        <small>${[g.dak && dakTekst(g.dak), s.goot != null && t("goot ± {h}", { h: meter(s.goot) }), s.nok != null && t("nok ± {h}", { h: meter(s.nok) }), s.n && t("{n} × {h} per verdieping", { n: s.n, h: meter(s.h) })].filter(Boolean).join(" · ")}</small>
         ${kanTekenen() ? `<small><button type="button" class="linkknop" data-teken="${esc(LT(g.naam) || t("Gebouw {n}", { n: i + 1 }))}">${t("Opnieuw tekenen")}</button></small>` : ""}
         ${lagen.length ? `<div class="rm-lagen">${lagen.reverse().map(([l, a]) => `<div><span>${esc(l)}</span><i style="--w:${Math.max(4, a / max * 100)}%"></i><span>${m2(a)}</span></div>`).join("")}</div>` : `<p class="note">${t("Geen bruikbare verdiepingen meer (ruïne). Alleen de grondoppervlakte telt.")}</p>`}
       </li>`;
     }).join("")}</ul>`);
-    parts.push(`<p class="note">${t("Schatting. De grondoppervlakte komt uit de gebouwcontour ({c}), de hoogte uit de LiDAR-hoogtekaart ({h}): goot ≈ 25e percentiel, nok ≈ 90e percentiel boven het maaiveld. Verdiepingen = hoogte tot de goot gedeeld door ± {v} per verdieping; een dakverdieping telt voor de helft. Muren en trappen zijn niet afgetrokken (bruto).", { c: esc(LT(info.bronContour) || "GRB / PICC"), h: esc(LT(info.bronHoogte) || "DHM / LiDAR"), v: meter(schatting(p, info.gebouwen[0], info).h) })}${info.berekend ? " " + t("Berekend op {d}.", { d: datum(info.berekend) }) : ""}</p>`);
+    parts.push(`<p class="note">${t("Schatting. De grondoppervlakte komt uit de gebouwcontour ({c}), de hoogte uit de LiDAR-hoogtekaart ({h}): goot ≈ 25e percentiel, nok ≈ 90e percentiel boven het maaiveld. Verdiepingen = hoogte tot de goot gedeeld door ± {v} per verdieping; een dakverdieping telt voor de helft. Muren en trappen zijn niet afgetrokken (bruto).", { c: esc(LT(info.bronContour) || "GRB / PICC"), h: esc(LT(info.bronHoogte) || "DHM / LiDAR"), v: meter(schatting(p, info.gebouwen[0], info).h) })}${info.gebouwen.some(g => g.dak) ? " " + t("Het dak is per gebouw gepast op de LiDAR-hoogtes (plat, lessenaar, zadel of schild; anders een vereenvoudigd samengesteld dak). Goot en nok komen dan uit dat dakmodel.") : ""}${info.berekend ? " " + t("Berekend op {d}.", { d: datum(info.berekend) }) : ""}</p>`);
   }
   const inv = (info && info.invullingen) || [];
   parts.push(`<h3>${t("Mogelijke invullingen")} <small>${inv.length}</small></h3>`);
@@ -122,7 +131,7 @@ function tekenIso(p) {
 }
 (() => {
   let sleep = null;
-  document.addEventListener("pointerdown", e => { const el = e.target.closest("#iso"); if (el) { sleep = { x: e.clientX, h: isoHoek }; el.setPointerCapture(e.pointerId); e.preventDefault(); } });
+  document.addEventListener("pointerdown", e => { const el = e.target.closest("#iso"); if (el && !el.classList.contains("drie")) { sleep = { x: e.clientX, h: isoHoek }; el.setPointerCapture(e.pointerId); e.preventDefault(); } });
   document.addEventListener("pointermove", e => { if (sleep && current) { isoHoek = sleep.h + (e.clientX - sleep.x) / 90; tekenIso(current); } });
   document.addEventListener("pointerup", () => { sleep = null; });
 })();
@@ -159,10 +168,12 @@ function voegGebouwenToe() {
 }
 function zetGebouwen(aan) {
   gebouwenAan = aan;
-  ["geb-muur", "geb-dak"].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, "visibility", aan ? "visible" : "none"));
+  const drie = !!(map.getLayer && map.getLayer("geb-3d"));
+  ["geb-muur", "geb-dak"].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, "visibility", aan && !drie ? "visible" : "none"));
+  if (drie) map.triggerRepaint();
 }
 if (map.loaded && map.loaded()) voegGebouwenToe(); else map.on("load", voegGebouwenToe);
-const herkleur = () => { const s = map.getSource && map.getSource("gebouwen"); if (s) s.setData(gebouwenGeojson()); };
+const herkleur = () => { const s = map.getSource && map.getSource("gebouwen"); if (s) s.setData(gebouwenGeojson()); if (typeof herbouwDrie === "function") herbouwDrie(); };
 new MutationObserver(herkleur).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", herkleur);
 
@@ -176,6 +187,7 @@ function bekijk3d(p) {
   const span = Math.max((bb.getEast() - bb.getWest()) * 71000, (bb.getNorth() - bb.getSouth()) * 111000, 30);
   const zoom = Math.min(19, Math.max(16, 17.2 - Math.log2(span / 80)));
   map.flyTo({ center: bb.getCenter(), zoom, pitch: 60, bearing: -25, speed: 1.2, essential: true, padding: panelPadding() });
+  if (typeof toonBediening === "function") toonBediening(true);
 }
 
 $("pBody").addEventListener("click", e => {

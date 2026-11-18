@@ -5,6 +5,16 @@
 const VERTALING = {
   ui: {
     fr: {
+      "Ronddraaien": "Faire le tour",
+      "Kantelen": "Incliner",
+      "2D": "2D",
+      "Draaien: rechtermuisknop of Ctrl + slepen, of twee vingers.": "Tourner : clic droit ou Ctrl + glisser, ou deux doigts.",
+      "plat dak": "toit plat",
+      "lessenaarsdak": "toit en appentis",
+      "zadeldak": "toit à deux pans",
+      "schilddak": "toit en croupe",
+      "samengesteld dak": "toiture composée",
+      "Het dak is per gebouw gepast op de LiDAR-hoogtes (plat, lessenaar, zadel of schild; anders een vereenvoudigd samengesteld dak). Goot en nok komen dan uit dat dakmodel.": "La toiture de chaque bâtiment est ajustée aux hauteurs LiDAR (plate, appentis, deux pans ou croupe ; sinon une toiture composée simplifiée). La gouttière et le faîte viennent alors de ce modèle.",
       "Punt terug": "Point en arrière",
       "Klaar": "Terminé",
       "Klik de hoeken van het gebouw aan op de kaart ({n} van minstens 3).": "Cliquez sur les coins du bâtiment sur la carte ({n} sur au moins 3).",
@@ -275,6 +285,16 @@ const VERTALING = {
       "{n} pagina's A3": "{n} pages A3"
     },
     en: {
+      "Ronddraaien": "Orbit",
+      "Kantelen": "Tilt",
+      "2D": "2D",
+      "Draaien: rechtermuisknop of Ctrl + slepen, of twee vingers.": "Rotate: right mouse button or Ctrl + drag, or two fingers.",
+      "plat dak": "flat roof",
+      "lessenaarsdak": "shed roof",
+      "zadeldak": "gable roof",
+      "schilddak": "hip roof",
+      "samengesteld dak": "composite roof",
+      "Het dak is per gebouw gepast op de LiDAR-hoogtes (plat, lessenaar, zadel of schild; anders een vereenvoudigd samengesteld dak). Goot en nok komen dan uit dat dakmodel.": "Each building's roof is fitted to the LiDAR heights (flat, shed, gable or hip; otherwise a simplified composite roof). Eaves and ridge then come from that roof model.",
       "Punt terug": "Undo point",
       "Klaar": "Done",
       "Klik de hoeken van het gebouw aan op de kaart ({n} van minstens 3).": "Click the corners of the building on the map ({n} of at least 3).",
