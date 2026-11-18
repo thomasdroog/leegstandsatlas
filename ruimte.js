@@ -13,7 +13,7 @@ const VERDIEPING = { kasteel: 3.5, religieus: 3.6, industrie: 4.5, spoorweg: 4, 
 // Daktype in woorden, bv. "zadeldak, 45°".
 function dakTekst(d) {
   if (!d) return "";
-  const naam = { plat: t("plat dak"), lessenaar: t("lessenaarsdak"), zadel: t("zadeldak"), schild: t("schilddak"), gemeten: t("samengesteld dak"), samengesteld: t("samengesteld dak") }[d.soort] || d.soort;
+  const naam = { plat: t("plat dak"), lessenaar: t("lessenaarsdak"), zadel: t("zadeldak"), schild: t("schilddak"), gemeten: t("samengesteld dak"), samengesteld: t("samengesteld dak"), gebogen: t("gebogen dak") }[d.soort] || d.soort;
   const vl = d.soort === "samengesteld" && d.vlakken ? " " + t("({n} vlakken)", { n: d.vlakken }) : "";
   return d.helling ? `${naam}${vl}, ${d.helling}°` : naam + vl;
 }
