@@ -989,6 +989,8 @@ function staatTab(p) {
     `<div class="schaal-lbl">${[1, 2, 3, 4, 5].map(i => `<span class="${i === n ? "on" : ""}">${i}</span>`).join("")}</div>`];
   if (st.toelichting) parts.push(`<p class="txt">${esc(st.toelichting)}</p>`);
   parts.push(`<p class="note">${esc(STAAT_UITLEG[n])}.${st.naam ? " " + t("Laatst aangepast door {naam}, {tijd}.", { naam: esc(st.naam), tijd: wanneer(st.tijd) }) : st.bron ? " " + t("Beoordeling: {bron}.", { bron: esc(t(st.bron)) }) : ""}</p>`);
+  // Toestand volgens de herbruikbaarheidsfiche van de studenten (de volledige fiche staat bij Oppervlakte & invulling).
+  if (p.fiche && typeof ficheHtml === "function") parts.push(`<h3>${t("Volgens de herbruikbaarheidsfiche")}</h3>${ficheHtml(p.fiche, true)}<p class="note"><button type="button" class="linkknop" id="naarFiche">${t("Hele fiche en mogelijke invullingen")}</button></p>`);
   if (delen(p).length) parts.push(`<h3>${t("Onderdelen")} <small>${delen(p).length}</small></h3><ul class="delen">${delen(p).map(o => {
     const m = score(o);
     const onder = [o.staat && o.staat.toelichting, o.door && t("Toegevoegd door {naam}, {tijd}", { naam: o.door, tijd: wanneer(o.tijd) })].filter(Boolean).map(esc).join(" · ");

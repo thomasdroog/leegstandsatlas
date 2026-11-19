@@ -71,6 +71,7 @@ Alles komt uit de gedeelde Drive-map “leegstand”. Elke submap is één pand.
 | Schermafbeeldingen van Street View of een luchtbeeld | Street View en Luchtbeeld |
 | Submap “Plannen” of “grondplannen” (pdf of beeld) | Tabblad Grondplannen, als beeld en als pdf om te openen of te downloaden. Namen, e-mailadressen en telefoonnummers worden er eerst uit gehaald. |
 | Submappen “3d-model”, “historisch”, “materialen” | De gelijknamige tabbladen |
+| Document “Herbruikbaarheidsfiche” (soort, bouwwijze, oppervlakte, bouwniveaus, brandveiligheid, dak, energie, opties voor herbestemming; extra vragen mogen erbij) | Tabblad Oppervlakte & invulling (hele fiche), tabblad Staat (bouwwijze, dak, brandveiligheid, energie) en pagina 2 van de A3-export |
 
 De site wordt dagelijks bijgewerkt vanuit die map.
 

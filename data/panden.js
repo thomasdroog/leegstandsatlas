@@ -3,7 +3,7 @@
 // geschiedenis: korte samenvatting in eigen woorden van het document "geschiedenis" in de map van het pand, met de bron.
 // uitgelicht: de vijf beste foto's voor de eerste pagina van de A3-export (zonder dit veld: de scherpste eigen foto's).
 // categorie: soort pand, bepaalt de kleur op de kaart (zie CATEGORIEEN in index.html).
-// fiche: de "Herbruikbaarheidsfiche" uit de Drive-map van het pand (soort, bouwwijze, oppervlakte, niveaus, brandveiligheid, dak, opties), zoals de studenten ze invulden.
+// fiche: de "Herbruikbaarheidsfiche" uit de Drive-map van het pand (soort, bouwwijze, oppervlakte, niveaus, brandveiligheid, dak, energie, opties, extra [{label, waarde}] voor andere vragen), zoals de studenten ze invulden.
 // staat: beoordeling van de toestand, score 1 (ruïne) tot 5 (goed), met toelichting en bron. Bezoekers kunnen dit aanpassen op de site.
 // onderdelen (optioneel): delen van een pand met een eigen soort en staat, bv. een kasteel met twee ruïnes ernaast. Het pand telt dan mee bij elke soort in de legende.
 const PANDEN = [
