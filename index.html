@@ -146,7 +146,13 @@ button, input { font: inherit; color: inherit; }
 .rm-inv li { display: grid; gap: 3px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); }
 .rm-inv b { font: 600 13px/1.25 var(--font-ui); }
 .rm-inv span { font: 400 13px/1.45 var(--font-ui); color: var(--fg); }
-@media (max-width: 760px) { .rm-kop { grid-template-columns: 1fr; } .iso { aspect-ratio: auto; height: 210px; } .rm-cijfers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .oud > .pill #lagenTxt { display: none; } }
+.rm-fiche { display: grid; flex: none; margin: 0; border: 1px solid var(--line); border-radius: 12px; }
+.rm-fiche div { display: grid; grid-template-columns: 11em minmax(0, 1fr); gap: 10px; padding: 8px 12px; }
+.rm-fiche div + div { border-top: 1px solid var(--line); }
+.rm-fiche dt { font: 500 10px/1.6 var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.rm-fiche dd { margin: 0; font: 400 13px/1.45 var(--font-ui); }
+.rm-fiche ul { margin: 0; padding-left: 1.1em; }
+@media (max-width: 760px) { .rm-fiche div { grid-template-columns: 1fr; gap: 2px; } .rm-kop { grid-template-columns: 1fr; } .iso { aspect-ratio: auto; height: 210px; } .rm-cijfers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .oud > .pill #lagenTxt { display: none; } }
 .d3 { position: absolute; z-index: 5; left: 50%; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: calc(100vw - 32px); }
 .d3 .pill { height: 32px; padding: 0 12px; cursor: pointer; font: 500 12px/1 var(--font-mono); border: 0; }
 .d3 .pill[aria-pressed="true"] { background: var(--fg); color: var(--bg); }

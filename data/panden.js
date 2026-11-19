@@ -3,6 +3,7 @@
 // geschiedenis: korte samenvatting in eigen woorden van het document "geschiedenis" in de map van het pand, met de bron.
 // uitgelicht: de vijf beste foto's voor de eerste pagina van de A3-export (zonder dit veld: de scherpste eigen foto's).
 // categorie: soort pand, bepaalt de kleur op de kaart (zie CATEGORIEEN in index.html).
+// fiche: de "Herbruikbaarheidsfiche" uit de Drive-map van het pand (soort, bouwwijze, oppervlakte, niveaus, brandveiligheid, dak, opties), zoals de studenten ze invulden.
 // staat: beoordeling van de toestand, score 1 (ruïne) tot 5 (goed), met toelichting en bron. Bezoekers kunnen dit aanpassen op de site.
 // onderdelen (optioneel): delen van een pand met een eigen soort en staat, bv. een kasteel met twee ruïnes ernaast. Het pand telt dan mee bij elke soort in de legende.
 const PANDEN = [
@@ -105,6 +106,19 @@ const PANDEN = [
   "model3d": [],
   "historisch": [],
   "materialen": [],
+  "fiche": {
+   "datum": "2026-11-18",
+   "soort": "Klooster",
+   "bouwwijze": "Structuur (slechte staat). Door een brand kwam er een opening in de gevel van een deel van het gebouw; dat deel is afgebroken.",
+   "oppervlakte": "682,93 m²",
+   "niveaus": "Gelijkvloers, niveau 1 en niveau 2 (zolder)",
+   "brandveiligheid": "Geen actieve brandveiligheid aanwezig",
+   "dak": "Dak in perfecte staat",
+   "opties": [
+    "Woningen (vroeger 14 kamers, nu een vergunning voor 7 woningen)",
+    "Kantoren"
+   ]
+  },
   "geschiedenis": {
    "tekst": [
     "In 1875 vestigden Franciscanessen, op de vlucht voor de Kulturkampf in Duitsland, zich in Hombourg op het landgoed van graaf Bourcieu de Montereux. Het domein met bijgebouwen is meer dan een hectare groot. In 1908 liet de eigenaar het na aan de Franciscanessen van de Heilige Familie, die in 1910 een kapel aan Sint-Antonius wijdden.",
@@ -338,6 +352,21 @@ const PANDEN = [
   "model3d": [],
   "historisch": [],
   "materialen": [],
+  "fiche": {
+   "datum": "2026-11-18",
+   "soort": "Voormalig treinstation",
+   "bouwwijze": "Structuur (slechte staat)",
+   "oppervlakte": "12.300 m²",
+   "niveaus": "Enkel gelijkvloers",
+   "brandveiligheid": "Geen actieve brandveiligheid aanwezig",
+   "dak": "Slechte staat: verouderde panelen en hier en daar gaten",
+   "opties": [
+    "Opnieuw een station",
+    "Publieke programma's",
+    "Culturele doeleinden",
+    "Educatie"
+   ]
+  },
   "geschiedenis": {
    "tekst": [
     "De wijk Montzen-Station ontstond tussen 1914 en 1918, toen spoorlijn 24 werd aangelegd. Vanaf 1919 nam het goederenverkeer sterk toe, onder meer door Duitse leveringen als herstelbetaling voor de oorlogsschade, en de Belgische Staat werkte het rangeerstation af en breidde het uit. In de jaren dertig beleefde het station zijn hoogtepunt.",

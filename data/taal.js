@@ -56,6 +56,7 @@ function vertaalPanden(lijst) {
     }
     if (x.materialen) p.materialen = x.materialen;
     if (x.planBron) p.planBron = x.planBron;
+    if (x.fiche && p.fiche) p.fiche = { ...p.fiche, ...x.fiche };
     if (x.plannen && p.planinfo) Object.entries(p.planinfo).forEach(([src, pi], i) => { if (x.plannen[i]) pi.titel = x.plannen[i]; });
     if (x.onderdelen) (p.onderdelen || []).forEach(o => {
       const v = x.onderdelen[o.naam];

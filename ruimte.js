@@ -78,6 +78,14 @@ function ruimteTab(p) {
     }).join("")}</ul>`);
     parts.push(`<p class="note">${t("Schatting. De grondoppervlakte komt uit de gebouwcontour ({c}), de hoogte uit de LiDAR-hoogtekaart ({h}): goot ≈ 25e percentiel, nok ≈ 90e percentiel boven het maaiveld. Verdiepingen = hoogte tot de goot gedeeld door ± {v} per verdieping; een dakverdieping telt voor de helft. Muren en trappen zijn niet afgetrokken (bruto).", { c: esc(LT(info.bronContour) || "GRB / PICC"), h: esc(LT(info.bronHoogte) || "DHM / LiDAR"), v: meter(schatting(p, info.gebouwen[0], info).h) })}${info.gebouwen.some(g => g.dak) ? " " + t("Het dak is per gebouw opgebouwd uit dakvlakken die in de LiDAR-hoogtes gezocht zijn (vlakdetectie met RANSAC); nokken en kepers zijn de snijlijnen van die vlakken. Goot en nok komen uit dat dakmodel.") : ""}${info.berekend ? " " + t("Berekend op {d}.", { d: datum(info.berekend) }) : ""}</p>`);
   }
+  // Herbruikbaarheidsfiche zoals de studenten ze invulden (doc in de Drive-map van het pand), los van de voorstellen hieronder.
+  const f = p.fiche;
+  if (f) {
+    const rij = (k, v) => v ? `<div><dt>${t(k)}</dt><dd>${esc(v)}</dd></div>` : "";
+    const opties = f.opties && f.opties.length ? `<div><dt>${t("Opties voor herbestemming")}</dt><dd><ul>${f.opties.map(o => `<li>${esc(o)}</li>`).join("")}</ul></dd></div>` : "";
+    parts.push(`<h3>${t("Herbruikbaarheidsfiche")}</h3><dl class="rm-fiche">${rij("Soort", f.soort)}${rij("Bouwwijze", f.bouwwijze)}${rij("Oppervlakte", f.oppervlakte)}${rij("Bouwniveaus", f.niveaus)}${rij("Brandveiligheid", f.brandveiligheid)}${rij("Dak / overkapping", f.dak)}${opties}</dl>`);
+    if (f.datum) parts.push(`<p class="note">${t("Ingevuld door de studenten op {d}.", { d: datum(f.datum) })}</p>`);
+  }
   const inv = (info && info.invullingen) || [];
   parts.push(`<h3>${t("Mogelijke invullingen")} <small>${inv.length}</small></h3>`);
   if (inv.length) parts.push(`<ul class="rm-inv">${inv.map(x => `<li><b>${esc(LT(x.titel))}</b><span>${esc(LT(x.uitleg))}</span></li>`).join("")}</ul>`);
