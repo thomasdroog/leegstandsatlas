@@ -203,6 +203,7 @@ function inhoud(p) {
   if (p.grondplannen.length) d.push(t("{n} plannen", { n: p.grondplannen.length }));
   if (p.historisch.length) d.push(t("{n} historische foto's", { n: p.historisch.length }));
   if (p.materialen.length) d.push(t("materialen"));
+  if (p.fiche) d.push(t("herbruikbaarheidsfiche"));
   if (!p.lngLat) d.push(t("niet op de kaart"));
   return d.join(" · ");
 }
@@ -372,8 +373,16 @@ const blad1 = (p, fotos) => `<section class="sheet">${hoofd(p)}<div class="body 
 function blad2(p, metFotos) {
   const secties = [`<div class="sec"><h3>${t("Geschiedenis")}</h3>${p.geschiedenis ? geschHTML(p.geschiedenis) : `<p class="niets">${t("Nog geen geschiedenis aangeleverd.")}</p>`}</div>`,
     `<div class="sec"><h3>${t("Materialen")}</h3>${p.materialen.length ? `<ul>${p.materialen.map(m => `<li>${esc(m)}</li>`).join("")}</ul>` : `<p class="niets">${t("Nog geen materialen aangeleverd.")}</p>`}</div>`];
+  // Herbruikbaarheidsfiche van de studenten (zelfde velden als op de site, zie ficheHtml in ruimte.js).
+  const f = p.fiche;
+  if (f) {
+    const rijen = [["Soort", f.soort], ["Bouwwijze", f.bouwwijze], ["Oppervlakte", f.oppervlakte], ["Bouwniveaus", f.niveaus], ["Brandveiligheid", f.brandveiligheid], ["Dak / overkapping", f.dak], ["Energie", f.energie]]
+      .map(([k, v]) => [t(k), v]).concat((f.extra || []).map(x => [x.label, x.waarde])).filter(([, v]) => v);
+    if (f.opties && f.opties.length) rijen.push([t("Opties voor herbestemming"), f.opties.join(" · ")]);
+    secties.push(`<div class="sec"><h3>${t("Herbruikbaarheidsfiche")}</h3><ul>${rijen.map(([k, v]) => `<li><b>${esc(k)}:</b> ${esc(v)}</li>`).join("")}</ul></div>`);
+  }
   if (p.model3d.length) secties.push(`<div class="sec"><h3>${t("3D-model")}</h3><p class="niets">${t("Te bekijken op de website.")}</p></div>`);
-  return leegBlad(p, t("Geschiedenis en materialen"), metFotos
+  return leegBlad(p, t(p.fiche ? "Geschiedenis, fiche en materialen" : "Geschiedenis en materialen"), metFotos
     ? `<div class="body b2"><div class="tekst">${secties.join("")}</div><div class="vak"></div></div>`
     : `<div class="tekst3">${secties.join("")}</div>`);
 }
